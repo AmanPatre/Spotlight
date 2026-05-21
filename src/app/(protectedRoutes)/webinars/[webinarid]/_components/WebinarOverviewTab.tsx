@@ -9,6 +9,7 @@ type Props = {
   ctaType: CtaTypeEnum;
   ctaLabel: string | null;
   aiAgentId: string | null;
+  aiAgentName?: string | null;
   couponEnabled: boolean;
   couponCode: string | null;
   lockChat: boolean;
@@ -21,6 +22,7 @@ const WebinarOverviewTab = ({
   ctaType,
   ctaLabel,
   aiAgentId,
+  aiAgentName,
   couponEnabled,
   couponCode,
   lockChat,
@@ -68,11 +70,10 @@ const WebinarOverviewTab = ({
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Type:</span>
             <span
-              className={`px-2 py-0.5 rounded-full text-xs font-medium ${
-                ctaType === CtaTypeEnum.BOOK_A_CALL
-                  ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                  : "bg-green-500/10 text-green-400 border border-green-500/20"
-              }`}
+              className={`px-2 py-0.5 rounded-full text-xs font-medium ${ctaType === CtaTypeEnum.BOOK_A_CALL
+                ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
+                : "bg-green-500/10 text-green-400 border border-green-500/20"
+                }`}
             >
               {ctaType === CtaTypeEnum.BOOK_A_CALL ? "Book a Call" : "Buy Now"}
             </span>
@@ -87,11 +88,10 @@ const WebinarOverviewTab = ({
             <div className="flex items-center gap-2 mt-1">
               <span className="text-xs text-muted-foreground">AI Agent:</span>
               <span
-                className={`text-xs font-medium ${
-                  aiAgentId ? "text-green-400" : "text-amber-400"
-                }`}
+                className={`text-xs font-medium ${aiAgentId ? "text-green-400" : "text-amber-400"
+                  }`}
               >
-                {aiAgentId ? "Configured ✓" : "Not configured"}
+                {aiAgentId ? (aiAgentName || "Configured ✓") : "Not configured"}
               </span>
             </div>
           )}

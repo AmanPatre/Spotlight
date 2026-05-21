@@ -50,6 +50,17 @@ export const getWebinarAttendence = async (
       AttendedTypeEnum,
       AttendanceData
     >;
+
+    let totalRegisteredCount = 0;
+    let totalAttendedCount = 0;
+
+    for (const countItem of attendanceCounts) {
+      totalRegisteredCount += countItem._count.attendedType;
+      if (countItem.attendedType !== AttendedTypeEnum.REGISTERED) {
+        totalAttendedCount += countItem._count.attendedType;
+      }
+    }
+
     for (const type of Object.values(AttendedTypeEnum)) {
       if (
         type === AttendedTypeEnum.ADDED_TO_CART &&
@@ -58,25 +69,26 @@ export const getWebinarAttendence = async (
         continue;
 
       if (
-        type === AttendedTypeEnum.BREAKOUT_ROOM &&
+        (type === AttendedTypeEnum.BREAKOUT_ROOM || type === AttendedTypeEnum.FOLLOW_UP) &&
         webinar.ctaType !== CtaTypeEnum.BOOK_A_CALL
       )
         continue;
 
-      const countItem = attendanceCounts.find((item) => {
-        if (
-          webinar.ctaType === CtaTypeEnum.BOOK_A_CALL &&
-          type === AttendedTypeEnum.BREAKOUT_ROOM &&
-          item.attendedType === AttendedTypeEnum.ADDED_TO_CART
-        ) {
-          return true;
-        }
+      let count = 0;
 
-        return item.attendedType === type;
-      });
+      if (type === AttendedTypeEnum.REGISTERED) {
+        count = totalRegisteredCount;
+      } else if (type === AttendedTypeEnum.ATTENDED) {
+        count = totalAttendedCount;
+      } else {
+        const countItem = attendanceCounts.find(
+          (item) => item.attendedType === type
+        );
+        count = countItem ? countItem._count.attendedType : 0;
+      }
 
       result[type] = {
-        count: countItem ? countItem._count.attendedType : 0,
+        count,
         users: [],
       };
     }
@@ -86,24 +98,25 @@ export const getWebinarAttendence = async (
         if (
           (type === AttendedTypeEnum.ADDED_TO_CART &&
             webinar.ctaType === CtaTypeEnum.BOOK_A_CALL) ||
-          (type === AttendedTypeEnum.BREAKOUT_ROOM &&
+          ((type === AttendedTypeEnum.BREAKOUT_ROOM || type === AttendedTypeEnum.FOLLOW_UP) &&
             webinar.ctaType !== CtaTypeEnum.BOOK_A_CALL)
         ) {
           continue;
         }
 
-        const queryType =
-          webinar.ctaType === CtaTypeEnum.BOOK_A_CALL &&
-            type === AttendedTypeEnum.BREAKOUT_ROOM
-            ? AttendedTypeEnum.ADDED_TO_CART
-            : type;
-
         if (result[type].count > 0) {
+          let whereClause: any = { webinarId };
+
+          if (type === AttendedTypeEnum.REGISTERED) {
+            // No additional filter, we want everyone
+          } else if (type === AttendedTypeEnum.ATTENDED) {
+            whereClause.attendedType = { not: AttendedTypeEnum.REGISTERED };
+          } else {
+            whereClause.attendedType = type;
+          }
+
           const attendances = await prismaClient.attendance.findMany({
-            where: {
-              webinarId,
-              attendedType: queryType,
-            },
+            where: whereClause,
             include: {
               user: true,
             },
@@ -182,6 +195,28 @@ export const updateAttendanceStatus = async (
   status: AttendedTypeEnum
 ) => {
   try {
+    const enumOrder: Record<AttendedTypeEnum, number> = {
+      [AttendedTypeEnum.REGISTERED]: 0,
+      [AttendedTypeEnum.ATTENDED]: 1,
+      [AttendedTypeEnum.ADDED_TO_CART]: 2,
+      [AttendedTypeEnum.BREAKOUT_ROOM]: 3,
+      [AttendedTypeEnum.FOLLOW_UP]: 4,
+      [AttendedTypeEnum.CONVERTED]: 5,
+    };
+
+    const currentAttendance = await prismaClient.attendance.findUnique({
+      where: { attendeeId_webinarId: { attendeeId, webinarId } },
+      select: { attendedType: true }
+    });
+
+    if (
+      currentAttendance &&
+      enumOrder[status] <= enumOrder[currentAttendance.attendedType]
+    ) {
+      // Don't downgrade or do unnecessary update
+      return { success: true };
+    }
+
     await prismaClient.attendance.update({
       where: {
         attendeeId_webinarId: {
@@ -230,6 +265,30 @@ export const getAllLeads = async () => {
   } catch (error) {
     console.error("Error fetching all leads", error);
     return { success: false, leads: [] };
+  }
+};
+
+export const getAttendeeStatus = async (
+  webinarId: string,
+  attendeeId: string
+) => {
+  try {
+    const attendance = await prismaClient.attendance.findUnique({
+      where: {
+        attendeeId_webinarId: {
+          attendeeId,
+          webinarId,
+        },
+      },
+      select: {
+        attendedType: true,
+      },
+    });
+
+    return { success: true, attendedType: attendance?.attendedType || null };
+  } catch (error) {
+    console.error("Error fetching attendee status", error);
+    return { success: false };
   }
 };
 

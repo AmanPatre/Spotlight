@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { Zap, PhoneCall, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
+import { CtaTypeEnum } from "@/generated/prisma/enums";
 
 type CTAType = "BUY_NOW" | "BOOK_A_CALL";
 
 type Props = {
   call: any;
   aiAgentId: string | null;
+  ctaType: CtaTypeEnum;
 };
 
-export default function CTAControlPanel({ call, aiAgentId }: Props) {
+export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
   const [sending, setSending] = useState<CTAType | null>(null);
 
   const sendCTA = async (ctaType: CTAType) => {
@@ -49,16 +51,18 @@ export default function CTAControlPanel({ call, aiAgentId }: Props) {
       </p>
 
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => sendCTA("BUY_NOW")}
-          disabled={!!sending}
-          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600/20 border border-green-600/40 text-green-400 text-sm font-medium hover:bg-green-600/30 transition-all disabled:opacity-50"
-        >
-          <ShoppingBag className="w-4 h-4" />
-          {sending === "BUY_NOW" ? "Sending..." : "Drop Buy Now"}
-        </button>
+        {ctaType === CtaTypeEnum.BUY_NOW && (
+          <button
+            onClick={() => sendCTA("BUY_NOW")}
+            disabled={!!sending}
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600/20 border border-green-600/40 text-green-400 text-sm font-medium hover:bg-green-600/30 transition-all disabled:opacity-50"
+          >
+            <ShoppingBag className="w-4 h-4" />
+            {sending === "BUY_NOW" ? "Sending..." : "Drop Buy Now"}
+          </button>
+        )}
 
-        {aiAgentId && (
+        {ctaType === CtaTypeEnum.BOOK_A_CALL && aiAgentId && (
           <button
             onClick={() => sendCTA("BOOK_A_CALL")}
             disabled={!!sending}

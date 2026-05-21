@@ -12,17 +12,20 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import HostStreamView from "./HostStreamView";
+import { CtaTypeEnum } from "@/generated/prisma/enums";
 
 type Props = {
   webinarId: string;
   webinarTitle: string;
   aiAgentId: string | null;
+  ctaType: CtaTypeEnum;
 };
 
 export default function LiveRoomClient({
   webinarId,
   webinarTitle,
   aiAgentId,
+  ctaType,
 }: Props) {
   const { user: clerkUser, isLoaded } = useUser();
   const router = useRouter();
@@ -143,6 +146,7 @@ export default function LiveRoomClient({
         <HostStreamView
           webinarId={webinarId}
           aiAgentId={aiAgentId}
+          ctaType={ctaType}
           hostId={clerkUser!.id}
           hostName={
             clerkUser!.fullName ??

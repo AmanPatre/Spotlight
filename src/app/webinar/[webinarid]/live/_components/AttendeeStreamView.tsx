@@ -21,6 +21,7 @@ type Props = {
   attendeeId: string;
   attendeeName: string;
   aiAgentId: string | null;
+  initialStatus: AttendedTypeEnum | null;
 };
 
 export default function AttendeeStreamView({
@@ -28,6 +29,7 @@ export default function AttendeeStreamView({
   attendeeId,
   attendeeName,
   aiAgentId,
+  initialStatus,
 }: Props) {
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
@@ -148,6 +150,7 @@ export default function AttendeeStreamView({
           aiAgentId={aiAgentId}
           activeCTA={activeCTA}
           setActiveCTA={setActiveCTA}
+          initialStatus={initialStatus}
         />
       </StreamCall>
     </StreamVideo>
@@ -161,6 +164,7 @@ function AttendeeInnerView({
   aiAgentId,
   activeCTA,
   setActiveCTA,
+  initialStatus,
 }: {
   webinarId: string;
   attendeeId: string;
@@ -168,6 +172,7 @@ function AttendeeInnerView({
   aiAgentId: string | null;
   activeCTA: "BUY_NOW" | "BOOK_A_CALL" | null;
   setActiveCTA: (v: "BUY_NOW" | "BOOK_A_CALL" | null) => void;
+  initialStatus: AttendedTypeEnum | null;
 }) {
   const { useParticipants, useIsCallLive } = useCallStateHooks();
   const participants = useParticipants();
@@ -262,12 +267,21 @@ function AttendeeInnerView({
           </div>
 
           {/* Persistent CTA Button */}
-          <button
-            onClick={() => setActiveCTA("BUY_NOW")}
-            className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98]"
-          >
-            BUY NOW
-          </button>
+          {initialStatus && initialStatus !== AttendedTypeEnum.CONVERTED && (
+            <button
+              onClick={() => setActiveCTA("BUY_NOW")}
+              className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98]"
+            >
+              BUY NOW
+            </button>
+          )}
+
+          {initialStatus === AttendedTypeEnum.CONVERTED && (
+            <div className="w-full py-2.5 px-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              ACCESS UNLOCKED
+            </div>
+          )}
         </div>
         <div className="flex-1 min-h-0">
           <AttendeeChatPanel

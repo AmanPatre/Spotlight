@@ -12,6 +12,7 @@ import { updateWebinarStatus } from "@/actions/webinar";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import { toast } from "sonner";
 import HostChatPanel from "./HostChatPanel";
+import { CtaTypeEnum } from "@/generated/prisma/enums";
 import CTAControlPanel from "./CTAControlPanel";
 import DeviceControlPanel from "./DeviceControlPanel";
 import ParticipantSidebar from "./ParticipantSidebar";
@@ -19,6 +20,7 @@ import ParticipantSidebar from "./ParticipantSidebar";
 type Props = {
   webinarId: string;
   aiAgentId: string | null;
+  ctaType: CtaTypeEnum;
   hostId: string;
   hostName: string;
 };
@@ -26,6 +28,7 @@ type Props = {
 export default function HostStreamView({
   webinarId,
   aiAgentId,
+  ctaType,
   hostId,
   hostName,
 }: Props) {
@@ -93,7 +96,7 @@ export default function HostStreamView({
     <div className="flex flex-col lg:flex-row h-full gap-6 p-4 bg-black text-white selection:bg-purple-500/30">
       {/* ── Left Column: Stream Info & Controls ── */}
       <div className="flex flex-col flex-1 min-w-0 gap-6 overflow-y-auto pr-2 custom-scrollbar">
-        
+
         {/* ── Video Preview Container ── */}
         <div className="relative flex-shrink-0 min-h-[300px] lg:min-h-[400px] group rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 aspect-video shadow-2xl ring-1 ring-white/10 hover:ring-purple-500/30 transition-all duration-500">
           {localParticipant ? (
@@ -167,7 +170,7 @@ export default function HostStreamView({
         {/* ── Quick Actions ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <DeviceControlPanel />
-          <CTAControlPanel call={call} aiAgentId={aiAgentId} />
+          <CTAControlPanel call={call} aiAgentId={aiAgentId} ctaType={ctaType} />
         </div>
       </div>
 
@@ -177,22 +180,20 @@ export default function HostStreamView({
         <div className="flex p-1 bg-zinc-900/60 border border-white/5 rounded-xl shrink-0">
           <button
             onClick={() => setActiveTab("chat")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${
-              activeTab === "chat" 
-                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20" 
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "chat"
+              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
+              : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+              }`}
           >
             <MessageSquare className="w-3.5 h-3.5" />
             Live Chat
           </button>
           <button
             onClick={() => setActiveTab("participants")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${
-              activeTab === "participants" 
-                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20" 
-                : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-            }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "participants"
+              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
+              : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
+              }`}
           >
             <Users className="w-3.5 h-3.5" />
             Participants

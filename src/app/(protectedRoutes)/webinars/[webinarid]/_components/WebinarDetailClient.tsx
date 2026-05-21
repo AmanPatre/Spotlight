@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { LayoutDashboard, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { LayoutDashboard, Users, RefreshCcw } from "lucide-react";
 import { AttendedTypeEnum } from "@/generated/prisma/enums";
 import { getWebinarById } from "@/actions/webinar";
 import { getWebinarAttendence } from "@/actions/attendence";
@@ -35,6 +36,16 @@ export default function WebinarDetailClient({
   const [activeTab, setActiveTab] = useState<"overview" | "pipeline">(
     "overview"
   );
+  const router = useRouter();
+
+  // Polling for fresh data every 10 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      router.refresh();
+    }, 10000); // 10 seconds
+
+    return () => clearInterval(interval);
+  }, [router]);
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -51,9 +62,15 @@ export default function WebinarDetailClient({
 
         {/* Action controls */}
         <div className="flex items-center justify-between flex-wrap gap-4 pt-4 border-t border-[#27272a]">
-          <p className="text-xs text-[#71717a]">
-            Manage your webinar status and share the attendee link above
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-[#71717a]">
+              Manage your webinar status and share the attendee link above
+            </p>
+            <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20">
+              <RefreshCcw className="w-2.5 h-2.5 text-violet-400 animate-spin" />
+              <span className="text-[10px] text-violet-400 font-medium uppercase tracking-wider">Live Syncing</span>
+            </div>
+          </div>
           <WebinarStatusControls
             webinarId={webinar.id}
             currentStatus={webinar.webinarStatus}
@@ -68,8 +85,8 @@ export default function WebinarDetailClient({
           <button
             onClick={() => setActiveTab("overview")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === "overview"
-                ? "border-violet-500 text-violet-400"
-                : "border-transparent text-[#71717a] hover:text-[#fafafa]"
+              ? "border-violet-500 text-violet-400"
+              : "border-transparent text-[#71717a] hover:text-[#fafafa]"
               }`}
           >
             <LayoutDashboard className="w-3.5 h-3.5" />
@@ -79,8 +96,8 @@ export default function WebinarDetailClient({
           <button
             onClick={() => setActiveTab("pipeline")}
             className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === "pipeline"
-                ? "border-violet-500 text-violet-400"
-                : "border-transparent text-[#71717a] hover:text-[#fafafa]"
+              ? "border-violet-500 text-violet-400"
+              : "border-transparent text-[#71717a] hover:text-[#fafafa]"
               }`}
           >
             <Users className="w-3.5 h-3.5" />
@@ -96,6 +113,7 @@ export default function WebinarDetailClient({
             ctaType={webinar.ctaType}
             ctaLabel={webinar.ctaLabel}
             aiAgentId={webinar.aiAgentId}
+            aiAgentName={webinar.aiAgentName}
             couponEnabled={webinar.couponEnabled}
             couponCode={webinar.couponCode}
             lockChat={webinar.lockChat}

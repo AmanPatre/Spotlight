@@ -173,14 +173,14 @@ export default function VapiCallRoom({
       setMicReady(true);
       setMicPriming(false);
 
-      // Track AI Call started -> ADDED_TO_CART matches AI Call column
+      // Track AI Call started -> BREAKOUT_ROOM
       fetch("/api/attendance", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           attendeeId,
           webinarId,
-          status: "ADDED_TO_CART",
+          status: "BREAKOUT_ROOM",
         }),
       }).catch(console.error);
     });

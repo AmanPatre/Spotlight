@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Lock } from "lucide-react";
 import AttendeeStreamView from "./AttendeeStreamView";
+import { getAttendeeStatus } from "@/actions/attendence";
+import { AttendedTypeEnum } from "@/generated/prisma/enums";
 
 type Props = {
   webinarId: string;
@@ -18,6 +20,7 @@ export default function AttendeeLiveClient({
 }: Props) {
   const [attendeeId, setAttendeeId] = useState<string | null>(null);
   const [attendeeName, setAttendeeName] = useState<string>("Attendee");
+  const [initialStatus, setInitialStatus] = useState<AttendedTypeEnum | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -33,8 +36,18 @@ export default function AttendeeLiveClient({
     } else {
       setAttendeeId(storedId);
       if (storedName) setAttendeeName(storedName);
+
+      // Fetch current status
+      getAttendeeStatus(webinarId, storedId)
+        .then((res) => {
+          if (res.success && res.attendedType) {
+            setInitialStatus(res.attendedType as AttendedTypeEnum);
+          }
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
-    setLoading(false);
   }, [webinarId, router]);
 
   if (loading) {
@@ -62,6 +75,7 @@ export default function AttendeeLiveClient({
       attendeeId={attendeeId}
       attendeeName={attendeeName}
       aiAgentId={aiAgentId}
+      initialStatus={initialStatus}
     />
   );
 }

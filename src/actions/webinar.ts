@@ -5,6 +5,7 @@ import { onAuthenticateUser } from "./auth";
 import { prismaClient } from "@/lib/prismaClient";
 import { revalidatePath } from "next/cache";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { getVapiAssistantById } from "./vapi";
 
 function combineDateTime(
   date: Date,
@@ -95,16 +96,17 @@ export const createWebinar = async (formData: WebinarFormState) => {
     revalidatePath("/");
 
     return {
-        status:200,
-        message:"Webinar created Successfully",
-        webinarId:webinar.id,
-        webinarLink:`/webinar/${webinar.id}`,
+      status: 200,
+      message: "Webinar created Successfully",
+      webinarId: webinar.id,
+      webinarLink: `/webinar/${webinar.id}`,
+      managementLink: `/webinars/${webinar.id}`,
     }
   } catch (error) {
-    console.error("Error creating webinar" , error);
+    console.error("Error creating webinar", error);
     return {
-        status : 500,
-        message : "Failed to create webinar. Please try again"
+      status: 500,
+      message: "Failed to create webinar. Please try again"
     };
   }
 };
@@ -135,6 +137,7 @@ export const getWebinarByPresenterId = async (
 }
 export const getWebinarById = async (webinarId: string) => {
   try {
+    console.log("Fetching webinar with ID:", webinarId);
     const webinar = await prismaClient.webinar.findUnique({
       where: { id: webinarId },
       include: {
@@ -143,9 +146,25 @@ export const getWebinarById = async (webinarId: string) => {
         },
       },
     });
-    return webinar;
+
+    if (!webinar) {
+      console.log("Webinar NOT found in database for ID:", webinarId);
+      return null;
+    }
+
+    if (webinar.aiAgentId) {
+      const vapiRes = await getVapiAssistantById(webinar.aiAgentId);
+      if (vapiRes.success && vapiRes.assistant) {
+        return {
+          ...webinar,
+          aiAgentName: vapiRes.assistant.name || "Untitled Agent",
+        };
+      }
+    }
+
+    return { ...webinar, aiAgentName: null };
   } catch (error) {
-    console.error("Error fetching webinar", error);
+    console.error("Error fetching webinar for ID:", webinarId, error);
     return null;
   }
 };
