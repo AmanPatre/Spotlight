@@ -32,7 +32,10 @@ export default function WaitingRoom({
         setStatus(currentStatus as WebinarStatusEnum);
         if (currentStatus === WebinarStatusEnum.LIVE) {
           clearInterval(interval);
-          onLive();
+          // Add a small 2s delay to ensure host's Stream.io call is initialized
+          setTimeout(() => {
+            onLive();
+          }, 2000);
         }
       }
     }, 5000); // Poll every 5 seconds
@@ -85,16 +88,14 @@ export default function WaitingRoom({
         <button
           onClick={handleNotifyMe}
           disabled={subscribed}
-          className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${
-            subscribed
+          className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${subscribed
               ? "bg-green-500/10 border-green-500/30 text-green-400"
               : "bg-secondary/30 border-border hover:bg-secondary/50 text-primary"
-          }`}
+            }`}
         >
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center ${
-              subscribed ? "bg-green-500/10" : "bg-purple-500/10 text-purple-400"
-            }`}
+            className={`w-10 h-10 rounded-xl flex items-center justify-center ${subscribed ? "bg-green-500/10" : "bg-purple-500/10 text-purple-400"
+              }`}
           >
             {subscribed ? (
               <CheckCircle2 className="w-5 h-5" />

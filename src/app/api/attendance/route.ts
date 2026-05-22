@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prismaClient";
 import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { updateAttendanceStatus } from "@/actions/attendence";
 
 /**
  * PATCH /api/attendance
@@ -32,10 +33,10 @@ export async function PATCH(req: NextRequest) {
             );
         }
 
-        await prismaClient.attendance.update({
-            where: { attendeeId_webinarId: { attendeeId, webinarId } },
-            data: { attendedType: status },
-        });
+        const result = await updateAttendanceStatus(webinarId, attendeeId, status);
+        if (!result.success) {
+            throw new Error("Failed to update status");
+        }
 
         return NextResponse.json({ success: true });
     } catch (error) {

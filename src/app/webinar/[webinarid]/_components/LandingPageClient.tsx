@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import RegistrationForm from "./RegistrationForm";
 import WaitingRoom from "./WaitingRoom";
-import { Calendar, User, Clock } from "lucide-react";
+import { Calendar, User, Clock, CheckCircle2 } from "lucide-react";
 
 type Props = {
   webinarId: string;
@@ -141,6 +141,20 @@ export default function LandingPageClient({
                   >
                     Join Live Stream
                   </button>
+                </div>
+              ) : webinarStatus === WebinarStatusEnum.ENDED ? (
+                <div className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl border border-border bg-secondary/10 backdrop-blur-md text-center">
+                  <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center">
+                    <CheckCircle2 className="w-10 h-10 text-purple-400" />
+                  </div>
+                  <h3 className="text-2xl font-bold">Webinar Concluded</h3>
+                  <p className="text-muted-foreground">
+                    This event has ended. Thank you for your interest! Keep an eye on your inbox for any follow-up materials or replay links.
+                  </p>
+                  <div className="w-full h-px bg-border" />
+                  <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
+                    See you at the next one
+                  </p>
                 </div>
               ) : (
                 <WaitingRoom

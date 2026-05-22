@@ -17,11 +17,21 @@ export default function CheckoutPage({ params }: Props) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Fake card fields state
-    const [cardName, setCardName] = useState("Test User");
-    const [cardNumber, setCardNumber] = useState("4242 4242 4242 4242");
-    const [expiry, setExpiry] = useState("12/28");
-    const [cvv, setCvv] = useState("123");
+    // Script Loading state
+    const [scriptLoaded, setScriptLoaded] = useState(false);
+
+    useEffect(() => {
+        // Dynamically load Razorpay checkout script
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => setScriptLoaded(true);
+        script.onerror = () => setError("Failed to load payment gateway");
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
 
     useEffect(() => {
         params.then(({ webinarid }) => {
@@ -47,25 +57,87 @@ export default function CheckoutPage({ params }: Props) {
         setLoading(true);
         setError(null);
 
+        if (!scriptLoaded) {
+            setError("Payment gateway is still loading...");
+            return;
+        }
+
         try {
-            const res = await fetch("/api/payment/checkout", {
+            // 1. Create order on backend
+            const orderRes = await fetch("/api/payment/razorpay/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ attendeeId, webinarId }),
+                body: JSON.stringify({ amount: 9700, currency: "INR" }), // 9700 paise = 97 INR
             });
 
-            const data = await res.json();
+            const orderData = await orderRes.json();
 
-            if (!res.ok || !data.success) {
-                setError(data.error ?? "Payment failed. Please try again.");
+            if (!orderRes.ok) {
+                setError(orderData.error || "Failed to create order");
+                setLoading(false);
                 return;
             }
 
-            // Success → navigate to thank you page
-            router.push(`/webinar/${webinarId}/thank-you?orderId=${data.orderId}`);
-        } catch {
+            // 2. Open Razorpay Checkout Window
+            const options = {
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder", // Replace with env in production
+                amount: orderData.amount,
+                currency: orderData.currency,
+                name: "Webinar Platform",
+                description: "Webinar Full Access",
+                order_id: orderData.id,
+                prefill: {
+                    name: "Test User",
+                    email: "test@example.com",
+                    contact: "9999999999",
+                },
+                theme: {
+                    color: "#059669", // emerald-600
+                },
+                handler: async function (response: any) {
+                    try {
+                        // 3. Verify Payment
+                        const verifyRes = await fetch("/api/payment/razorpay/verify", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_signature: response.razorpay_signature,
+                                webinarId: webinarId,
+                                attendeeId: attendeeId,
+                            }),
+                        });
+
+                        const verifyData = await verifyRes.json();
+
+                        if (verifyData.success) {
+                            router.push(`/webinar/${webinarId}/thank-you?orderId=${orderData.id}`);
+                        } else {
+                            setError("Payment verification failed");
+                            setLoading(false);
+                        }
+                    } catch (e) {
+                        setError("Error verifying payment");
+                        setLoading(false);
+                    }
+                },
+                modal: {
+                    ondismiss: function () {
+                        setLoading(false);
+                    }
+                }
+            };
+
+            const rzp = new (window as any).Razorpay(options);
+            rzp.on("payment.failed", function (response: any) {
+                setError(`Payment Failed: ${response.error.description}`);
+                setLoading(false);
+            });
+            rzp.open();
+
+        } catch (e) {
             setError("Network error. Please check your connection.");
-        } finally {
             setLoading(false);
         }
     };
@@ -111,64 +183,13 @@ export default function CheckoutPage({ params }: Props) {
                         </div>
                     </div>
 
-                    {/* Card Fields (all fake / pre-filled) */}
+                    {/* Razorpay Information Box */}
                     <div className="space-y-4 mb-6">
-                        <div>
-                            <label className="block text-xs text-muted-foreground font-medium mb-1.5">
-                                Cardholder Name
-                            </label>
-                            <input
-                                type="text"
-                                value={cardName}
-                                onChange={(e) => setCardName(e.target.value)}
-                                className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-xs text-muted-foreground font-medium mb-1.5">
-                                Card Number
-                            </label>
-                            <div className="relative">
-                                <input
-                                    type="text"
-                                    value={cardNumber}
-                                    onChange={(e) => setCardNumber(e.target.value)}
-                                    className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all pr-10"
-                                    maxLength={19}
-                                />
-                                <CreditCard className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            </div>
-                            <p className="text-xs text-muted-foreground/50 mt-1">
-                                Test card — use any values above
+                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex gap-3 text-sm text-emerald-400">
+                            <ShieldCheck className="w-5 h-5 shrink-0" />
+                            <p>
+                                Payments are securely processed by <strong>Razorpay</strong>. Clicking the button below will open a secure checkout window.
                             </p>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label className="block text-xs text-muted-foreground font-medium mb-1.5">
-                                    Expiry
-                                </label>
-                                <input
-                                    type="text"
-                                    value={expiry}
-                                    onChange={(e) => setExpiry(e.target.value)}
-                                    className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
-                                    maxLength={5}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-muted-foreground font-medium mb-1.5">
-                                    CVV
-                                </label>
-                                <input
-                                    type="text"
-                                    value={cvv}
-                                    onChange={(e) => setCvv(e.target.value)}
-                                    className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
-                                    maxLength={3}
-                                />
-                            </div>
                         </div>
                     </div>
 
@@ -218,7 +239,7 @@ export default function CheckoutPage({ params }: Props) {
                 </div>
 
                 <p className="text-center text-xs text-muted-foreground/40 mt-6">
-                    This is a simulated checkout for demonstration purposes.
+                    This checkout is integrated with Razorpay test mode.
                 </p>
             </div>
         </div>

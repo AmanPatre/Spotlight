@@ -13,14 +13,25 @@ type Props = {
 const statusColor = (status: string) => {
   switch (status) {
     case "LIVE": return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
+    case "SCHEDULED":
+    case "WAITING_ROOM":
     case "UPCOMING": return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-    case "ENDED": return "bg-[#27272a] text-[#71717a] border-[#3f3f46]";
-    default: return "bg-[#27272a] text-[#71717a] border-[#3f3f46]";
+    case "ENDED": return "bg-zinc-900 text-zinc-500 border-zinc-800";
+    default: return "bg-zinc-900 text-zinc-500 border-zinc-800";
   }
 };
 
 const WebinarCard = ({ webinar }: Props) => {
-  const status = (webinar as any)?.status ?? "UPCOMING";
+  const getDisplayStatus = (status: string) => {
+    switch (status) {
+      case "LIVE": return "LIVE";
+      case "ENDED": return "ENDED";
+      default: return "UPCOMING";
+    }
+  };
+
+  const status = webinar.webinarStatus;
+  const displayStatus = getDisplayStatus(status);
   return (
     <div className="group flex gap-3 flex-col items-start w-full rounded-lg border border-[#27272a] bg-[#18181b] overflow-hidden hover:border-[#3f3f46] transition-colors">
       {/* Thumbnail */}
@@ -33,9 +44,9 @@ const WebinarCard = ({ webinar }: Props) => {
             className="object-cover group-hover:scale-105 transition-transform duration-300"
           />
           {/* Status badge */}
-          <span className={`absolute top-2 right-2 inline-flex items-center px-2 py-0.5 rounded-md border text-xs font-medium ${statusColor(status)}`}>
-            {status === "LIVE" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />}
-            {status}
+          <span className={`absolute top-2 right-2 inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider ${statusColor(displayStatus)} shadow-lg`}>
+            {displayStatus === "LIVE" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />}
+            {displayStatus}
           </span>
         </div>
       </Link>

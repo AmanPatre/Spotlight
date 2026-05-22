@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   StreamCall,
   StreamVideo,
@@ -14,7 +14,9 @@ import { Loader2, Zap, ShieldCheck } from "lucide-react";
 import AttendeeChatPanel from "./AttendeeChatPanel";
 import CTABanner from "./CTABanner";
 import { updateAttendanceStatus } from "@/actions/attendence";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { getWebinarStatus } from "@/actions/webinar";
+import { AttendedTypeEnum, WebinarStatusEnum } from "@/generated/prisma/enums";
+import { useRouter } from "next/navigation";
 
 type Props = {
   webinarId: string;
@@ -37,51 +39,80 @@ export default function AttendeeStreamView({
   const [activeCTA, setActiveCTA] = useState<"BUY_NOW" | "BOOK_A_CALL" | null>(
     null
   );
+  const router = useRouter();
+
+  const checkStatus = useCallback(async () => {
+    const status = await getWebinarStatus(webinarId);
+    if (status === WebinarStatusEnum.ENDED) {
+      router.replace(`/webinar/${webinarId}`);
+    }
+  }, [webinarId, router]);
+
+  // Poll for webinar status
+  useEffect(() => {
+    const interval = setInterval(checkStatus, 10000); // Check every 10 seconds
+    return () => clearInterval(interval);
+  }, [checkStatus]);
 
   useEffect(() => {
     let streamClient: StreamVideoClient | null = null;
 
-    const init = async () => {
-      const res = await fetch("/api/attendee-stream-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ attendeeId }),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.token) {
-        throw new Error(data.error || "Failed to get stream token");
+    const init = async (retries = 5, delay = 3000) => {
+      try {
+        const res = await fetch("/api/attendee-stream-token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ attendeeId }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.token) {
+          throw new Error(data.error || "Failed to get stream token");
+        }
+
+        streamClient = new StreamVideoClient({
+          apiKey: process.env.NEXT_PUBLIC_STREAM_API_KEY!,
+          user: { id: attendeeId, name: attendeeName },
+          token: data.token,
+        });
+
+        const streamCall = streamClient.call("livestream", webinarId);
+
+        // Try to join
+        try {
+          await streamCall.join({ create: false });
+        } catch (joinErr: any) {
+          // If call not found and we have retries left, wait and try again
+          const msg = joinErr?.message ?? String(joinErr);
+          if ((msg.includes("Call not found") || msg.includes("404")) && retries > 0) {
+            console.log(`Call not found, retrying in ${delay}ms... (${retries} left)`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return init(retries - 1, delay);
+          }
+          throw joinErr;
+        }
+
+        setClient(streamClient);
+        setCall(streamCall);
+
+        await updateAttendanceStatus(
+          webinarId,
+          attendeeId,
+          AttendedTypeEnum.ATTENDED
+        );
+      } catch (err: any) {
+        console.error("AttendeeStreamView init error:", err);
+        const msg = err?.message ?? String(err);
+        if (msg.includes("Call not found") || msg.includes("404")) {
+          setError("The host hasn't started the stream yet. Hang tight!");
+        } else if (msg.includes("403") || msg.includes("Forbidden")) {
+          setError("You don't have permission to join this stream.");
+        } else {
+          setError("Failed to connect to the live broadcast. Please refresh.");
+        }
       }
-
-      streamClient = new StreamVideoClient({
-        apiKey: process.env.NEXT_PUBLIC_STREAM_API_KEY!,
-        user: { id: attendeeId, name: attendeeName },
-        token: data.token,
-      });
-
-      const streamCall = streamClient.call("livestream", webinarId);
-      await streamCall.join({ create: false });
-
-      setClient(streamClient);
-      setCall(streamCall);
-
-      await updateAttendanceStatus(
-        webinarId,
-        attendeeId,
-        AttendedTypeEnum.ATTENDED
-      );
     };
 
-    init().catch((err) => {
-      console.error("AttendeeStreamView init error:", err);
-      const msg = err?.message ?? String(err);
-      if (msg.includes("Call not found") || msg.includes("404")) {
-        setError("The host hasn't started the stream yet. Hang tight!");
-      } else if (msg.includes("403") || msg.includes("Forbidden")) {
-        setError("You don't have permission to join this stream.");
-      } else {
-        setError("Failed to connect to the live broadcast. Please refresh.");
-      }
-    });
+    init();
 
     return () => {
       streamClient?.disconnectUser();
