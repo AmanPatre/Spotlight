@@ -123,3 +123,9 @@ model Attendance {
   @@index([webinarId])
   @@index([attendedType])
 }
+
+model ProcessedWebhook {
+  id        String   @id @default(cuid())
+  eventId   String   @unique
+  createdAt DateTime @default(now())
+}

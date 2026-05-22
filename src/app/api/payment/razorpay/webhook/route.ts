@@ -24,6 +24,18 @@ export async function POST(req: Request) {
         }
 
         const event = JSON.parse(rawBody);
+        const eventId = event.id; // Razorpay event ID
+
+        if (eventId) {
+            // Check if this webhook event was already processed
+            const existingWebhook = await prismaClient.processedWebhook.findUnique({
+                where: { eventId }
+            });
+
+            if (existingWebhook) {
+                return NextResponse.json({ message: "Event already processed" }, { status: 200 });
+            }
+        }
 
         // Handle payment.captured event
         if (event.event === "payment.captured") {
@@ -33,6 +45,10 @@ export async function POST(req: Request) {
             const { attendeeId, webinarId } = payment.notes;
 
             if (attendeeId && webinarId) {
+                // ==========================================
+                // PAYMENT FULFILLMENT LOGIC
+                // Update attendee status to CONVERTED
+                // ==========================================
                 await prismaClient.attendance.update({
                     where: {
                         attendeeId_webinarId: {
@@ -45,6 +61,13 @@ export async function POST(req: Request) {
                     }
                 });
             }
+        }
+
+        // Save the event ID to prevent duplicate processing
+        if (eventId) {
+            await prismaClient.processedWebhook.create({
+                data: { eventId }
+            });
         }
 
         return NextResponse.json({ status: "ok" });
