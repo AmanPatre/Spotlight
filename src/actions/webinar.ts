@@ -6,6 +6,7 @@ import { prismaClient } from "@/lib/prismaClient";
 import { revalidatePath } from "next/cache";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import { getVapiAssistantById } from "./vapi";
+import { inngest } from "@/inngest/client";
 
 function combineDateTime(
   date: Date,
@@ -181,6 +182,16 @@ export const updateWebinarStatus = async (
       where: { id: webinarId, presenterId: user.user.id },
       data: { webinarStatus: status },
     });
+
+    if (status === "ENDED") {
+      await inngest.send({
+        name: "app/webinar.ended",
+        data: {
+          webinarId,
+          presenterEmail: user.user.email,
+        },
+      });
+    }
 
     revalidatePath(`/webinars/${webinarId}`);
     return { status: 200, message: "Status updated successfully" };

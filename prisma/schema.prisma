@@ -92,6 +92,7 @@ model Webinar {
   @@index([presenterId])
   @@index([aiAgentId])
   @@index([startTime])
+  @@index([presenterId, webinarStatus])
 }
 
 model Attendee {
@@ -104,6 +105,8 @@ model Attendee {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([callStatus])
 }
 
 model Attendance {
@@ -122,6 +125,20 @@ model Attendance {
   @@unique([attendeeId, webinarId])
   @@index([webinarId])
   @@index([attendedType])
+  @@index([webinarId, attendedType])
+
+  CallDebrief CallDebrief?
+}
+
+model CallDebrief {
+  id           String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  attendanceId String      @unique @db.Uuid
+  attendance   Attendance  @relation(fields: [attendanceId], references: [id], onDelete: Cascade)
+  score        Int         @default(0)
+  summary      String?     @db.Text
+  isHotLead    Boolean     @default(false)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model ProcessedWebhook {
