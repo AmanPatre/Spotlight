@@ -5,7 +5,7 @@ import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Radio, Square, Users } from "lucide-react";
+import { Loader2, Radio, CircleStop, Users } from "lucide-react";
 
 type Props = {
   webinarId: string;
@@ -24,7 +24,7 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
         toast.success(result.message);
         if (newStatus === WebinarStatusEnum.LIVE) {
           window.open(`/webinars/${webinarId}/live`, "_blank");
-          router.refresh(); // Still refresh the current page to update status buttons
+          router.refresh();
         } else {
           router.refresh();
         }
@@ -40,8 +40,8 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
 
   if (currentStatus === WebinarStatusEnum.ENDED) {
     return (
-      <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-muted text-muted-foreground text-sm font-medium">
-        <Square className="w-4 h-4" />
+      <div className="flex items-center gap-2 px-4 py-2 rounded border border-[#27272a] bg-[#18181b] text-[#c4c7c8] text-sm font-medium opacity-70 cursor-not-allowed">
+        <CircleStop className="w-4 h-4" />
         Webinar Ended
       </div>
     );
@@ -53,7 +53,7 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
         <button
           onClick={() => handleStatusChange(WebinarStatusEnum.WAITING_ROOM)}
           disabled={loading}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-secondary text-primary border border-border text-sm font-medium hover:bg-secondary/80 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 rounded bg-white text-black text-sm font-medium hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -68,7 +68,7 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
         <button
           onClick={() => handleStatusChange(WebinarStatusEnum.LIVE)}
           disabled={loading}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-sm font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 rounded bg-white text-black text-sm font-medium hover:bg-white/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -84,20 +84,20 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
           <button
             onClick={() => window.open(`/webinars/${webinarId}/live`, "_blank")}
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded border border-[#27272a] bg-[#18181b] text-white text-sm font-medium hover:bg-[#1c1b1b] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Radio className="w-4 h-4" />
-            Resume Live Stream
+            Resume Live
           </button>
           <button
             onClick={() => handleStatusChange(WebinarStatusEnum.ENDED)}
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 rounded bg-red-600 hover:bg-red-700 text-white text-sm font-medium shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <Square className="w-4 h-4" />
+              <CircleStop className="w-4 h-4" />
             )}
             End Webinar
           </button>

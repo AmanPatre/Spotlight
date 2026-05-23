@@ -77,7 +77,7 @@ const CTAStep = () => {
       <div className="space-y-2">
         <Label
           htmlFor="ctaLabel"
-          className={errors.ctaLabel ? "text-red-400" : ""}
+          className={cn(errors.ctaLabel ? "text-red-400" : "text-[#e5e2e1]")}
         >
           CTA Label <span className="text-red-400">*</span>
         </Label>
@@ -89,7 +89,7 @@ const CTAStep = () => {
           onChange={handleChange}
           placeholder="Let's Get Started"
           className={cn(
-            "!bg-background/50 border border-input",
+            "!bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
             errors.ctaLabel && "border-red-400 focus-visible:ring-red-400",
           )}
         />
@@ -100,7 +100,7 @@ const CTAStep = () => {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="tags">Tags</Label>
+        <Label htmlFor="tags" className="text-[#e5e2e1]">Tags</Label>
 
         <Input
           id="tags"
@@ -108,7 +108,7 @@ const CTAStep = () => {
           onChange={(e) => setTagInput(e.target.value)}
           onKeyDown={handleAddTag}
           placeholder="Add tags and press Enter"
-          className="!bg-background/50 border border-input"
+          className="!bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]"
         />
 
         {tags && tags.length > 0 && (
@@ -116,14 +116,14 @@ const CTAStep = () => {
             {tags.map((tag: string, index: number) => (
               <div
                 key={index}
-                className="flex items-center gap-1 bg-gray-800 text-white px-3 py-1 rounded-md"
+                className="flex items-center gap-1 bg-[#1c1b1b] border border-[#444748] text-white px-3 py-1 rounded-md"
               >
                 {tag}
 
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="text-gray-400 hover:text-white"
+                  className="text-[#c4c7c8] hover:text-white"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -134,24 +134,24 @@ const CTAStep = () => {
       </div>
 
       <div className="space-y-2 w-full">
-        <Label>CTA Type</Label>
+        <Label className="text-[#e5e2e1]">CTA Type</Label>
 
         <Tabs
           value={ctaType}
           onValueChange={handleSelectCTAType}
           className="w-full"
         >
-          <TabsList className="w-full bg-transparent">
+          <TabsList className="w-full bg-transparent border border-[#444748] p-1 rounded-md">
             <TabsTrigger
               value={CtaTypeEnum.BOOK_A_CALL}
-              className="w-1/2 data-[state=active]:!bg-background/50"
+              className="w-1/2 text-[#c4c7c8] data-[state=active]:!bg-white data-[state=active]:!text-black"
             >
               Book a Call
             </TabsTrigger>
 
             <TabsTrigger
               value={CtaTypeEnum.BUY_NOW}
-              className="w-1/2"
+              className="w-1/2 text-[#c4c7c8] data-[state=active]:!bg-white data-[state=active]:!text-black"
             >
               Buy Now
             </TabsTrigger>
@@ -161,7 +161,7 @@ const CTAStep = () => {
 
       {ctaType === CtaTypeEnum.BOOK_A_CALL && (
         <div className="space-y-2">
-          <Label className={errors.aiAgent ? "text-red-400" : ""}>
+          <Label className={cn(errors.aiAgent ? "text-red-400" : "text-[#e5e2e1]")}>
             AI agent <span className="text-red-400">*</span>
           </Label>
           <Select
@@ -172,7 +172,7 @@ const CTAStep = () => {
           >
             <SelectTrigger
               className={cn(
-                "w-full !bg-background/50 border border-input",
+                "w-full !bg-[#1c1b1b] border-[#444748] text-white",
                 errors.aiAgent && "border-red-400",
               )}
             >
@@ -182,7 +182,7 @@ const CTAStep = () => {
                 }
               />
             </SelectTrigger>
-            <SelectContent className="!bg-background border border-input max-h-64">
+            <SelectContent className="!bg-[#1c1b1b] border-[#444748] text-white max-h-64">
               {assistants.map((a) => (
                 <SelectItem key={a.id} value={a.id}>
                   {a.name || a.id}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import VapiCallRoom from "./VapiCallRoom";
 
 type Props = {
@@ -30,17 +30,30 @@ export default function CallClientShell({ webinarId, assistantId }: Props) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-black">
-        <Loader2 className="size-8 animate-spin text-purple-500" />
+      <div
+        className="flex min-h-screen items-center justify-center bg-black"
+        style={{
+          backgroundImage: "radial-gradient(#444748 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-white" />
+          <p className="font-mono text-[11px] text-[#8e9192] uppercase tracking-widest">
+            Initializing session…
+          </p>
+        </div>
       </div>
     );
   }
 
   if (!attendeeId) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-black text-zinc-400">
-        <Lock className="size-8 text-red-400" />
-        <p className="text-sm">Redirecting…</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-black text-[#8e9192]">
+        <div className="w-10 h-10 border border-[#ffb4ab] flex items-center justify-center">
+          <span className="text-[#ffb4ab] font-mono text-lg">!</span>
+        </div>
+        <p className="font-mono text-sm text-[#8e9192]">Redirecting…</p>
       </div>
     );
   }

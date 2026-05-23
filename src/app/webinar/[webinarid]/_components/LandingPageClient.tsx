@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import RegistrationForm from "./RegistrationForm";
 import WaitingRoom from "./WaitingRoom";
-import { Calendar, User, Clock, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 type Props = {
   webinarId: string;
@@ -27,18 +27,34 @@ export default function LandingPageClient({
   const [attendeeId, setAttendeeId] = useState<string | null>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check if user is already registered in this browser
-    const storedId = localStorage.getItem(`spotlight_attendee_${webinarId}`);
-    if (storedId) {
-      setAttendeeId(storedId);
-    }
+  // Countdown state
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
-    // If already live and registered, go straight to live
+  useEffect(() => {
+    const storedId = localStorage.getItem(`spotlight_attendee_${webinarId}`);
+    if (storedId) setAttendeeId(storedId);
     if (storedId && webinarStatus === WebinarStatusEnum.LIVE) {
       router.push(`/webinar/${webinarId}/live`);
     }
   }, [webinarId, webinarStatus, router]);
+
+  useEffect(() => {
+    const tick = () => {
+      const diff = new Date(startTime).getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000) / 60000);
+      const seconds = Math.floor((diff % 60000) / 1000);
+      setTimeLeft({ days, hours, minutes, seconds });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [startTime]);
 
   const handleRegistrationSuccess = (id: string) => {
     setAttendeeId(id);
@@ -51,129 +67,147 @@ export default function LandingPageClient({
     router.push(`/webinar/${webinarId}/live`);
   };
 
+  const pad = (n: number) => String(n).padStart(2, "0");
+
   return (
-    <div className="relative w-full min-h-screen flex flex-col items-center pt-20 pb-20 px-6">
-      {/* Abstract Background Decoration */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[500px] bg-purple-600/10 blur-[120px] pointer-events-none rounded-full" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-600/5 blur-[100px] pointer-events-none rounded-full" />
+    <main
+      className="relative bg-black min-h-screen flex items-center justify-center py-12 px-4 md:px-10 overflow-x-hidden"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.04) 1px, transparent 1px)",
+        backgroundSize: "40px 40px",
+      }}
+    >
+      <div className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-24 items-center">
 
-      <main className="relative z-10 w-full max-w-5xl grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-        {/* Left Content Column */}
-        <div className="flex flex-col gap-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/50 border border-border text-xs font-bold text-purple-400 uppercase tracking-widest w-fit">
-            <span className="w-2 h-2 rounded-full bg-purple-500 animate-pulse" />
-            Special Live Event
+        {/* ───── Left: Event Details & Timer ───── */}
+        <div className="flex flex-col space-y-12 w-full">
+
+          {/* Brand + Badge */}
+          <div className="flex items-center space-x-5">
+            <span className="text-white font-bold text-xl tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
+              Spotlight
+            </span>
+            <div className="h-4 w-px bg-zinc-800" />
+            <div className="flex items-center space-x-2 border border-white px-3 py-1">
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span className="text-white text-[11px] font-mono uppercase tracking-widest">Live Event</span>
+            </div>
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-black leading-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60">
-            {title}
-          </h1>
-
-          <p className="text-lg text-muted-foreground leading-relaxed">
-            {description}
-          </p>
-
-          <div className="flex flex-col gap-4 pt-4">
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-purple-400" />
+          {/* Title & Presenter */}
+          <div className="space-y-6">
+            <h1
+              className="text-white font-bold tracking-tighter leading-tight"
+              style={{ fontFamily: "Geist, sans-serif", fontSize: "clamp(32px,6vw,64px)", lineHeight: 1.1 }}
+            >
+              {title}
+            </h1>
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white font-bold text-sm">
+                {presenterName.charAt(0).toUpperCase()}
               </div>
-              <p className="font-medium text-primary">
-                {new Date(startTime).toLocaleDateString(undefined, {
-                  weekday: "long",
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                <Clock className="w-5 h-5 text-purple-400" />
+              <div>
+                <p className="text-white text-base font-medium" style={{ fontFamily: "Geist, sans-serif" }}>
+                  {presenterName}
+                </p>
+                <p className="text-zinc-500 text-sm" style={{ fontFamily: "Geist, sans-serif" }}>
+                  {new Date(startTime).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                </p>
               </div>
-              <p className="font-medium text-primary">
-                Starts at{" "}
-                {new Date(startTime).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
             </div>
+          </div>
 
-            <div className="flex items-center gap-4 text-muted-foreground">
-              <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center overflow-hidden border border-border">
-                <div className="w-full h-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white font-bold text-xs uppercase">
-                  {presenterName.charAt(0)}
+          {/* Countdown */}
+          <div className="space-y-4">
+            <p className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest">Starts In</p>
+            <div className="flex flex-wrap gap-4 items-start">
+              {[
+                { label: "Days", value: pad(timeLeft.days) },
+                { label: "Hours", value: pad(timeLeft.hours) },
+                { label: "Mins", value: pad(timeLeft.minutes) },
+                { label: "Secs", value: pad(timeLeft.seconds) },
+              ].map((unit, i, arr) => (
+                <div key={unit.label} className="flex items-start gap-4">
+                  <div className="flex flex-col items-center">
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-black border border-zinc-800 flex items-center justify-center">
+                      <span className="text-white font-mono font-bold" style={{ fontSize: "clamp(28px,4vw,48px)" }}>
+                        {unit.value}
+                      </span>
+                    </div>
+                    <span className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest mt-2">{unit.label}</span>
+                  </div>
+                  {i < arr.length - 1 && (
+                    <span className="text-zinc-700 font-bold text-4xl mt-2">:</span>
+                  )}
                 </div>
-              </div>
-              <p className="font-medium">
-                Hosted by <span className="text-primary">{presenterName}</span>
-              </p>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Right Action Column */}
-        <div className="w-full lg:sticky lg:top-24">
-          {!attendeeId ? (
-            <div className="p-8 rounded-3xl border border-border bg-secondary/10 backdrop-blur-md shadow-2xl">
-              <RegistrationForm
+        {/* ───── Right: Action Card ───── */}
+        <div className="w-full max-w-[480px] mx-auto lg:ml-auto">
+          <div className="relative bg-zinc-950 border border-zinc-800 p-8 min-h-[420px] flex flex-col justify-center overflow-hidden">
+            {/* Top accent line */}
+            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-zinc-400 to-transparent opacity-20" />
+
+            {!attendeeId ? (
+              /* ─── Registration ─── */
+              <RegistrationForm webinarId={webinarId} onSuccess={handleRegistrationSuccess} />
+
+            ) : webinarStatus === WebinarStatusEnum.LIVE ? (
+              /* ─── Live CTA ─── */
+              <div className="flex flex-col items-center text-center space-y-6">
+                <div className="w-16 h-16 flex items-center justify-center border border-white bg-black">
+                  <span className="w-4 h-4 rounded-full bg-white animate-pulse" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
+                    We&apos;re Live!
+                  </h2>
+                  <p className="text-zinc-400 text-sm" style={{ fontFamily: "Geist, sans-serif" }}>
+                    The broadcast has started. Join now.
+                  </p>
+                </div>
+                <button
+                  onClick={handleGoLive}
+                  className="w-full bg-white text-black font-semibold py-3 px-4 hover:bg-zinc-200 transition-colors text-sm"
+                  style={{ fontFamily: "Geist, sans-serif" }}
+                >
+                  Join Live Stream →
+                </button>
+              </div>
+
+            ) : webinarStatus === WebinarStatusEnum.ENDED ? (
+              /* ─── Ended ─── */
+              <div className="flex flex-col items-center text-center space-y-6">
+                <CheckCircle2 className="w-12 h-12 text-zinc-500" />
+                <div className="space-y-2">
+                  <h2 className="text-white text-2xl font-bold tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
+                    Webinar Concluded
+                  </h2>
+                  <p className="text-zinc-400 text-sm" style={{ fontFamily: "Geist, sans-serif" }}>
+                    This event has ended. Thank you for your interest! Keep an eye on your inbox for follow-up materials.
+                  </p>
+                </div>
+                <div className="w-full h-px bg-zinc-800" />
+                <p className="text-zinc-600 text-xs font-mono uppercase tracking-widest">See you at the next one</p>
+              </div>
+
+            ) : (
+              /* ─── Waiting Room ─── */
+              <WaitingRoom
                 webinarId={webinarId}
-                onSuccess={handleRegistrationSuccess}
+                webinarTitle={title}
+                startTime={startTime}
+                onLive={handleGoLive}
               />
-            </div>
-          ) : (
-            <div className="w-full">
-              {webinarStatus === WebinarStatusEnum.LIVE ? (
-                <div className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl border border-purple-500/30 bg-purple-500/5 backdrop-blur-md text-center">
-                  <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center">
-                    <span className="w-10 h-10 rounded-full bg-red-500 animate-ping absolute opacity-20" />
-                    <span className="w-4 h-4 rounded-full bg-red-500 relative" />
-                  </div>
-                  <h3 className="text-2xl font-bold">The Event is LIVE</h3>
-                  <p className="text-muted-foreground">
-                    You&apos;re already registered. Jump in now to join the broadcast!
-                  </p>
-                  <button
-                    onClick={handleGoLive}
-                    className="w-full py-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-lg transition-all shadow-xl shadow-red-500/20"
-                  >
-                    Join Live Stream
-                  </button>
-                </div>
-              ) : webinarStatus === WebinarStatusEnum.ENDED ? (
-                <div className="flex flex-col items-center justify-center gap-6 p-10 rounded-3xl border border-border bg-secondary/10 backdrop-blur-md text-center">
-                  <div className="w-20 h-20 rounded-full bg-purple-500/10 flex items-center justify-center">
-                    <CheckCircle2 className="w-10 h-10 text-purple-400" />
-                  </div>
-                  <h3 className="text-2xl font-bold">Webinar Concluded</h3>
-                  <p className="text-muted-foreground">
-                    This event has ended. Thank you for your interest! Keep an eye on your inbox for any follow-up materials or replay links.
-                  </p>
-                  <div className="w-full h-px bg-border" />
-                  <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">
-                    See you at the next one
-                  </p>
-                </div>
-              ) : (
-                <WaitingRoom
-                  webinarId={webinarId}
-                  webinarTitle={title}
-                  startTime={startTime}
-                  onLive={handleGoLive}
-                />
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </main>
 
-      <footer className="mt-auto pt-20 text-center opacity-30 hover:opacity-100 transition-opacity">
-        <p className="text-xs uppercase tracking-tighter">
-          Powered by Spotlight — Next-Gen AI Webinars
-        </p>
-      </footer>
-    </div>
+      </div>
+    </main>
   );
 }

@@ -62,6 +62,29 @@ export const processWebinarEnd = inngest.createFunction(
                         return null;
                     }
 
+                    // Step 3.1: Fetch real transcript from Vapi
+                    let vapiTranscript = null;
+                    try {
+                        const response = await fetch(`https://api.vapi.ai/call?assistantId=${webinar.aiAgentId}&limit=50`, {
+                            headers: {
+                                "Authorization": `Bearer ${process.env.VAPI_API_KEY}`,
+                            }
+                        });
+                        const calls = await response.json() as any[];
+
+                        // Find the call for this specific attendee in this webinar
+                        const myCall = calls.find(c =>
+                            c.metadata?.webinarId === webinarId &&
+                            c.metadata?.attendeeId === attendance.attendeeId
+                        );
+
+                        vapiTranscript = myCall?.transcript || null;
+                    } catch (e) {
+                        console.error("Vapi fetch error", e);
+                    }
+
+                    const finalTranscript = vapiTranscript || mockTranscript;
+
                     // Use Gemini to score the lead
                     const { object } = await generateObject({
                         model: google("gemini-2.0-flash"),
@@ -75,13 +98,11 @@ export const processWebinarEnd = inngest.createFunction(
               Also, write a 1-2 sentence debrief summary of their concerns/interest.
               
               Transcript:
-              ${mockTranscript}
+              ${finalTranscript}
             `,
                     });
 
                     const isHotLead = object.score >= 3;
-
-                    // Save the debrief in our Postgres DB
                     await prismaClient.callDebrief.upsert({
                         where: { attendanceId: attendance.id },
                         update: {

@@ -75,23 +75,17 @@ export default function HostChatPanel({ webinarId, hostId, hostName }: Props) {
 
   if (!chatClient || !channel) {
     return (
-      <div className="h-full flex flex-col items-center justify-center gap-3 text-muted-foreground">
-        <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-        <p className="text-xs">Loading chat...</p>
+      <div className="h-full flex flex-col items-center justify-center gap-3 text-[#a1a1aa] bg-[#141313]">
+        <Loader2 className="w-5 h-5 animate-spin text-[#ffffff]" />
+        <p className="text-[10px] font-mono uppercase tracking-widest">Initialising encrypted channel...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col h-full rounded-xl border border-border overflow-hidden bg-zinc-950">
-      {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-secondary/30">
-        <MessageSquare className="w-4 h-4 text-purple-400" />
-        <span className="text-sm font-semibold text-primary">Live Chat</span>
-      </div>
-
+    <div className="flex flex-col h-full bg-[#141313] overflow-hidden">
       {/* Stream Chat UI */}
-      <div className="flex-1 overflow-hidden [&_.str-chat]:h-full [&_.str-chat__container]:h-full">
+      <div className="flex-1 overflow-hidden [&_.str-chat]:h-full [&_.str-chat__container]:h-full [&_.str-chat]:!bg-[#141313] [&_.str-chat__main-panel]:!bg-[#141313] [&_.str-chat__list]:!bg-[#141313]">
         <Chat client={chatClient} theme="str-chat__theme-dark">
           <Channel channel={channel}>
             <Window>

@@ -38,26 +38,26 @@ export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
   };
 
   return (
-    <div className="p-4 rounded-xl border border-border bg-secondary/20 flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <Zap className="w-4 h-4 text-yellow-400" />
-        <h3 className="text-sm font-semibold text-primary">
+    <div className="px-6 py-6 rounded-2xl border border-white/5 bg-[#171717] flex flex-col gap-4">
+      <div className="flex items-center gap-2.5">
+        <Zap className="w-5 h-5 text-yellow-500" strokeWidth={2.5} />
+        <h3 className="text-[15px] font-semibold text-[#a78bfa]">
           Drop a CTA to Attendees
         </h3>
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-[14px] leading-relaxed text-[#9ca3af] pr-6">
         Clicking a button will instantly show a banner to all live attendees.
       </p>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col gap-3 mt-3">
         {ctaType === CtaTypeEnum.BUY_NOW && (
           <button
             onClick={() => sendCTA("BUY_NOW")}
             disabled={!!sending}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-green-600/20 border border-green-600/40 text-green-400 text-sm font-medium hover:bg-green-600/30 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[#064e3b] border border-[#047857] text-[#6ee7b7] text-[14px] font-medium hover:bg-[#065f46] transition-all disabled:opacity-50"
           >
-            <ShoppingBag className="w-4 h-4" />
+            <ShoppingBag className="w-[18px] h-[18px]" strokeWidth={2} />
             {sending === "BUY_NOW" ? "Sending..." : "Drop Buy Now"}
           </button>
         )}
@@ -66,16 +66,16 @@ export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
           <button
             onClick={() => sendCTA("BOOK_A_CALL")}
             disabled={!!sending}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-purple-600/20 border border-purple-600/40 text-purple-400 text-sm font-medium hover:bg-purple-600/30 transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-lg bg-[#2e1549] border border-[#522985] text-[#d8b4fe] text-[14px] font-medium hover:bg-[#3d1c61] transition-all disabled:opacity-50"
           >
-            <PhoneCall className="w-4 h-4" />
+            <PhoneCall className="w-[18px] h-[18px]" strokeWidth={2} />
             {sending === "BOOK_A_CALL" ? "Sending..." : "Drop Book a Call"}
           </button>
         )}
       </div>
 
       {!aiAgentId && (
-        <p className="text-xs text-amber-400/80">
+        <p className="text-[11px] text-yellow-500/80">
           ⚠️ "Book a Call" CTA is hidden — no AI agent configured for this
           webinar.
         </p>

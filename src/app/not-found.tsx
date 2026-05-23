@@ -4,23 +4,23 @@ import { Compass } from 'lucide-react';
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white p-6 selection:bg-purple-500/30">
+        <div className="min-h-screen flex flex-col items-center justify-center bg-[#09090b] text-white p-6 selection:bg-white/10">
             <div className="relative mb-8">
-                <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full" />
-                <div className="relative w-24 h-24 rounded-3xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shadow-2xl">
-                    <Compass className="w-12 h-12 text-purple-400" />
+                <div className="absolute inset-0 bg-white/5 blur-3xl rounded-full" />
+                <div className="relative w-24 h-24 rounded border border-[#27272a] bg-[#141313] flex items-center justify-center shadow-2xl">
+                    <Compass className="w-10 h-10 text-white" />
                 </div>
             </div>
 
-            <h1 className="text-7xl font-black mb-4 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40">404</h1>
-            <h2 className="text-2xl font-bold mb-4">Page Not Found</h2>
-            <p className="text-zinc-500 text-lg mb-10 max-w-sm text-center leading-relaxed font-medium">
-                The spotlight couldn&apos;t find what you were looking for. It might have been moved or doesn&apos;t exist.
+            <h1 className="text-7xl font-black mb-4 tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40 uppercase">404</h1>
+            <h2 className="text-[18px] font-bold mb-4 uppercase tracking-[0.2em]" style={{ fontFamily: 'Geist, sans-serif' }}>Page Not Found</h2>
+            <p className="text-[#c4c7c8] text-[12px] font-mono mb-10 max-w-sm text-center uppercase tracking-widest leading-relaxed">
+                The enterprise spotlight couldn&apos;t identify the requested node. It may have been decommissioned or moved.
             </p>
 
             <Link href="/">
-                <Button className="bg-purple-600 hover:bg-purple-500 text-white h-14 px-10 rounded-2xl font-bold text-lg shadow-xl shadow-purple-600/20 transition-all hover:scale-105 active:scale-95">
-                    Go back home
+                <Button className="bg-white hover:bg-[#c6c6c7] text-[#141313] h-12 px-10 rounded-none font-bold text-[12px] tracking-[0.2em] uppercase shadow-lg transition-all active:scale-95">
+                    Return to Dashboard
                 </Button>
             </Link>
         </div>

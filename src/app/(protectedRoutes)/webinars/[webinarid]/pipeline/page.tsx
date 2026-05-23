@@ -8,6 +8,8 @@ import { PipelineIcon } from "@/icons/PipelineIcon";
 import PipelineLayout from "./_components/PipelineLayout";
 import DebriefWidget from "./_components/DebriefWidget";
 
+export const dynamic = "force-dynamic";
+
 const formatColumnTitle = (type: AttendedTypeEnum): string => {
   const titles: Record<AttendedTypeEnum, string> = {
     [AttendedTypeEnum.REGISTERED]: "Registered",

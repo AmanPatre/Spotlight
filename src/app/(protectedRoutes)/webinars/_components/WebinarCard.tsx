@@ -1,6 +1,5 @@
 import { Webinar } from "@/generated/prisma/client";
-import { PipelineIcon } from "@/icons/PipelineIcon";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -8,17 +7,6 @@ import React from "react";
 
 type Props = {
   webinar: Webinar;
-};
-
-const statusColor = (status: string) => {
-  switch (status) {
-    case "LIVE": return "bg-emerald-500/15 text-emerald-400 border-emerald-500/30";
-    case "SCHEDULED":
-    case "WAITING_ROOM":
-    case "UPCOMING": return "bg-blue-500/15 text-blue-400 border-blue-500/30";
-    case "ENDED": return "bg-zinc-900 text-zinc-500 border-zinc-800";
-    default: return "bg-zinc-900 text-zinc-500 border-zinc-800";
-  }
 };
 
 const WebinarCard = ({ webinar }: Props) => {
@@ -32,50 +20,51 @@ const WebinarCard = ({ webinar }: Props) => {
 
   const status = webinar.webinarStatus;
   const displayStatus = getDisplayStatus(status);
+
   return (
-    <div className="group flex gap-3 flex-col items-start w-full rounded-lg border border-[#27272a] bg-[#18181b] overflow-hidden hover:border-[#3f3f46] transition-colors">
-      {/* Thumbnail */}
-      <Link href={`/webinars/${webinar?.id}`} className="w-full">
-        <div className="relative w-full aspect-video overflow-hidden bg-[#0e0e10]">
-          <Image
-            src={"/darkthumbnail.png"}
-            alt="webinar"
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          {/* Status badge */}
-          <span className={`absolute top-2 right-2 inline-flex items-center px-2 py-0.5 rounded-md border text-[10px] font-black uppercase tracking-wider ${statusColor(displayStatus)} shadow-lg`}>
+    <div className="group w-full bg-[#0e0e0e] border border-[#2e2e2e] rounded-xl overflow-hidden hover:border-[#ffffff]/20 transition-all duration-300 flex flex-col h-[280px]">
+      <Link href={`/webinars/${webinar?.id}`} className="relative flex-1 bg-[#141313] flex items-center justify-center p-4 border-b border-[#2e2e2e]">
+        <div className="absolute top-3 right-3 z-10">
+          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-[#363535] text-[#a1a1aa] border border-[#2e2e2e]">
             {displayStatus === "LIVE" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse" />}
             {displayStatus}
           </span>
         </div>
+        <div className="w-20 h-20 relative rounded-full bg-[#0e0e0e] border border-[#2e2e2e] shadow-inner flex items-center justify-center group-hover:scale-105 transition-transform duration-500 overflow-hidden">
+          <Image
+            src={"/darkthumbnail.png"}
+            alt="webinar"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
+          />
+        </div>
       </Link>
-
-      {/* Info */}
-      <div className="w-full px-4 pb-4 flex justify-between gap-3 items-start">
-        <Link href={`/webinars/${webinar?.id}`} className="flex flex-col gap-1.5 flex-1 min-w-0">
-          <p className="text-sm font-medium text-[#fafafa] truncate">{webinar?.title}</p>
-          {webinar?.description && (
-            <p className="text-xs text-[#71717a] line-clamp-2">{webinar?.description}</p>
-          )}
-          <div className="flex items-center gap-3 mt-1">
-            <span className="flex items-center gap-1 text-xs text-[#52525b]">
-              <Calendar className="w-3 h-3" />
-              {format(new Date(webinar?.startTime), "dd/MM/yyyy")}
-            </span>
-            <span className="flex items-center gap-1 text-xs text-[#52525b]">
-              <Clock className="w-3 h-3" />
-              {format(new Date(webinar?.startTime), "HH:mm")}
-            </span>
+      <div className="p-5 bg-[#0e0e0e]">
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <Link href={`/webinars/${webinar?.id}`} className="block flex-1 min-w-0">
+            <h3 className="text-base font-semibold text-[#ffffff] truncate">{webinar?.title}</h3>
+            {webinar?.description && (
+              <p className="text-sm text-[#a1a1aa] truncate mt-0.5">{webinar?.description}</p>
+            )}
+          </Link>
+          <Link
+            href={`/webinars/${webinar?.id}/pipeline`}
+            className="shrink-0 w-8 h-8 rounded bg-[#1c1b1b] border border-[#2e2e2e] flex items-center justify-center text-[#a1a1aa] hover:text-[#ffffff] hover:bg-[#3a3939] transition-colors"
+          >
+            <MoreHorizontal className="w-4 h-4" />
+          </Link>
+        </div>
+        <div className="flex items-center gap-4 text-xs font-mono text-[#a1a1aa] mt-4">
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <Calendar className="w-3.5 h-3.5" />
+            {format(new Date(webinar?.startTime), "dd/MM/yyyy")}
           </div>
-        </Link>
-
-        <Link
-          href={`/webinars/${webinar?.id}/pipeline`}
-          className="shrink-0 flex items-center justify-center w-8 h-8 rounded-md border border-[#27272a] bg-[#0e0e10] hover:bg-[#27272a] hover:border-violet-500/40 text-[#a1a1aa] hover:text-violet-400 transition-colors"
-        >
-          <PipelineIcon className="w-3.5 h-3.5" />
-        </Link>
+          <div className="flex items-center gap-1.5 whitespace-nowrap">
+            <Clock className="w-3.5 h-3.5" />
+            {format(new Date(webinar?.startTime), "HH:mm")}
+          </div>
+        </div>
       </div>
     </div>
   );

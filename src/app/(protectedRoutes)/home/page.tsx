@@ -1,125 +1,182 @@
 import React from "react";
-import { BarChart3, Users, Mic, TrendingUp, Plus, ArrowRight, Webcam, Zap } from "lucide-react";
-import Link from "next/link";
-import OnBoarding from "./_components/OnBoarding";
-import { potentialCustomer } from "@/lib/data";
-import UserInfoCard from "@/components/ui/ReusableComponent/UserInfocard";
+import { Activity, ArrowRight, ArrowUp, Calendar, Download, Mic, Minus, MoreHorizontal, Plus, TrendingUp, DollarSign, Loader2 } from "lucide-react";
+import { getHomeDashboardData } from "@/actions/dashboard";
 
-const statCards = [
-  { label: "Total Webinars", value: "12", icon: Webcam, change: "+3 this month", positive: true },
-  { label: "Total Leads", value: "248", icon: Users, change: "+42 this week", positive: true },
-  { label: "Active AI Agents", value: "5", icon: Mic, change: "2 in session", positive: true },
-  { label: "Conversion Rate", value: "18%", icon: TrendingUp, change: "+2.4% vs last month", positive: true },
-];
+export const dynamic = 'force-dynamic';
 
-const quickActions = [
-  { label: "Create Webinar", href: "/webinars", icon: Plus, primary: true },
-  { label: "View Pipeline", href: "/lead", icon: BarChart3, primary: false },
-  { label: "Manage AI Agents", href: "/ai-agents", icon: Zap, primary: false },
-];
+const Pages = async () => {
+  const { success, data } = await getHomeDashboardData();
 
-const Pages = () => {
+  if (!success || !data) {
+    return (
+      <div className="w-full h-[calc(100vh-56px)] flex flex-col items-center justify-center gap-4 bg-black">
+        <div className="w-10 h-10 border border-[#ffb4ab] flex items-center justify-center">
+          <span className="text-[#ffb4ab] font-mono text-xl">!</span>
+        </div>
+        <p className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">Failed to load dashboard metrics</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full mx-auto h-full space-y-8">
-      {/* Header row */}
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-6">
+    <div className="w-full px-8 py-10">
+      {/* Header Section */}
+      <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between border-b border-[#444748] pb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#fafafa]">Dashboard</h1>
-          <p className="text-sm text-[#a1a1aa] mt-1">
-            Welcome back. Here&apos;s what&apos;s happening with your webinars.
+          <h1 className="text-[32px] leading-[1.2] font-semibold text-[#ffffff] tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>Overview</h1>
+          <p className="text-[14px] text-[#c4c7c8] mt-2 max-w-lg" style={{ fontFamily: "Geist, sans-serif" }}>
+            Real-time performance metrics and stream scheduling. Monitor aggregate attendee data across active enterprise deployments.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          {quickActions.map((a) => (
-            <Link
-              key={a.label}
-              href={a.href}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${a.primary
-                  ? "bg-violet-600 hover:bg-violet-700 text-white"
-                  : "bg-[#18181b] border border-[#27272a] text-[#a1a1aa] hover:bg-[#27272a] hover:text-white"
-                }`}
-            >
-              <a.icon className="w-3.5 h-3.5" />
-              {a.label}
-            </Link>
-          ))}
+        <div className="flex items-center gap-4">
+          <div className="text-[12px] font-medium text-[#c4c7c8] border border-[#444748] rounded px-3 py-1.5 bg-[#1c1b1b] flex items-center gap-2 font-mono">
+            <Calendar className="w-[14px] h-[14px]" />
+            LIVE_MONITOR
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((s) => (
-          <div
-            key={s.label}
-            className="p-5 rounded-lg border border-[#27272a] bg-[#18181b] hover:border-[#3f3f46] transition-colors"
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs text-[#71717a] font-medium uppercase tracking-wide">{s.label}</span>
-              <div className="w-7 h-7 rounded-md bg-violet-600/10 border border-violet-500/20 flex items-center justify-center">
-                <s.icon className="w-3.5 h-3.5 text-violet-400" />
-              </div>
+      {/* Top Metrics Cards */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* Metric 1 */}
+        <div className="bg-[#1c1b1b] border border-[#444748] p-6 rounded-lg flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-8">
+            <h2 className="text-[14px] font-medium text-[#e5e2e1]" style={{ fontFamily: "Geist, sans-serif" }}>Total Attendees</h2>
+            <Activity className="w-[20px] h-[20px] text-[#c4c7c8]" />
+          </div>
+          <div>
+            <div className="text-[48px] leading-[1.1] font-semibold text-[#ffffff] tracking-tight">
+              {data.metrics.totalAttendees.toLocaleString()}
             </div>
-            <p className="text-2xl font-semibold text-[#fafafa]">{s.value}</p>
-            <p className="text-xs text-[#a1a1aa] mt-1">{s.change}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Onboarding + sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Onboarding steps */}
-        <div className="lg:col-span-1 p-5 rounded-lg border border-[#27272a] bg-[#18181b]">
-          <h2 className="text-sm font-medium text-[#fafafa] mb-4">Getting Started</h2>
-          <OnBoarding />
-        </div>
-
-        {/* Potential customers preview */}
-        <div className="lg:col-span-2 p-5 rounded-lg border border-[#27272a] bg-[#18181b]">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-medium text-[#fafafa]">Recent Leads</h2>
-            <Link
-              href="/lead"
-              className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 transition-colors"
-            >
-              View all <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          <div className="flex flex-col gap-3">
-            {potentialCustomer.slice(0, 3).map((customer, index) => (
-              <UserInfoCard customer={customer} tags={customer.tags} key={index} />
-            ))}
+            <div className="text-[12px] font-medium text-[#c4c7c8] mt-3 flex items-center gap-1 font-mono uppercase tracking-wider">
+              <Activity className="w-[14px] h-[14px] text-emerald-500" />
+              Live Sync Active
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Feature section links */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Link
-          href="/lead"
-          className="group p-5 rounded-lg border border-[#27272a] bg-[#18181b] hover:border-violet-500/40 hover:bg-[#1c1c1f] transition-all"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-[#fafafa]">Sales Pipeline</span>
-            <ArrowRight className="w-4 h-4 text-[#52525b] group-hover:text-violet-400 transition-colors" />
+        {/* Metric 2 */}
+        <div className="bg-[#1c1b1b] border border-[#444748] p-6 rounded-lg flex flex-col justify-between">
+          <div className="flex justify-between items-start mb-8">
+            <h2 className="text-[14px] font-medium text-[#e5e2e1]" style={{ fontFamily: "Geist, sans-serif" }}>Active Agents</h2>
+            <Mic className="w-[20px] h-[20px] text-[#c4c7c8]" />
           </div>
-          <p className="text-xs text-[#71717a]">
-            Track attendees from registered → attending → converted
-          </p>
-        </Link>
+          <div>
+            <div className="text-[48px] leading-[1.1] font-semibold text-[#ffffff] tracking-tight">
+              {data.metrics.activeAgents}
+            </div>
+            <div className="text-[12px] font-medium text-[#c4c7c8] mt-3 flex items-center gap-1 font-mono uppercase tracking-wider">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Vapi System Online
+            </div>
+          </div>
+        </div>
 
-        <Link
-          href="/webinars"
-          className="group p-5 rounded-lg border border-[#27272a] bg-[#18181b] hover:border-violet-500/40 hover:bg-[#1c1c1f] transition-all"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-[#fafafa]">My Webinars</span>
-            <ArrowRight className="w-4 h-4 text-[#52525b] group-hover:text-violet-400 transition-colors" />
+        {/* Metric 3 */}
+        <div className="bg-[#1c1b1b] border border-[#444748] p-6 rounded-lg flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 w-32 h-32 bg-[#e2e2e2]/5 blur-3xl rounded-full"></div>
+          <div className="flex justify-between items-start mb-8 relative z-10">
+            <h2 className="text-[14px] font-medium text-[#e5e2e1]" style={{ fontFamily: "Geist, sans-serif" }}>Pipeline Value</h2>
+            <DollarSign className="w-[20px] h-[20px] text-[#c4c7c8]" />
           </div>
-          <p className="text-xs text-[#71717a]">
-            Manage live, upcoming, and archived webinar sessions
-          </p>
-        </Link>
-      </div>
+          <div className="relative z-10">
+            <div className="text-[48px] leading-[1.1] font-semibold text-[#ffffff] tracking-tight">
+              {data.metrics.pipelineValue}
+            </div>
+            <div className="text-[12px] font-medium text-[#c4c7c8] mt-3 flex items-center gap-1 font-mono uppercase tracking-wider">
+              <TrendingUp className="w-[14px] h-[14px] text-emerald-500" />
+              AI Projected
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Data Tables Grid */}
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1">
+        {/* Upcoming Streams Table */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-[20px] leading-[1.4] font-medium text-[#ffffff]" style={{ fontFamily: "Geist, sans-serif" }}>Upcoming Streams</h3>
+            <button className="text-[12px] font-medium text-[#c4c7c8] hover:text-[#ffffff] transition-colors flex items-center gap-1 font-mono uppercase tracking-widest">
+              View all <ArrowRight className="w-[14px] h-[14px]" />
+            </button>
+          </div>
+          <div className="border border-[#444748] bg-[#141313] rounded overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#353434] border-b border-[#444748] text-[12px] font-medium text-[#c4c7c8] font-mono uppercase tracking-widest">
+                  <th className="py-3 px-4">Session Name</th>
+                  <th className="py-3 px-4">Host</th>
+                  <th className="py-3 px-4">Time (UTC)</th>
+                  <th className="py-3 px-4 text-right">Reg.</th>
+                </tr>
+              </thead>
+              <tbody className="text-[14px] text-[#e5e2e1]">
+                {data.upcoming.length > 0 ? data.upcoming.map((item, i) => (
+                  <tr key={i} className="border-b border-[#444748] hover:bg-[#1c1b1b] transition-colors">
+                    <td className="py-3 px-4 font-medium text-[#ffffff]" style={{ fontFamily: "Geist, sans-serif" }}>{item.title}</td>
+                    <td className="py-3 px-4 text-[#c4c7c8]" style={{ fontFamily: "Geist, sans-serif" }}>{item.host}</td>
+                    <td className="py-3 px-4 font-mono text-[13px]">{item.time}</td>
+                    <td className="py-3 px-4 text-right font-mono text-[13px]">{item.reg}</td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={4} className="py-10 text-center text-zinc-500 font-mono text-[11px] uppercase tracking-widest">
+                      No upcoming sessions scheduled
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Recent Debriefs Table */}
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-[20px] leading-[1.4] font-medium text-[#ffffff]" style={{ fontFamily: "Geist, sans-serif" }}>Recent Debriefs</h3>
+            <button className="text-[12px] font-medium text-[#c4c7c8] hover:text-[#ffffff] transition-colors flex items-center gap-1 font-mono uppercase tracking-widest">
+              Archive <ArrowRight className="w-[14px] h-[14px]" />
+            </button>
+          </div>
+          <div className="border border-[#444748] bg-[#141313] rounded overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#353434] border-b border-[#444748] text-[12px] font-medium text-[#c4c7c8] font-mono uppercase tracking-widest">
+                  <th className="py-3 px-4">Session Name</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Conversion</th>
+                  <th className="py-3 px-4"></th>
+                </tr>
+              </thead>
+              <tbody className="text-[14px] text-[#e5e2e1]">
+                {data.debriefs.length > 0 ? data.debriefs.map((item, i) => (
+                  <tr key={i} className="border-b border-[#444748] hover:bg-[#1c1b1b] transition-colors group">
+                    <td className="py-3 px-4 font-medium text-[#ffffff]" style={{ fontFamily: "Geist, sans-serif" }}>{item.title}</td>
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded bg-[#201f1f] border border-[#444748] text-[12px] font-medium text-[#c4c7c8] font-mono uppercase tracking-tighter">
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 font-mono text-[13px]">{item.conversion}</td>
+                    <td className="py-3 px-4 text-right">
+                      <button className="opacity-0 group-hover:opacity-100 transition-opacity text-[#c4c7c8] hover:text-[#ffffff]">
+                        <Download className="w-[18px] h-[18px]" />
+                      </button>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={4} className="py-10 text-center text-zinc-500 font-mono text-[11px] uppercase tracking-widest">
+                      No session debriefs available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

@@ -1,255 +1,131 @@
 import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
-import {
-  Zap,
-  ArrowRight,
-  CheckCircle,
-  BarChart3,
-  Mic,
-  Users,
-  Shield,
-} from "lucide-react";
-
-const features = [
-  {
-    icon: Mic,
-    title: "Real-Time Voice AI",
-    description:
-      "Deploy hyper-realistic voice agents that interact with your audience in real-time, capturing intent and qualifying leads.",
-  },
-  {
-    icon: BarChart3,
-    title: "Advanced Analytics",
-    description:
-      "Track attendee engagement, conversion funnels, and AI call performance with a unified analytics dashboard.",
-  },
-  {
-    icon: Users,
-    title: "Pipeline Management",
-    description:
-      "Visualize your lead pipeline from registered → attending → AI breakout → converted in one clean view.",
-  },
-  {
-    icon: Shield,
-    title: "Enterprise Security",
-    description:
-      "SAML SSO, audit logs, and dedicated infrastructure ensure your data is always protected.",
-  },
-];
-
-const pricingTiers = [
-  {
-    name: "Starter",
-    price: "$99",
-    period: "/mo",
-    description: "For emerging teams launching their first automated webinars.",
-    features: [
-      "Up to 5 Live AI Agents",
-      "1,000 Voice Minutes /mo",
-      "Standard CRM Integrations",
-      "Basic Analytics",
-    ],
-    cta: "Get Started",
-    highlight: false,
-  },
-  {
-    name: "Professional",
-    badge: "Most Popular",
-    price: "$299",
-    period: "/mo",
-    description: "For scaling organizations requiring deep customization.",
-    features: [
-      "Unlimited Live AI Agents",
-      "10,000 Voice Minutes /mo",
-      "Advanced Behavioral Analytics",
-      "Custom Voice Cloning",
-    ],
-    cta: "Start Free Trial",
-    highlight: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "",
-    description: "Custom deployment for global events and maximum security.",
-    features: [
-      "Dedicated Infrastructure",
-      "Unlimited Voice Minutes",
-      "SAML SSO & Audit Logs",
-      "24/7 Priority Support",
-    ],
-    cta: "Contact Sales",
-    highlight: false,
-  },
-];
+import { ArrowRight, Mic } from "lucide-react";
 
 export default async function Home() {
   const { userId } = await auth();
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-[#fafafa] font-[family-name:var(--font-geist)]">
-      {/* Nav */}
-      <nav className="fixed top-0 inset-x-0 z-50 border-b border-[#27272a] bg-[#09090b]/80 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-violet-600 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-semibold text-[#fafafa]">Spotlight</span>
+    <div className="bg-[#141313] text-[#e5e2e1] font-[family-name:var(--font-geist)] antialiased min-h-screen flex flex-col pt-16">
+      {/* TopNavBar */}
+      <nav className="bg-[#141313] fixed top-0 w-full z-50 border-b border-[#444748] h-16 flex items-center">
+        <div className="flex justify-between items-center px-4 md:px-10 w-full max-w-[1440px] mx-auto">
+          <div className="text-[20px] leading-[1.4] font-bold text-[#ffffff] tracking-tight">Spotlight</div>
+          <div className="hidden md:flex gap-6 items-center">
+            <a className="text-[14px] text-[#c4c7c8] hover:text-[#ffffff] transition-colors" href="#">Features</a>
+            <a className="text-[14px] text-[#c4c7c8] hover:text-[#ffffff] transition-colors" href="#">Solutions</a>
+            <a className="text-[14px] text-[#c4c7c8] hover:text-[#ffffff] transition-colors" href="#">Documentation</a>
+            <a className="text-[14px] text-[#c4c7c8] hover:text-[#ffffff] transition-colors" href="#">Pricing</a>
           </div>
-
-          <div className="hidden md:flex items-center gap-6 text-sm text-[#a1a1aa]">
-            <a href="#features" className="hover:text-white transition-colors">Features</a>
-            <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
-          </div>
-
-          <div className="flex items-center gap-3 text-sm">
+          <div className="flex gap-6 items-center">
             {userId ? (
-              <Link
-                href="/home"
-                className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors"
-              >
-                Dashboard <ArrowRight className="w-3.5 h-3.5" />
+              <Link href="/home" className="text-[12px] font-medium bg-[#ffffff] text-[#0e0e0e] px-4 py-2 rounded scale-95 active:opacity-80 hover:bg-[#e2e2e2] transition-colors">
+                Dashboard
               </Link>
             ) : (
               <>
-                <Link
-                  href="/sign-in"
-                  className="text-[#a1a1aa] hover:text-white transition-colors"
-                >
-                  Login
-                </Link>
-                <Link
-                  href="/sign-up"
-                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors"
-                >
-                  Get Started <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+                <Link className="hidden md:inline-block text-[12px] font-medium text-[#c4c7c8] hover:text-[#ffffff] scale-95 active:opacity-80 transition-all" href="/sign-in">Login</Link>
+                <Link href="/sign-up" className="text-[12px] font-medium bg-[#ffffff] text-[#0e0e0e] px-4 py-2 rounded scale-95 active:opacity-80 hover:bg-[#e2e2e2] transition-colors">Start Building</Link>
               </>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="pt-32 pb-24 px-6 max-w-5xl mx-auto text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-600/10 text-violet-400 text-xs font-medium mb-8">
-          <Zap className="w-3 h-3" />
-          Voice AI × Webinar Automation
-        </div>
-        <h1 className="text-4xl sm:text-6xl font-semibold leading-tight tracking-tight mb-6">
-          Turn Passive Viewers into{" "}
-          <span className="text-violet-400">Active Leads</span>
-          <br />
-          with Voice AI.
-        </h1>
-        <p className="text-[#a1a1aa] text-lg max-w-2xl mx-auto mb-10">
-          Automate your webinar engagement. Deploy hyper-realistic voice agents
-          that interact with your audience in real-time, capturing intent and
-          qualifying leads before the session ends.
-        </p>
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link
-            href={userId ? "/home" : "/sign-up"}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-md bg-violet-600 hover:bg-violet-700 text-white font-medium transition-colors"
-          >
-            {userId ? "Go to Dashboard" : "Start for Free"}{" "}
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-          <a
-            href="#features"
-            className="flex items-center gap-2 px-6 py-2.5 rounded-md border border-[#27272a] bg-[#18181b] hover:bg-[#27272a] text-[#fafafa] font-medium transition-colors"
-          >
-            See Features
-          </a>
-        </div>
-      </section>
-
-      {/* Feature grid */}
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-semibold mb-3">
-              Everything you need to automate engagement
-            </h2>
-            <p className="text-[#a1a1aa] max-w-xl mx-auto">
-              Spotlight combines AI voice technology, real-time analytics, and CRM pipelines into one unified platform.
+      <main className="flex-grow flex flex-col items-center w-full">
+        {/* Hero Section */}
+        <section className="w-full max-w-[1440px] px-4 md:px-10 py-32 md:py-48 flex flex-col items-center justify-center text-center relative overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(to_right,#4447481a_1px,transparent_1px),linear-gradient(to_bottom,#4447481a_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] z-0 pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col items-center">
+            <h1 className="text-[48px] leading-[1.1] font-semibold text-[#ffffff] max-w-4xl tracking-tighter">
+              Stream the Webinar. <br className="hidden md:block" />Let AI Close the Deals.
+            </h1>
+            <p className="text-[16px] leading-[1.6] text-[#c4c7c8] mt-6 max-w-2xl">
+              Zero-latency streaming meets autonomous voice agents. A unified infrastructure built for high-performance technical environments.
             </p>
+            <div className="mt-12 flex flex-col sm:flex-row gap-4 items-center">
+              <Link href={userId ? "/home" : "/sign-up"} className="w-full sm:w-auto text-[12px] font-medium bg-[#ffffff] text-[#0e0e0e] px-6 py-3 rounded hover:bg-[#e2e2e2] transition-colors flex items-center justify-center gap-2">
+                Start Building
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <button className="w-full sm:w-auto text-[12px] font-medium border border-[#444748] bg-transparent text-[#ffffff] px-6 py-3 rounded hover:bg-[#201f1f] transition-colors">
+                Read Docs
+              </button>
+            </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="p-6 rounded-lg border border-[#27272a] bg-[#18181b] hover:border-violet-500/40 hover:bg-[#1c1c1f] transition-all duration-150"
-              >
-                <div className="w-9 h-9 rounded-md bg-violet-600/10 border border-violet-500/20 flex items-center justify-center mb-4">
-                  <f.icon className="w-4 h-4 text-violet-400" />
-                </div>
-                <h3 className="font-medium text-sm mb-2">{f.title}</h3>
-                <p className="text-[#a1a1aa] text-xs leading-relaxed">{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="py-24 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl font-semibold mb-3">Predictable Enterprise Pricing</h2>
-            <p className="text-[#a1a1aa]">
-              Scale your automated engagement with transparent tiers designed for high-volume B2B operations.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {pricingTiers.map((tier) => (
-              <div
-                key={tier.name}
-                className={`relative p-6 rounded-lg border flex flex-col transition-all ${tier.highlight
-                    ? "border-violet-500/60 bg-violet-600/5"
-                    : "border-[#27272a] bg-[#18181b]"
-                  }`}
-              >
-                {tier.badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-medium bg-violet-600 text-white">
-                    {tier.badge}
-                  </span>
-                )}
-                <div className="mb-6">
-                  <p className="text-sm font-medium text-[#a1a1aa] mb-1">{tier.name}</p>
-                  <p className="text-3xl font-semibold">
-                    {tier.price}
-                    <span className="text-sm text-[#a1a1aa] font-normal">{tier.period}</span>
-                  </p>
-                  <p className="text-xs text-[#71717a] mt-2">{tier.description}</p>
-                </div>
-                <ul className="space-y-2 flex-1 mb-6">
-                  {tier.features.map((ft) => (
-                    <li key={ft} className="flex items-center gap-2 text-sm text-[#a1a1aa]">
-                      <CheckCircle className="w-3.5 h-3.5 text-violet-400 shrink-0" />
-                      {ft}
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  href={userId ? "/home" : "/sign-up"}
-                  className={`w-full flex items-center justify-center gap-1.5 py-2 rounded-md text-sm font-medium transition-colors ${tier.highlight
-                      ? "bg-violet-600 hover:bg-violet-700 text-white"
-                      : "bg-[#27272a] hover:bg-[#3f3f46] text-[#fafafa]"
-                    }`}
-                >
-                  {tier.cta} <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
+        {/* Bento Grid Section */}
+        <section className="w-full max-w-[1440px] px-4 md:px-10 pb-32">
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 auto-rows-[280px]">
+            {/* Card 1: Real-Time Infrastructure (Spans 8 cols) */}
+            <div className="md:col-span-8 bg-[#141313] border border-[#444748] rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group">
+              <div className="z-10 relative max-w-md">
+                <div className="text-[12px] font-medium text-[#c4c7c8] mb-4 px-2 py-1 border border-[#444748] rounded inline-block bg-[#201f1f]">SYSTEM.CORE</div>
+                <h3 className="text-[20px] font-medium text-[#ffffff] tracking-tight">Real-Time Infrastructure</h3>
+                <p className="text-[14px] text-[#c4c7c8] mt-2">Engineered for sub-second latency globally. Ensure your stream and bidirectional data flows are delivered precisely when it matters, with zero perceptible delay.</p>
               </div>
-            ))}
+              <div className="absolute right-0 bottom-0 w-1/2 h-[120%] bg-gradient-to-l from-[#2a2a2a]/20 to-transparent translate-x-4 translate-y-8 group-hover:translate-x-0 group-hover:translate-y-4 transition-transform duration-700 pointer-events-none">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#8e919233_1px,transparent_1px)] bg-[size:16px_100%]"></div>
+              </div>
+            </div>
+
+            {/* Card 2: Vapi Voice Breakouts (Spans 4 cols) */}
+            <div className="md:col-span-4 bg-[#141313] border border-[#444748] rounded-xl p-8 flex flex-col justify-between">
+              <div>
+                <div className="text-[12px] font-medium text-[#c4c7c8] mb-4 px-2 py-1 border border-[#444748] rounded inline-block bg-[#201f1f]">MODULE.VOICE</div>
+                <h3 className="text-[20px] font-medium text-[#ffffff] tracking-tight">Vapi Voice Breakouts</h3>
+                <p className="text-[14px] text-[#c4c7c8] mt-2">Autonomous voice agents engage attendees instantly post-webinar.</p>
+              </div>
+              <div className="flex justify-end mt-4">
+                <div className="h-12 w-12 rounded-full border border-[#444748] bg-[#201f1f] flex items-center justify-center">
+                  <Mic className="w-6 h-6 text-[#ffffff]" />
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Asynchronous Lead Routing (Spans 12 cols) */}
+            <div className="md:col-span-12 bg-[#141313] border border-[#444748] rounded-xl p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 relative overflow-hidden">
+              <div className="z-10 relative max-w-xl">
+                <div className="text-[12px] font-medium text-[#c4c7c8] mb-4 px-2 py-1 border border-[#444748] rounded inline-block bg-[#201f1f]">ROUTING.ASYNC</div>
+                <h3 className="text-[20px] font-medium text-[#ffffff] tracking-tight">Asynchronous Lead Routing</h3>
+                <p className="text-[14px] text-[#c4c7c8] mt-2">Intelligent parsing algorithms that distribute qualified, context-rich leads directly to your CRM infrastructure based on real-time engagement heuristics.</p>
+              </div>
+              <div className="z-10 relative flex flex-col gap-1 min-w-[240px]">
+                <div className="flex items-center justify-between p-3 border border-[#444748] rounded bg-[#201f1f] font-mono text-[13px] text-[#c4c7c8]">
+                  <span>Webhook Status</span>
+                  <span className="text-[#ffffff] flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#ffffff] inline-block"></span> 200 OK</span>
+                </div>
+                <div className="flex items-center justify-between p-3 border border-[#444748] rounded bg-[#201f1f] font-mono text-[13px] text-[#c4c7c8]">
+                  <span>Processing Time</span>
+                  <span className="text-[#ffffff]">12ms</span>
+                </div>
+                <div className="flex items-center justify-between p-3 border border-[#444748] rounded bg-[#201f1f] font-mono text-[13px] text-[#c4c7c8]">
+                  <span>CRM Target</span>
+                  <span className="text-[#ffffff]">Salesforce</span>
+                </div>
+              </div>
+              {/* Ambient Glow */}
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] bg-[#e2e2e2]/5 rounded-full blur-[100px] pointer-events-none"></div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#27272a] py-8 px-6 text-center text-[#52525b] text-sm">
-        <p>© 2026 Spotlight. All rights reserved.</p>
+      <footer className="bg-[#141313] w-full py-8 border-t border-[#444748] mt-auto">
+        <div className="flex flex-col md:flex-row justify-between items-center px-4 md:px-10 max-w-[1440px] mx-auto gap-6">
+          <div className="text-[20px] font-bold text-[#ffffff] tracking-tight">Spotlight</div>
+          <div className="flex gap-6 text-[12px] font-medium">
+            <a className="text-[#c4c7c8] hover:text-[#ffffff] transition-colors opacity-100 hover:opacity-80" href="#">Privacy</a>
+            <a className="text-[#c4c7c8] hover:text-[#ffffff] transition-colors opacity-100 hover:opacity-80" href="#">Terms</a>
+            <a className="text-[#c4c7c8] hover:text-[#ffffff] transition-colors opacity-100 hover:opacity-80" href="#">Security</a>
+            <a className="text-[#c4c7c8] hover:text-[#ffffff] transition-colors opacity-100 hover:opacity-80" href="#">Status</a>
+          </div>
+          <div className="text-[12px] font-medium text-[#c4c7c8] text-center md:text-right">
+            © 2026 Spotlight Enterprise. All rights reserved.
+          </div>
+        </div>
       </footer>
     </div>
   );

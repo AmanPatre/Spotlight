@@ -3,9 +3,7 @@
 import { useState } from "react";
 import { registerAttendee } from "@/actions/attendence";
 import { toast } from "sonner";
-import { Loader2, ArrowRight } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   webinarId: string;
@@ -23,20 +21,18 @@ export default function RegistrationForm({ webinarId, onSuccess }: Props) {
       toast.error("Please fill in all fields");
       return;
     }
-
     setLoading(true);
     try {
       const result = await registerAttendee(webinarId, name, email);
       if (result.success && result.attendeeId) {
         toast.success("Successfully registered!");
-        // Store in localStorage for persistence across public pages
         localStorage.setItem(`spotlight_attendee_${webinarId}`, result.attendeeId);
         localStorage.setItem(`spotlight_attendee_name_${webinarId}`, name);
         onSuccess(result.attendeeId);
       } else {
         toast.error(result.message || "Registration failed");
       }
-    } catch (error) {
+    } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -44,62 +40,78 @@ export default function RegistrationForm({ webinarId, onSuccess }: Props) {
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex flex-col gap-4 w-full max-w-md mx-auto"
-    >
-      <div className="space-y-2 text-center mb-4">
-        <h2 className="text-2xl font-bold text-primary">Reserve Your Spot</h2>
-        <p className="text-sm text-muted-foreground">
-          Join thousands of others learning from the best.
+    <div className="flex flex-col space-y-8 w-full">
+      <div>
+        <h2
+          className="text-white text-2xl font-semibold tracking-tight mb-1"
+          style={{ fontFamily: "Geist, sans-serif" }}
+        >
+          Reserve your spot
+        </h2>
+        <p className="text-zinc-500 text-sm" style={{ fontFamily: "Geist, sans-serif" }}>
+          Join thousands of developers tuning in live.
         </p>
       </div>
 
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground ml-1">
-          FULL NAME
-        </label>
-        <Input
-          placeholder="John Doe"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          className="bg-secondary/20 border-border h-12"
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Full Name */}
+        <div className="space-y-1">
+          <label className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest">
+            Full Name
+          </label>
+          <input
+            type="text"
+            placeholder="Jane Doe"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+            className="w-full bg-black border border-zinc-800 text-white font-mono text-[13px] p-3 focus:outline-none focus:border-white transition-colors placeholder:text-zinc-700 disabled:opacity-50"
+          />
+        </div>
+
+        {/* Work Email */}
+        <div className="space-y-1">
+          <label className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest">
+            Work Email
+          </label>
+          <input
+            type="email"
+            placeholder="jane@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            required
+            className="w-full bg-black border border-zinc-800 text-white font-mono text-[13px] p-3 focus:outline-none focus:border-white transition-colors placeholder:text-zinc-700 disabled:opacity-50"
+          />
+        </div>
+
+        {/* Ticket Type */}
+        <div className="flex justify-between items-center py-4 border-b border-zinc-800">
+          <span className="text-zinc-400 text-sm" style={{ fontFamily: "Geist, sans-serif" }}>
+            Ticket Type
+          </span>
+          <span className="text-white text-[11px] font-mono uppercase bg-zinc-900 border border-zinc-800 px-2 py-1">
+            Free
+          </span>
+        </div>
+
+        {/* Submit */}
+        <button
+          type="submit"
           disabled={loading}
-        />
-      </div>
-
-      <div className="space-y-1">
-        <label className="text-xs font-medium text-muted-foreground ml-1">
-          EMAIL ADDRESS
-        </label>
-        <Input
-          type="email"
-          placeholder="john@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="bg-secondary/20 border-border h-12"
-          disabled={loading}
-        />
-      </div>
-
-      <Button
-        type="submit"
-        disabled={loading}
-        className="w-full h-12 mt-4 text-white font-bold text-lg bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-xl shadow-purple-500/20"
-      >
-        {loading ? (
-          <Loader2 className="w-5 h-5 animate-spin" />
-        ) : (
-          <>
-            Register for Free
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </>
-        )}
-      </Button>
-
-      <p className="text-[10px] text-center text-muted-foreground mt-4 uppercase tracking-widest">
-        Secure & Private • No Credit Card Required
-      </p>
-    </form>
+          className="w-full bg-white text-black font-medium py-3 px-4 hover:bg-zinc-200 transition-colors flex items-center justify-center space-x-2 disabled:opacity-60 mt-4"
+          style={{ fontFamily: "Geist, sans-serif", fontSize: "14px" }}
+        >
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              <span>Secure Ticket &amp; Register</span>
+              <span>→</span>
+            </>
+          )}
+        </button>
+      </form>
+    </div>
   );
 }

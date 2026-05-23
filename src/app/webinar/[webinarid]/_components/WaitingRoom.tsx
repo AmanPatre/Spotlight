@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { getWebinarStatus } from "@/actions/webinar";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
-import { Loader2, Timer, Bell, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 type Props = {
@@ -13,112 +12,90 @@ type Props = {
   onLive: () => void;
 };
 
-export default function WaitingRoom({
-  webinarId,
-  webinarTitle,
-  startTime,
-  onLive,
-}: Props) {
-  const [status, setStatus] = useState<WebinarStatusEnum>(
-    WebinarStatusEnum.WAITING_ROOM
-  );
-  const [subscribed, setSubscribed] = useState(false);
+export default function WaitingRoom({ webinarId, webinarTitle, startTime, onLive }: Props) {
+  const [status, setStatus] = useState<WebinarStatusEnum>(WebinarStatusEnum.WAITING_ROOM);
 
+  // Poll every 5 seconds for status
   useEffect(() => {
-    // Polling interval for status updates
     const interval = setInterval(async () => {
       const currentStatus = await getWebinarStatus(webinarId);
       if (currentStatus) {
         setStatus(currentStatus as WebinarStatusEnum);
         if (currentStatus === WebinarStatusEnum.LIVE) {
           clearInterval(interval);
-          // Add a small 2s delay to ensure host's Stream.io call is initialized
-          setTimeout(() => {
-            onLive();
-          }, 2000);
+          setTimeout(() => onLive(), 2000);
         }
       }
-    }, 5000); // Poll every 5 seconds
-
+    }, 5000);
     return () => clearInterval(interval);
   }, [webinarId, onLive]);
 
-  const handleNotifyMe = () => {
-    setSubscribed(true);
-    toast.success("We'll alert you as soon as we go live!");
+  const handleAddToCalendar = () => {
+    const start = new Date(startTime);
+    const end = new Date(start.getTime() + 60 * 60 * 1000); // +1hr
+    const fmt = (d: Date) =>
+      d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const url = `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(webinarTitle)}&dates=${fmt(start)}/${fmt(end)}`;
+    window.open(url, "_blank");
+    toast.success("Opening Google Calendar...");
   };
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 max-w-xl mx-auto text-center py-12 px-6 rounded-3xl border border-border bg-secondary/10 backdrop-blur-sm">
-      <div className="relative">
-        <div className="absolute inset-0 bg-purple-500 blur-3xl opacity-20 animate-pulse" />
-        <div className="relative w-24 h-24 rounded-full border-4 border-purple-500/30 flex items-center justify-center">
-          <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
-        </div>
-      </div>
+    <div className="flex flex-col h-full justify-center space-y-8 w-full">
+      <div className="flex flex-col items-center text-center space-y-6">
 
-      <div className="space-y-3">
-        <h2 className="text-3xl font-bold tracking-tight text-primary">
-          You&apos;re on the list!
-        </h2>
-        <p className="text-muted-foreground">
-          The host is getting everything ready for <strong>{webinarTitle}</strong>.
-          We&apos;ll automatically redirect you when the broadcast begins.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-secondary/30 border border-border">
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
-            <Timer className="w-5 h-5" />
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">
-              Starts At
-            </p>
-            <p className="text-sm font-semibold">
-              {new Date(startTime).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={handleNotifyMe}
-          disabled={subscribed}
-          className={`flex items-center gap-3 p-4 rounded-2xl border transition-all ${subscribed
-              ? "bg-green-500/10 border-green-500/30 text-green-400"
-              : "bg-secondary/30 border-border hover:bg-secondary/50 text-primary"
-            }`}
-        >
-          <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center ${subscribed ? "bg-green-500/10" : "bg-purple-500/10 text-purple-400"
-              }`}
+        {/* Check icon */}
+        <div className="w-16 h-16 border border-white bg-black flex items-center justify-center">
+          <svg
+            className="w-8 h-8 text-white"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
           >
-            {subscribed ? (
-              <CheckCircle2 className="w-5 h-5" />
-            ) : (
-              <Bell className="w-5 h-5" />
-            )}
-          </div>
-          <div className="text-left">
-            <p className="text-[10px] font-bold text-muted-foreground uppercase">
-              Alerts
-            </p>
-            <p className="text-sm font-semibold">
-              {subscribed ? "Subscribed" : "Notify Me"}
-            </p>
-          </div>
-        </button>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <div className="space-y-2">
+          <h2
+            className="text-white text-2xl font-semibold tracking-tight"
+            style={{ fontFamily: "Geist, sans-serif" }}
+          >
+            Ticket Confirmed
+          </h2>
+          <p
+            className="text-zinc-400 text-sm max-w-[280px] mx-auto"
+            style={{ fontFamily: "Geist, sans-serif" }}
+          >
+            Connection established. Waiting for host broadcast to begin...
+          </p>
+        </div>
+
+        {/* Standby badge */}
+        <div className="flex items-center justify-center space-x-2 bg-zinc-900 border border-zinc-800 px-4 py-2 w-full max-w-[240px]">
+          <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+          <span className="text-white font-mono text-[13px]">
+            {status === WebinarStatusEnum.WAITING_ROOM ? "Standby Mode" : "Host preparing..."}
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground py-2 px-4 rounded-full bg-secondary/20">
-        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-        {status === WebinarStatusEnum.WAITING_ROOM
-          ? "Waiting room is open"
-          : "Host is preparing"}
+      {/* Add to Calendar */}
+      <div className="pt-6 border-t border-zinc-800 w-full">
+        <button
+          onClick={handleAddToCalendar}
+          className="w-full bg-transparent border border-zinc-800 text-white py-3 px-4 hover:bg-zinc-900 hover:border-zinc-700 transition-colors flex items-center justify-center space-x-2 text-sm"
+          style={{ fontFamily: "Geist, sans-serif" }}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span>Add to Calendar</span>
+        </button>
       </div>
     </div>
   );

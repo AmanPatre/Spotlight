@@ -3,16 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Vapi from "@vapi-ai/web";
-import { Button } from "@/components/ui/button";
-import {
-  Bot,
-  Loader2,
-  Mic,
-  MicOff,
-  PhoneOff,
-  UserRound,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Loader2, Mic, MicOff } from "lucide-react";
 import { toast } from "sonner";
 
 type Props = {
@@ -23,6 +14,8 @@ type Props = {
 };
 
 type CallStatus = "idle" | "connecting" | "active" | "ended" | "error";
+
+// ─── Vapi error helpers (unchanged) ──────────────────────────────────────────
 
 function formatVapiErrorPayload(e: unknown): string {
   if (e instanceof Error) return e.message;
@@ -35,11 +28,7 @@ function formatVapiErrorPayload(e: unknown): string {
     if (typeof m === "string" && m.length) return m;
   }
   if (typeof o.type === "string") return o.type;
-  try {
-    return JSON.stringify(o);
-  } catch {
-    return "Unknown error";
-  }
+  try { return JSON.stringify(o); } catch { return "Unknown error"; }
 }
 
 function formatCallStartFailed(ev: unknown): string {
@@ -53,30 +42,26 @@ function formatCallStartFailed(ev: unknown): string {
     if (st !== "No stack trace available") parts.push(st);
   }
   if (o.context && typeof o.context === "object") {
-    try {
-      parts.push(`context: ${JSON.stringify(o.context)}`);
-    } catch {
-      /* ignore */
-    }
+    try { parts.push(`context: ${JSON.stringify(o.context)}`); } catch { /* ignore */ }
   }
   if (parts.length) return parts.join(" — ");
-  try {
-    return JSON.stringify(o);
-  } catch {
-    return "Call failed (no details). Check assistant ID and Vapi public key.";
-  }
+  try { return JSON.stringify(o); } catch { return "Call failed (no details). Check assistant ID and Vapi public key."; }
 }
 
-function replacerSafe(_key: string, value: unknown) {
-  if (value instanceof Error) {
-    return {
-      message: value.message,
-      name: value.name,
-      stack: value.stack,
-    };
-  }
-  return value;
+// ─── Transcript message type ──────────────────────────────────────────────────
+
+type TranscriptEntry = {
+  id: number;
+  role: "user" | "ai" | "system";
+  text: string;
+  time: string;
+};
+
+function nowTime() {
+  return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function VapiCallRoom({
   webinarId,
@@ -87,33 +72,46 @@ export default function VapiCallRoom({
   const router = useRouter();
   const vapiRef = useRef<Vapi | null>(null);
   const skipCallEndNavigation = useRef(false);
+  const transcriptBottomRef = useRef<HTMLDivElement>(null);
+
   const [status, setStatus] = useState<CallStatus>("idle");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [muted, setMuted] = useState(false);
   const [elapsed, setElapsed] = useState(0);
-  const [userSpeaking, setUserSpeaking] = useState(false);
   const [aiSpeaking, setAiSpeaking] = useState(false);
   const aiSpeakingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  /** Mic must be primed inside a click handler so the browser keeps user activation for Daily/Vapi. */
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [micReady, setMicReady] = useState(false);
   const [micPriming, setMicPriming] = useState(false);
   const [micDenied, setMicDenied] = useState(false);
-  /**
-   * Keep the granted MediaStream alive and pass its audio track into Daily via Vapi.
-   * Stopping tracks after "Allow" then letting Daily call getUserMedia again often yields silence / ejection.
-   */
   const micStreamRef = useRef<MediaStream | null>(null);
+
+  const [transcript, setTranscript] = useState<TranscriptEntry[]>([
+    { id: 0, role: "system", text: "Recording initiated. AI Agent connected.", time: nowTime() },
+  ]);
+  const transcriptIdRef = useRef(1);
 
   const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
 
+  // Auto-scroll transcript
+  useEffect(() => {
+    transcriptBottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [transcript]);
+
+  const addTranscriptEntry = (role: TranscriptEntry["role"], text: string) => {
+    setTranscript((prev) => [
+      ...prev,
+      { id: transcriptIdRef.current++, role, text, time: nowTime() },
+    ]);
+  };
+
   const releaseMicrophone = useCallback(() => {
-    try {
-      vapiRef.current?.stop();
-    } catch { /* ignore */ }
+    try { vapiRef.current?.stop(); } catch { /* ignore */ }
     vapiRef.current = null;
     if (micStreamRef.current) {
-      micStreamRef.current.getTracks().forEach(t => t.stop());
+      micStreamRef.current.getTracks().forEach((t) => t.stop());
       micStreamRef.current = null;
     }
     setMicReady(false);
@@ -121,11 +119,7 @@ export default function VapiCallRoom({
 
   const endAndLeave = useCallback(async () => {
     skipCallEndNavigation.current = false;
-    try {
-      await vapiRef.current?.stop();
-    } catch {
-      /* ignore */
-    }
+    try { await vapiRef.current?.stop(); } catch { /* ignore */ }
     vapiRef.current = null;
     releaseMicrophone();
     setStatus("ended");
@@ -133,17 +127,14 @@ export default function VapiCallRoom({
   }, [releaseMicrophone, router, webinarId]);
 
   const handleConnect = useCallback(async () => {
-    if (!publicKey) {
-      toast.error("Missing NEXT_PUBLIC_VAPI_PUBLIC_KEY");
-      return;
-    }
-
+    if (!publicKey) { toast.error("Missing NEXT_PUBLIC_VAPI_PUBLIC_KEY"); return; }
     setMicPriming(true);
     setMicDenied(false);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
+          deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
@@ -168,35 +159,30 @@ export default function VapiCallRoom({
 
     vapi.on("call-start", () => {
       setStatus("active");
-      vapi.setMuted(false); // Explicitly ensure we are not muted
+      vapi.setMuted(false);
+      if (selectedDeviceId) {
+        vapi.setInputDevicesAsync({ audioDeviceId: selectedDeviceId }).catch(console.warn);
+      }
       setMuted(false);
       setMicReady(true);
       setMicPriming(false);
+      addTranscriptEntry("system", "Call connected. Voice session active.");
 
-      // Track AI Call started -> BREAKOUT_ROOM
       fetch("/api/attendance", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attendeeId,
-          webinarId,
-          status: "BREAKOUT_ROOM",
-        }),
+        body: JSON.stringify({ attendeeId, webinarId, status: "BREAKOUT_ROOM" }),
       }).catch(console.error);
     });
 
     vapi.on("call-end", () => {
       setStatus("ended");
+      addTranscriptEntry("system", "Session ended.");
 
-      // Track AI Call ended -> FOLLOW_UP
       fetch("/api/attendance", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          attendeeId,
-          webinarId,
-          status: "FOLLOW_UP",
-        }),
+        body: JSON.stringify({ attendeeId, webinarId, status: "FOLLOW_UP" }),
       }).catch(console.error);
 
       if (skipCallEndNavigation.current) {
@@ -209,14 +195,21 @@ export default function VapiCallRoom({
     vapi.on("speech-start", () => setAiSpeaking(true));
     vapi.on("speech-end", () => setAiSpeaking(false));
 
-    vapi.on("message", (msg: { role?: string; type?: string }) => {
-      if (msg?.role === "assistant") bumpAi();
+    vapi.on("message", (msg: { role?: string; type?: string; transcript?: string; transcriptType?: string }) => {
+      if (msg?.role === "assistant") {
+        bumpAi();
+        if (msg.transcriptType === "final" && msg.transcript) {
+          addTranscriptEntry("ai", msg.transcript);
+        }
+      }
+      if (msg?.role === "user" && msg.transcriptType === "final" && msg.transcript) {
+        addTranscriptEntry("user", msg.transcript);
+      }
     });
 
     vapi.on("error", (e: unknown) => {
       const detail = formatVapiErrorPayload(e);
       const type = e && typeof e === "object" && "type" in e ? String((e as { type?: string }).type) : "";
-
       console.warn(`[Vapi] ${type || "error"} ${detail}`);
 
       if (type === "daily-error") {
@@ -232,7 +225,6 @@ export default function VapiCallRoom({
         toast.error(`Voice connection: ${detail}`, { duration: 5000 });
         return;
       }
-
       setErrorMsg(detail);
       setStatus("error");
       releaseMicrophone();
@@ -247,309 +239,398 @@ export default function VapiCallRoom({
       setStatus("error");
       releaseMicrophone();
       setMicPriming(false);
-      setMicDenied(true); // likely permission denied
+      setMicDenied(true);
     });
 
     setStatus("connecting");
+    vapi.start(assistantId, { metadata: { webinarId, attendeeId } }, undefined, undefined, undefined, {
+      roomDeleteOnUserLeaveEnabled: false,
+    }).catch((e: unknown) => {
+      console.error("Vapi start failed", e);
+      setErrorMsg(e instanceof Error ? e.message : "Could not start voice session");
+      setStatus("error");
+      releaseMicrophone();
+      setMicPriming(false);
+    });
+  }, [assistantId, publicKey, releaseMicrophone, router, webinarId, selectedDeviceId, attendeeId]);
 
-    vapi
-      .start(assistantId, undefined, undefined, undefined, undefined, {
-        roomDeleteOnUserLeaveEnabled: false,
-      })
-      .catch((e: unknown) => {
-        console.error("Vapi start failed", e);
-        setErrorMsg(e instanceof Error ? e.message : "Could not start voice session");
-        setStatus("error");
-        releaseMicrophone();
-        setMicPriming(false);
-      });
-  }, [assistantId, publicKey, releaseMicrophone, router, webinarId]);
+  // Enumerate devices
+  useEffect(() => {
+    const getDevices = async () => {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        const allDevices = await navigator.mediaDevices.enumerateDevices();
+        const audioDevices = allDevices.filter((d) => d.kind === "audioinput");
+        setDevices(audioDevices);
+        if (audioDevices.length > 0 && !selectedDeviceId) {
+          setSelectedDeviceId(audioDevices[0].deviceId);
+        }
+      } catch (e) { console.warn("Could not enumerate devices:", e); }
+    };
+    getDevices();
+    navigator.mediaDevices.ondevicechange = getDevices;
+  }, [selectedDeviceId]);
 
+  // Elapsed timer
   useEffect(() => {
     if (status !== "active") return;
     const t = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(t);
   }, [status]);
 
-  // Listen to local mic to animate user speaking
-  useEffect(() => {
-    if (!micReady || !micStreamRef.current || muted) {
-      setUserSpeaking(false);
-      return;
-    }
-
-    const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.5;
-
-    const source = audioCtx.createMediaStreamSource(micStreamRef.current);
-    source.connect(analyser);
-
-    const dataArray = new Uint8Array(analyser.frequencyBinCount);
-    let animationFrameId: number;
-    let lastState = false;
-
-    const checkVolume = () => {
-      analyser.getByteFrequencyData(dataArray);
-      let sum = 0;
-      for (let i = 0; i < dataArray.length; i++) {
-        sum += dataArray[i];
-      }
-      const avg = sum / dataArray.length;
-
-      const isSpeaking = avg > 12; // Threshold for speaking
-      if (isSpeaking !== lastState) {
-        lastState = isSpeaking;
-        setUserSpeaking(isSpeaking);
-      }
-
-      animationFrameId = requestAnimationFrame(checkVolume);
-    };
-
-    checkVolume();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      audioCtx.close().catch(() => { });
-    };
-  }, [micReady, muted]);
-
   const fmt = (sec: number) => {
-    const m = Math.floor(sec / 60);
+    const h = Math.floor(sec / 3600);
+    const m = Math.floor((sec % 3600) / 60);
     const s = sec % 60;
-    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
-  const initial = attendeeName.trim().charAt(0).toUpperCase() || "?";
-
+  // ─── Missing public key ──────────────────────────────────────────────────────
   if (!publicKey) {
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-sm text-red-400 max-w-md">
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-black text-white px-6 text-center">
+        <p className="text-sm text-red-400 font-mono max-w-md border border-red-900 bg-red-950/20 p-4">
           Missing NEXT_PUBLIC_VAPI_PUBLIC_KEY
         </p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            releaseMicrophone();
-            router.push(`/webinar/${webinarId}/live`);
-          }}
+        <button
+          onClick={() => { releaseMicrophone(); router.push(`/webinar/${webinarId}/live`); }}
+          className="border border-[#444748] text-[#e5e2e1] px-6 py-2 text-sm font-mono hover:bg-[#1c1b1b] transition-colors"
         >
-          Back to live room
-        </Button>
+          ← Back to live room
+        </button>
       </div>
     );
   }
 
+  // ─── Error state ─────────────────────────────────────────────────────────────
   if (errorMsg && status === "error") {
     const isEjection = errorMsg.toLowerCase().includes("ejection");
     return (
-      <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-6 text-center">
-        <p className="text-sm text-red-400 max-w-md">{errorMsg}</p>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-black text-white px-6 text-center">
+        <div className="w-12 h-12 border border-[#ffb4ab] flex items-center justify-center">
+          <span className="text-[#ffb4ab] font-mono text-xl">!</span>
+        </div>
+        <p className="text-sm text-[#ffb4ab] font-mono max-w-md">{errorMsg}</p>
         {isEjection && (
-          <p className="text-xs text-zinc-500 max-w-md leading-relaxed">
-            This usually means the voice room closed on the server. Confirm the
-            webinar&apos;s AI agent is a valid Vapi assistant, your public key
-            matches that Vapi org, and check the call in the Vapi dashboard. If
-            the problem persists, try another browser or disable React Strict
-            Mode for local dev (it can tear down the call once while connecting).
+          <p className="text-xs text-[#8e9192] font-mono max-w-md leading-relaxed border-t border-[#444748] pt-4">
+            This usually means the voice room closed on the server. Confirm the webinar&apos;s AI agent is a valid Vapi assistant, your public key matches that Vapi org, and check the call in the Vapi dashboard.
           </p>
         )}
-        <Button
-          variant="outline"
-          onClick={() => {
-            releaseMicrophone();
-            router.push(`/webinar/${webinarId}/live`);
-          }}
+        <button
+          onClick={() => { releaseMicrophone(); router.push(`/webinar/${webinarId}/live`); }}
+          className="border border-[#444748] text-[#e5e2e1] px-6 py-2 text-sm font-mono hover:bg-[#1c1b1b] transition-colors"
         >
-          Back to live room
-        </Button>
+          ← Back to live room
+        </button>
       </div>
     );
   }
 
+  // ─── Mic priming / pre-call screen ───────────────────────────────────────────
   if (!micReady) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-950 px-6 text-center text-white">
-        <div className="flex size-16 items-center justify-center rounded-full border border-purple-500/40 bg-purple-500/10">
-          <Mic className="size-8 text-purple-400" />
+      <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-black text-white px-6 text-center"
+        style={{
+          backgroundImage: "radial-gradient(#444748 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+        }}
+      >
+        {/* Icon */}
+        <div className="w-20 h-20 border border-[#444748] flex items-center justify-center">
+          <Mic className="w-8 h-8 text-white" />
         </div>
-        <div className="max-w-md space-y-2">
-          <h1 className="text-xl font-semibold">Microphone required</h1>
-          <p className="text-sm text-zinc-400 leading-relaxed">
-            Browsers only allow the AI to hear you after you explicitly allow
-            the microphone. Use{" "}
-            <span className="text-zinc-200">HTTPS</span> or{" "}
-            <span className="text-zinc-200">localhost</span>.
+
+        <div className="max-w-md space-y-3">
+          <h1 className="text-xl font-semibold tracking-tight" style={{ fontFamily: "Geist, Inter, sans-serif" }}>
+            Microphone Required
+          </h1>
+          <p className="text-sm text-[#8e9192] leading-relaxed font-mono">
+            Browsers only allow the AI to hear you after you explicitly allow the microphone.
+            Use <span className="text-white">HTTPS</span> or <span className="text-white">localhost</span>.
           </p>
-          <p className="text-sm text-zinc-500 leading-relaxed border-t border-white/10 pt-3 mt-1">
-            If you are the <span className="text-zinc-300">host</span> in one
-            tab (Stream live) and the <span className="text-zinc-300">
-              attendee
-            </span>{" "}
-            here in another, both can try to use the mic at once. That can
-            cause silence, flaky audio, or disconnects. For solo testing: open
-            the attendee link in{" "}
-            <span className="text-zinc-300">Incognito</span> or another
-            browser, or mute / turn off the host microphone while you test this
-            room.
-          </p>
-          <p className="text-xs text-zinc-600 leading-relaxed">
-            After you connect, the mic preview stays active so Daily can publish
-            the same track — that is intentional.
+
+          {/* Device selector */}
+          <div className="text-left space-y-2 py-4">
+            <label className="text-[11px] font-mono uppercase tracking-widest text-[#8e9192]">
+              Select Microphone
+            </label>
+            <select
+              value={selectedDeviceId}
+              onChange={(e) => setSelectedDeviceId(e.target.value)}
+              className="w-full bg-black border border-[#444748] px-4 py-3 text-sm text-[#e5e2e1] font-mono focus:outline-none focus:border-white transition-colors"
+            >
+              {devices.map((device) => (
+                <option key={device.deviceId} value={device.deviceId}>
+                  {device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <p className="text-xs text-[#8e9192] leading-relaxed border-t border-[#444748] pt-3 font-mono text-left">
+            If you are the <span className="text-white">host</span> in one tab and the{" "}
+            <span className="text-white">attendee</span> here in another, both can try to use the mic at once. For solo testing: open the attendee link in{" "}
+            <span className="text-white">Incognito</span> or another browser.
           </p>
         </div>
-        <Button
+
+        <button
           type="button"
-          size="lg"
-          className="rounded-xl px-8"
           onClick={() => void handleConnect()}
           disabled={micPriming}
+          className="flex items-center gap-2 bg-white text-black font-mono text-sm px-8 py-3 hover:bg-zinc-200 transition-colors disabled:opacity-60"
         >
           {micPriming ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              Checking microphone…
-            </>
+            <><Loader2 className="w-4 h-4 animate-spin" /> Checking microphone…</>
           ) : (
-            <>
-              <Mic className="mr-2 size-4" />
-              Allow microphone &amp; connect
-            </>
+            <><Mic className="w-4 h-4" /> Allow microphone & connect</>
           )}
-        </Button>
+        </button>
+
         {micDenied && (
-          <p className="text-xs text-amber-400 max-w-sm">
-            If Chrome blocked access: click the lock icon in the address bar →
-            Site settings → Microphone → Allow, then try again.
+          <p className="text-xs text-yellow-500 font-mono max-w-sm">
+            If Chrome blocked access: click the lock icon in the address bar → Site settings → Microphone → Allow, then try again.
           </p>
         )}
-        <Button
+
+        <button
           type="button"
-          variant="ghost"
-          className="text-zinc-500"
-          onClick={() => {
-            releaseMicrophone();
-            router.push(`/webinar/${webinarId}/live`);
-          }}
+          onClick={() => { releaseMicrophone(); router.push(`/webinar/${webinarId}/live`); }}
+          className="text-[#8e9192] text-sm font-mono hover:text-white transition-colors"
         >
-          Back to live room
-        </Button>
+          ← Back to live room
+        </button>
       </div>
     );
   }
 
+  // ─── Active Call UI ───────────────────────────────────────────────────────────
   return (
-    <div className="flex min-h-screen flex-col bg-zinc-950 text-white">
-      <div className="grid flex-1 grid-cols-1 gap-4 p-4 md:grid-cols-2 md:gap-6 md:p-8">
-        <div
-          className={cn(
-            "relative flex flex-col items-center justify-center rounded-3xl border bg-zinc-900/80 p-8 transition-shadow duration-300",
-            aiSpeaking
-              ? "border-purple-500/60 shadow-[0_0_40px_rgba(168,85,247,0.25)]"
-              : "border-white/10",
-          )}
-        >
-          <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-medium text-zinc-400">
-            <Mic className="size-3.5 text-purple-400" />
-            AI Assistant
-          </div>
-          <div
-            className={cn(
-              "flex size-28 items-center justify-center rounded-full border-4 bg-zinc-950 transition-all duration-300 md:size-32",
-              aiSpeaking
-                ? "border-purple-500 scale-105"
-                : "border-purple-500/30",
-            )}
-          >
-            <Bot className="size-14 text-purple-400 md:size-16" />
-          </div>
-        </div>
+    <div className="bg-[#141313] text-[#e5e2e1] h-screen w-screen overflow-hidden flex flex-col md:flex-row">
 
-        <div
-          className={cn(
-            "relative flex flex-col items-center justify-center rounded-3xl border bg-zinc-900/80 p-8 transition-shadow duration-300",
-            userSpeaking
-              ? "border-indigo-500/60 shadow-[0_0_40px_rgba(99,102,241,0.2)]"
-              : "border-white/10",
-          )}
-        >
-          <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-medium text-zinc-400">
-            <UserRound className="size-3.5 text-indigo-400" />
-            {attendeeName}
+      {/* ── Left: Main Visualization Canvas ─────────────────────────── */}
+      <main className="flex-1 relative flex flex-col h-full border-r border-[#444748]">
+
+        {/* Header */}
+        <header className="absolute top-0 left-0 w-full p-6 flex justify-between items-start z-10">
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <span className={`h-2 w-2 rounded-full ${status === "active" ? "bg-[#ffb4ab] animate-pulse" : "bg-[#8e9192]"}`} />
+              <h1 className="font-mono text-[11px] text-[#e5e2e1] uppercase tracking-widest">
+                Live Breakout Session
+              </h1>
+            </div>
+            <div className="font-mono text-[13px] text-[#8e9192]">
+              {attendeeName} · AI Breakout
+            </div>
           </div>
-          <div className="absolute right-4 top-4 rounded-full bg-black/40 px-3 py-1 text-xs font-mono text-zinc-300">
+          <div className="font-mono text-[13px] text-[#8e9192]">
             {fmt(elapsed)}
           </div>
+        </header>
+
+        {/* Center Stage: Concentric Rings Visualization */}
+        <div className="flex-1 flex items-center justify-center relative overflow-hidden">
+          {/* Dot grid background */}
           <div
-            className={cn(
-              "flex size-28 items-center justify-center rounded-full border-4 bg-gradient-to-br from-indigo-600 to-purple-700 text-2xl font-bold transition-all duration-300 md:size-32 md:text-3xl",
-              userSpeaking ? "border-indigo-300 scale-105" : "border-white/20",
-            )}
+            className="absolute inset-0 opacity-10 pointer-events-none"
+            style={{ backgroundImage: "radial-gradient(#444748 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+          />
+
+          {/* Crosshairs */}
+          <div className="absolute top-1/2 left-0 w-full h-px bg-[#444748] opacity-20" />
+          <div className="absolute left-1/2 top-0 w-px h-full bg-[#444748] opacity-20" />
+
+          {/* Concentric rings */}
+          <div className="relative w-[280px] h-[280px] md:w-[480px] md:h-[480px] flex items-center justify-center">
+            {/* Outer ring */}
+            <div
+              className={`absolute inset-0 border rounded-full transition-all duration-500 ${aiSpeaking ? "border-white opacity-30" : "border-[#444748] opacity-20"}`}
+              style={{ animation: "ringPulse 4s cubic-bezier(0.4,0,0.6,1) infinite" }}
+            />
+            {/* Mid ring */}
+            <div
+              className={`absolute inset-[15%] border rounded-full transition-all duration-500 ${aiSpeaking ? "border-white opacity-50" : "border-[#444748] opacity-40"}`}
+              style={{ animation: "ringPulse 3s cubic-bezier(0.4,0,0.6,1) infinite", animationDelay: "0.5s" }}
+            />
+            {/* Inner ring */}
+            <div
+              className={`absolute inset-[30%] border rounded-full transition-all duration-500 ${aiSpeaking ? "border-white opacity-70" : "border-[#444748] opacity-60"}`}
+              style={{ animation: "ringPulse 2s cubic-bezier(0.4,0,0.6,1) infinite", animationDelay: "1s" }}
+            />
+
+            {/* Core instrument */}
+            <div className="relative w-32 h-32 md:w-44 md:h-44 border border-[#444748] bg-[#1c1b1b] rounded-full flex flex-col items-center justify-center gap-2 z-10">
+              {/* Waveform bars */}
+              <div className="flex items-end gap-1 h-8">
+                {[3, 6, 9, 5, 8, 4, 7, 3].map((h, i) => (
+                  <div
+                    key={i}
+                    className={`w-1 bg-white rounded-sm transition-all duration-150 ${aiSpeaking ? "opacity-90" : "opacity-20"}`}
+                    style={{
+                      height: aiSpeaking ? `${h * 3}px` : "4px",
+                      transitionDelay: `${i * 30}ms`,
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="flex flex-col items-center">
+                <span className="font-mono text-[11px] text-white uppercase tracking-widest">AI Agent</span>
+                <span className="font-mono text-[10px] text-[#8e9192]">
+                  {aiSpeaking ? "Speaking" : status === "active" ? "Listening" : "Standby"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Controls */}
+        <footer className="p-8 flex justify-center items-center gap-6 z-10"
+          style={{ background: "linear-gradient(to top, #141313 60%, transparent)" }}
+        >
+          {/* Mute */}
+          <button
+            aria-label="Toggle Microphone"
+            onClick={() => {
+              const v = vapiRef.current;
+              if (!v) return;
+              const next = !v.isMuted();
+              v.setMuted(next);
+              setMuted(next);
+            }}
+            disabled={status !== "active"}
+            className="w-12 h-12 border border-[#444748] bg-transparent flex items-center justify-center text-[#e5e2e1] hover:bg-[#353434] transition-colors disabled:opacity-30"
           >
-            {initial}
-          </div>
-          <div className="absolute bottom-6 right-6">
-            {muted ? (
-              <MicOff className="size-5 text-red-400" />
-            ) : (
-              <Mic className="size-5 text-indigo-400" />
-            )}
+            {muted ? <MicOff className="w-5 h-5 text-[#ffb4ab]" /> : <Mic className="w-5 h-5" />}
+          </button>
+
+          {/* Camera (disabled) */}
+          <button
+            aria-label="Toggle Camera"
+            disabled
+            className="w-12 h-12 border border-[#444748] bg-[#1c1b1b] flex items-center justify-center text-[#444748] cursor-not-allowed"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5l4.72-4.72a.75.75 0 011.28.53v11.38a.75.75 0 01-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 002.25-2.25v-9a2.25 2.25 0 00-2.25-2.25h-9A2.25 2.25 0 002.25 7.5v9a2.25 2.25 0 002.25 2.25z" />
+            </svg>
+          </button>
+
+          {/* End Call (primary destructive) */}
+          <button
+            aria-label="End Breakout Session"
+            onClick={() => void endAndLeave()}
+            className="h-12 px-8 border border-[#ffb4ab] bg-transparent text-[#ffb4ab] hover:bg-[#ffb4ab] hover:text-[#141313] transition-all font-mono text-[11px] uppercase tracking-wider flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 3.75v4.5m0-4.5h-4.5m4.5 0l-6 6m3 12c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 014.5 2.25h1.372c.516 0 .966.351 1.091.852l1.106 4.423c.11.44-.054.902-.417 1.173l-1.293.97a1.062 1.062 0 00-.38 1.21 12.035 12.035 0 007.143 7.143c.441.162.928-.004 1.21-.38l.97-1.293a1.125 1.125 0 011.173-.417l4.423 1.106c.5.125.852.575.852 1.091V19.5a2.25 2.25 0 01-2.25 2.25h-2.25z" />
+            </svg>
+            End Call
+          </button>
+
+          {/* Settings */}
+          <button
+            aria-label="Audio Settings"
+            className="w-12 h-12 border border-[#444748] bg-transparent flex items-center justify-center text-[#e5e2e1] hover:bg-[#353434] transition-colors"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" />
+            </svg>
+          </button>
+        </footer>
+      </main>
+
+      {/* ── Right: Transcript Panel ──────────────────────────────────── */}
+      <aside className="w-full md:w-[360px] lg:w-[400px] h-[40vh] md:h-screen bg-[#0e0e0e] flex flex-col border-t md:border-t-0 md:border-l border-[#444748]">
+
+        {/* Panel header */}
+        <div className="p-4 border-b border-[#444748] flex items-center justify-between bg-[#1c1b1b]">
+          <h2 className="font-mono text-[11px] text-[#e5e2e1] uppercase tracking-widest">Live Transcript</h2>
+          <svg className="w-4 h-4 text-[#8e9192]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" />
+          </svg>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col"
+          style={{ scrollbarWidth: "thin", scrollbarColor: "#353434 transparent" }}
+        >
+          {transcript.map((entry) => {
+            if (entry.role === "system") {
+              return (
+                <div key={entry.id} className="flex flex-col gap-1 w-full opacity-60">
+                  <span className="font-mono text-[10px] text-[#8e9192] uppercase tracking-wider">
+                    System · {entry.time}
+                  </span>
+                  <p className="font-mono text-[13px] text-[#8e9192] italic">{entry.text}</p>
+                </div>
+              );
+            }
+            if (entry.role === "user") {
+              return (
+                <div key={entry.id} className="flex flex-col gap-1 w-full pl-4 border-l border-[#444748]">
+                  <span className="font-mono text-[10px] text-[#c4c7c8] uppercase tracking-wider">
+                    {attendeeName} · {entry.time}
+                  </span>
+                  <p className="text-[14px] text-[#e5e2e1]" style={{ fontFamily: "Geist, Inter, sans-serif", lineHeight: 1.5 }}>
+                    {entry.text}
+                  </p>
+                </div>
+              );
+            }
+            // AI
+            return (
+              <div key={entry.id} className="flex flex-col gap-1 w-full pl-3 border-l-2 border-white bg-[#1c1b1b] p-3 -ml-3">
+                <span className="font-mono text-[10px] text-white uppercase tracking-wider">
+                  AI Agent · {entry.time}
+                </span>
+                <p className="text-[14px] text-[#e5e2e1]" style={{ fontFamily: "Geist, Inter, sans-serif", lineHeight: 1.5 }}>
+                  {entry.text}
+                </p>
+              </div>
+            );
+          })}
+
+          {/* AI typing indicator */}
+          {aiSpeaking && (
+            <div className="flex flex-col gap-1 w-full pl-3 border-l-2 border-white bg-[#1c1b1b] p-3 -ml-3 opacity-80 animate-pulse">
+              <span className="font-mono text-[10px] text-white uppercase tracking-wider">AI Agent · Processing</span>
+              <div className="flex items-center gap-1 mt-1">
+                <span className="w-1.5 h-1.5 bg-white rounded-full" />
+                <span className="w-1.5 h-1.5 bg-white rounded-full opacity-60" />
+                <span className="w-1.5 h-1.5 bg-white rounded-full opacity-30" />
+              </div>
+            </div>
+          )}
+
+          <div ref={transcriptBottomRef} />
+        </div>
+
+        {/* Voice input footer */}
+        <div className="p-4 border-t border-[#444748] bg-[#1c1b1b] opacity-50 cursor-not-allowed">
+          <div className="w-full bg-[#141313] border border-[#444748] flex items-center px-3 py-2">
+            <span className="font-mono text-[13px] text-[#444748] flex-1">Voice input active...</span>
+            <Mic className="w-4 h-4 text-[#444748]" />
           </div>
         </div>
-      </div>
+      </aside>
 
-      <div className="sticky bottom-0 border-t border-white/10 bg-zinc-950/95 px-4 py-4 backdrop-blur-xl md:px-8">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-sm text-zinc-400">
-            <span className="font-mono">{fmt(elapsed)}</span>
-            <span className="hidden sm:inline">on call</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => router.push(`/webinar/${webinarId}/checkout?attendeeId=${attendeeId}`)}
-              className="hidden sm:block py-2.5 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-full text-sm font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98]"
-            >
-              BUY NOW
-            </button>
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              className="rounded-full border-white/20"
-              onClick={() => {
-                const v = vapiRef.current;
-                if (!v) return;
-                const next = !v.isMuted();
-                v.setMuted(next);
-                setMuted(next);
-              }}
-              disabled={status !== "active"}
-            >
-              {muted ? <MicOff className="size-4" /> : <Mic className="size-4" />}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              className="gap-2 rounded-full px-6"
-              onClick={() => void endAndLeave()}
-            >
-              <PhoneOff className="size-4" />
-              End call
-            </Button>
-          </div>
-        </div>
-      </div>
-
+      {/* ── Connecting overlay ───────────────────────────────────────── */}
       {status === "connecting" && (
-        <div className="pointer-events-none fixed inset-0 flex items-center justify-center bg-black/50">
-          <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-zinc-900 px-8 py-6">
-            <Loader2 className="size-8 animate-spin text-purple-400" />
-            <p className="text-sm text-zinc-300">Connecting to AI…</p>
+        <div className="pointer-events-none fixed inset-0 flex items-center justify-center bg-black/70 z-50">
+          <div className="flex flex-col items-center gap-4 border border-[#444748] bg-[#141313] px-10 py-8">
+            <Loader2 className="w-8 h-8 animate-spin text-white" />
+            <p className="font-mono text-sm text-[#c4c7c8] uppercase tracking-wider">Connecting to AI…</p>
           </div>
         </div>
       )}
+
+      <style>{`
+        @keyframes ringPulse {
+          0%   { transform: scale(0.95); opacity: 0.5; }
+          50%  { transform: scale(1.05); opacity: 1;   }
+          100% { transform: scale(0.95); opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }

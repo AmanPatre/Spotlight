@@ -6,11 +6,12 @@ import {
   useCallStateHooks,
   ParticipantView,
 } from "@stream-io/video-react-sdk";
-import { Radio, MonitorStop, Eye, VideoOff, Loader2, MessageSquare, Users, Settings } from "lucide-react";
+import { ArrowLeft, Power, Eye, VideoOff, Loader2, MessageSquare, Users, Settings, Mic, MicOff, Video, Flame } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { updateWebinarStatus } from "@/actions/webinar";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import HostChatPanel from "./HostChatPanel";
 import { CtaTypeEnum } from "@/generated/prisma/enums";
 import CTAControlPanel from "./CTAControlPanel";
@@ -19,6 +20,7 @@ import ParticipantSidebar from "./ParticipantSidebar";
 
 type Props = {
   webinarId: string;
+  webinarTitle?: string;
   aiAgentId: string | null;
   ctaType: CtaTypeEnum;
   hostId: string;
@@ -27,13 +29,14 @@ type Props = {
 
 export default function HostStreamView({
   webinarId,
+  webinarTitle,
   aiAgentId,
   ctaType,
   hostId,
   hostName,
 }: Props) {
   const call = useCall();
-  const { useIsCallLive, useParticipants, useLocalParticipant } =
+  const { useIsCallLive, useParticipants, useLocalParticipant, useMicrophoneState, useCameraState } =
     useCallStateHooks();
   const participants = useParticipants();
 
@@ -92,127 +95,157 @@ export default function HostStreamView({
     }
   };
 
+  const { isMute: isMicMuted } = useMicrophoneState();
+  const { isMute: isCamOff } = useCameraState();
+
+  const toggleMic = async () => {
+    if (isMicMuted) await call?.microphone.enable();
+    else await call?.microphone.disable();
+  };
+
+  const toggleCam = async () => {
+    if (isCamOff) await call?.camera.enable();
+    else await call?.camera.disable();
+  };
+
   return (
-    <div className="flex flex-col lg:flex-row h-full gap-6 p-4 bg-black text-white selection:bg-purple-500/30">
-      {/* ── Left Column: Stream Info & Controls ── */}
-      <div className="flex flex-col flex-1 min-w-0 gap-6 overflow-y-auto pr-2 custom-scrollbar">
-
-        {/* ── Video Preview Container ── */}
-        <div className="relative flex-shrink-0 min-h-[300px] lg:min-h-[400px] group rounded-3xl overflow-hidden bg-zinc-950 border border-white/5 aspect-video shadow-2xl ring-1 ring-white/10 hover:ring-purple-500/30 transition-all duration-500">
-          {localParticipant ? (
-            <div className="w-full h-full relative">
-              <ParticipantView
-                participant={localParticipant}
-                className="w-full h-full object-cover"
-                mirror
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+    <div className="flex flex-col h-full bg-[#141313] text-[#e5e2e1]">
+      {/* Top Header / Transactional App Bar */}
+      <header className="h-[64px] border-b border-[#444748] flex items-center justify-between px-8 bg-[#141313] shrink-0 z-10">
+        <div className="flex items-center gap-6">
+          <button onClick={() => router.back()} className="text-[#c4c7c8] hover:text-white transition-colors flex items-center justify-center">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <div className="flex flex-col">
+            <div className="flex items-center gap-3">
+              <span className="flex h-2 w-2 rounded-full bg-red-500 animate-pulse"></span>
+              <h1 className="text-[20px] font-medium text-white">{webinarTitle || "Live Session"}</h1>
             </div>
-          ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground gap-4 bg-zinc-900/50 backdrop-blur-sm">
-              {devicesReady ? (
-                <>
-                  <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20">
-                    <VideoOff className="w-8 h-8 text-red-400 opacity-60" />
-                  </div>
-                  <p className="text-sm font-medium">Camera is disabled</p>
-                </>
-              ) : (
-                <>
-                  <Loader2 className="w-10 h-10 text-purple-400 animate-spin" />
-                  <p className="text-sm font-medium">Starting your broadcast setup...</p>
-                </>
-              )}
-            </div>
-          )}
-
-          {/* Top Overlays */}
-          <div className="absolute top-6 left-6 flex items-center gap-3 pointer-events-none">
-            {isLive && (
-              <div className="flex items-center gap-2 bg-red-600 px-4 py-1.5 rounded-full text-[11px] font-black text-white uppercase tracking-widest shadow-lg shadow-red-600/20">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                Live
-              </div>
-            )}
-            <div className="bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/10 flex items-center gap-2 text-[11px] font-medium text-zinc-300">
-              <Eye className="w-3.5 h-3.5 text-purple-400" />
-              {Math.max(0, participants.length - 1)} viewers
-            </div>
+            <span className="font-mono text-[13px] text-[#c4c7c8] ml-5">Session ID: {webinarId}</span>
           </div>
         </div>
-
-        {/* ── Dashboard Bottom Bar ── */}
-        <div className="flex items-center justify-between gap-6 p-5 rounded-2xl bg-zinc-900/40 border border-white/5 backdrop-blur-md">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/20">
-              <Radio className={`w-5 h-5 ${isLive ? "text-purple-400 animate-pulse" : "text-zinc-500"}`} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-white">
-                {isLive ? "Live Stream Active" : "Stream Connecting..."}
-              </p>
-              <p className="text-xs text-zinc-500 font-medium">
-                {isLive ? "Your audience can see and hear you now" : "Waiting for stable connection"}
-              </p>
-            </div>
-          </div>
-
+        <div className="flex items-center gap-4">
+          <span className="font-mono text-[13px] text-[#c4c7c8] bg-[#2a2a2a] px-3 py-1 rounded border border-[#444748]">
+            {isLive ? "Live" : "Setup Mode"}
+          </span>
           <button
             onClick={handleEndStream}
             disabled={ending}
-            className="group flex items-center gap-2 px-6 py-3 rounded-xl bg-red-600/10 hover:bg-red-600 border border-red-600/20 hover:border-red-600 text-red-500 hover:text-white text-sm font-bold transition-all duration-300 disabled:opacity-50 shadow-lg shadow-red-600/5"
+            className="bg-white text-black font-medium text-[12px] px-5 py-2.5 rounded hover:bg-[#e5e2e1] transition-colors flex items-center gap-2 disabled:opacity-50"
           >
-            <MonitorStop className="w-4 h-4 group-hover:scale-110 transition-transform" />
-            {ending ? "Ending..." : "End Broadcast"}
+            <Power className="w-4 h-4" />
+            {ending ? "Ending..." : "End Stream & Launch AI Breakouts"}
           </button>
         </div>
+      </header>
 
-        {/* ── Quick Actions ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <DeviceControlPanel />
-          <CTAControlPanel call={call} aiAgentId={aiAgentId} ctaType={ctaType} />
-        </div>
-      </div>
+      {/* Main Workspace */}
+      <main className="flex-1 flex overflow-hidden">
+        {/* Center Stage: Video Player Area */}
+        <section className="flex-1 bg-[#0e0e0e] flex flex-col relative">
+          {/* Video Canvas */}
+          <div className="flex-1 p-6 flex flex-col items-center justify-center relative overflow-hidden">
+            <div className="w-full h-full max-w-6xl relative border border-[#444748] bg-black rounded overflow-hidden group">
+              {localParticipant ? (
+                <ParticipantView
+                  participant={localParticipant}
+                  className="w-full h-full object-cover"
+                  mirror
+                />
+              ) : (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-[#c4c7c8] gap-4 bg-[#141313]">
+                  <Loader2 className="w-10 h-10 text-white animate-spin" />
+                  <p className="text-sm">Starting broadcast setup...</p>
+                </div>
+              )}
 
-      {/* ── Right Column: Interactive Sidebar ── */}
-      <div className="w-full lg:w-[400px] flex flex-col shrink-0 gap-4">
-        {/* Tab Switcher */}
-        <div className="flex p-1 bg-zinc-900/60 border border-white/5 rounded-xl shrink-0">
-          <button
-            onClick={() => setActiveTab("chat")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "chat"
-              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
-              : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-              }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            Live Chat
-          </button>
-          <button
-            onClick={() => setActiveTab("participants")}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-bold transition-all duration-300 ${activeTab === "participants"
-              ? "bg-purple-600 text-white shadow-lg shadow-purple-600/20"
-              : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5"
-              }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            Participants
-          </button>
-        </div>
+              {/* Presenter Name Plate */}
+              <div className="absolute bottom-6 left-6 bg-[#141313]/90 backdrop-blur border border-[#444748] px-4 py-2 rounded flex flex-col">
+                <span className="font-mono text-[12px] text-white font-medium">{hostName}</span>
+                <span className="font-mono text-[10px] text-[#c4c7c8] uppercase tracking-wider">Host</span>
+              </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 min-h-0 bg-zinc-950/40 rounded-3xl border border-white/5 overflow-hidden">
-          {activeTab === "chat" ? (
-            <HostChatPanel
-              webinarId={webinarId}
-              hostId={hostId}
-              hostName={hostName}
-            />
-          ) : (
-            <ParticipantSidebar webinarId={webinarId} />
-          )}
-        </div>
-      </div>
+              {/* Live Viewers */}
+              <div className="absolute top-6 right-6 bg-[#141313]/90 backdrop-blur border border-[#444748] px-3 py-1.5 rounded flex items-center gap-2">
+                <Eye className="w-4 h-4 text-white" />
+                <span className="font-mono text-[13px] text-white">{Math.max(0, participants.length - 1)}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Control Bar */}
+          <div className="h-[88px] border-t border-[#444748] bg-[#141313] flex items-center justify-center gap-4 shrink-0 px-8">
+            <button
+              onClick={toggleMic}
+              className={`h-12 w-12 rounded-full border border-[#444748] flex items-center justify-center hover:bg-[#2a2a2a] transition-colors group ${isMicMuted ? 'bg-red-500/10 text-red-400' : 'bg-[#141313] text-white'}`}
+            >
+              {isMicMuted ? <MicOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <Mic className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+            </button>
+            <button
+              onClick={toggleCam}
+              className={`h-12 w-12 rounded-full border border-[#444748] flex items-center justify-center hover:bg-[#2a2a2a] transition-colors group ${isCamOff ? 'bg-red-500/10 text-red-400' : 'bg-[#141313] text-white'}`}
+            >
+              {isCamOff ? <VideoOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <Video className="w-5 h-5 group-hover:scale-110 transition-transform" />}
+            </button>
+
+            <div className="w-px h-8 bg-[#444748] mx-2"></div>
+
+            <Popover>
+              <PopoverTrigger>
+                <button className="h-12 w-12 rounded-full border border-[#444748] bg-[#141313] flex items-center justify-center hover:bg-[#2a2a2a] text-[#c4c7c8] hover:text-white transition-colors group">
+                  <Settings className="w-5 h-5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 bg-[#1c1b1b] border-[#444748] p-1.5 rounded-2xl shadow-2xl text-white mb-4" align="center" side="top">
+                <DeviceControlPanel />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger>
+                <button className="h-12 w-12 rounded-full border border-[#444748] bg-[#141313] flex items-center justify-center hover:bg-[#2a2a2a] text-[#c4c7c8] hover:text-white transition-colors group">
+                  <Flame className="w-5 h-5" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 bg-[#1c1b1b] border-[#444748] p-1.5 rounded-2xl shadow-2xl text-white mb-4" align="center" side="top">
+                <CTAControlPanel call={call} aiAgentId={aiAgentId} ctaType={ctaType} />
+              </PopoverContent>
+            </Popover>
+          </div>
+        </section>
+
+        {/* Right Panel: Communications */}
+        <aside className="w-[360px] border-l border-[#444748] bg-[#141313] flex flex-col shrink-0">
+          {/* Tabs */}
+          <div className="flex border-b border-[#444748] shrink-0 px-2">
+            <button
+              onClick={() => setActiveTab("chat")}
+              className={`flex-1 py-4 flex justify-center border-b-2 transition-colors ${activeTab === "chat" ? "border-white text-white" : "border-transparent text-[#c4c7c8] hover:border-[#444748]"}`}
+            >
+              <span className="font-mono text-[12px] uppercase font-bold tracking-wider">Chat</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("participants")}
+              className={`flex-1 py-4 flex justify-center border-b-2 transition-colors ${activeTab === "participants" ? "border-white text-white" : "border-transparent text-[#c4c7c8] hover:border-[#444748]"}`}
+            >
+              <span className="font-mono text-[12px] uppercase font-bold tracking-wider">Participants</span>
+            </button>
+          </div>
+
+          {/* Tab Content */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            {activeTab === "chat" ? (
+              <HostChatPanel
+                webinarId={webinarId}
+                hostId={hostId}
+                hostName={hostName}
+              />
+            ) : (
+              <ParticipantSidebar webinarId={webinarId} />
+            )}
+          </div>
+        </aside>
+      </main>
     </div>
   );
 }

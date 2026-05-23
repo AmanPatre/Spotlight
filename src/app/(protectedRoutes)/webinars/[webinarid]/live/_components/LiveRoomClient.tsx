@@ -114,25 +114,25 @@ export default function LiveRoomClient({
 
   if (!isLoaded || (!client && !error)) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-muted-foreground">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-        <p className="text-sm">Connecting to live stream...</p>
+      <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-[#a1a1aa] bg-[#141313]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#ffffff]" />
+        <p className="text-[12px] font-mono uppercase tracking-[0.2em]">Synchronising broadcast nodes...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-4">
-        <p className="text-red-400 text-sm">{error}</p>
+      <div className="w-full h-full flex flex-col items-center justify-center gap-6 bg-[#141313]">
+        <p className="text-red-500 text-[12px] font-mono uppercase tracking-widest">{error}</p>
         <button
           onClick={() => {
             setError(null);
             initCalledRef.current = false;
           }}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700"
+          className="px-8 py-3 bg-[#ffffff] text-[#141313] rounded-none text-[12px] font-bold uppercase tracking-[0.2em] hover:bg-[#c6c6c7] transition-all"
         >
-          Retry
+          RE-INITIALISE
         </button>
       </div>
     );

@@ -10,7 +10,7 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-import { Loader2, Zap, ShieldCheck } from "lucide-react";
+import { Loader2, Settings, Maximize2, Volume2, Pause, Users } from "lucide-react";
 import AttendeeChatPanel from "./AttendeeChatPanel";
 import CTABanner from "./CTABanner";
 import { updateAttendanceStatus } from "@/actions/attendence";
@@ -36,21 +36,19 @@ export default function AttendeeStreamView({
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [activeCTA, setActiveCTA] = useState<"BUY_NOW" | "BOOK_A_CALL" | null>(
-    null
-  );
+  const [activeCTA, setActiveCTA] = useState<"BUY_NOW" | "BOOK_A_CALL" | null>(null);
+  const [webinarEnded, setWebinarEnded] = useState(false);
   const router = useRouter();
 
   const checkStatus = useCallback(async () => {
     const status = await getWebinarStatus(webinarId);
     if (status === WebinarStatusEnum.ENDED) {
-      router.replace(`/webinar/${webinarId}`);
+      setWebinarEnded(true);
     }
-  }, [webinarId, router]);
+  }, [webinarId]);
 
-  // Poll for webinar status
   useEffect(() => {
-    const interval = setInterval(checkStatus, 10000); // Check every 10 seconds
+    const interval = setInterval(checkStatus, 10000);
     return () => clearInterval(interval);
   }, [checkStatus]);
 
@@ -65,9 +63,7 @@ export default function AttendeeStreamView({
           body: JSON.stringify({ attendeeId }),
         });
         const data = await res.json();
-        if (!res.ok || !data.token) {
-          throw new Error(data.error || "Failed to get stream token");
-        }
+        if (!res.ok || !data.token) throw new Error(data.error || "Failed to get stream token");
 
         streamClient = new StreamVideoClient({
           apiKey: process.env.NEXT_PUBLIC_STREAM_API_KEY!,
@@ -77,15 +73,12 @@ export default function AttendeeStreamView({
 
         const streamCall = streamClient.call("livestream", webinarId);
 
-        // Try to join
         try {
           await streamCall.join({ create: false });
         } catch (joinErr: any) {
-          // If call not found and we have retries left, wait and try again
           const msg = joinErr?.message ?? String(joinErr);
           if ((msg.includes("Call not found") || msg.includes("404")) && retries > 0) {
-            console.log(`Call not found, retrying in ${delay}ms... (${retries} left)`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((r) => setTimeout(r, delay));
             return init(retries - 1, delay);
           }
           throw joinErr;
@@ -94,13 +87,8 @@ export default function AttendeeStreamView({
         setClient(streamClient);
         setCall(streamCall);
 
-        await updateAttendanceStatus(
-          webinarId,
-          attendeeId,
-          AttendedTypeEnum.ATTENDED
-        );
+        await updateAttendanceStatus(webinarId, attendeeId, AttendedTypeEnum.ATTENDED);
       } catch (err: any) {
-        console.error("AttendeeStreamView init error:", err);
         const msg = err?.message ?? String(err);
         if (msg.includes("Call not found") || msg.includes("404")) {
           setError("The host hasn't started the stream yet. Hang tight!");
@@ -113,13 +101,9 @@ export default function AttendeeStreamView({
     };
 
     init();
-
-    return () => {
-      streamClient?.disconnectUser();
-    };
+    return () => { streamClient?.disconnectUser(); };
   }, [webinarId, attendeeId, attendeeName]);
 
-  // Listen for host CTA events
   useEffect(() => {
     if (!call) return;
     const unsubscribe = call.on("custom", (event: any) => {
@@ -130,19 +114,22 @@ export default function AttendeeStreamView({
     return () => unsubscribe();
   }, [call]);
 
+  // ── Error state ──────────────────────────────────────────────────────────────
   if (error) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center gap-6 bg-black text-white px-8 text-center selection:bg-purple-500/30">
-        <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center border border-red-500/20 shadow-2xl shadow-red-500/10">
-          <Zap className="w-10 h-10 text-red-400" />
+      <div className="w-full h-screen flex flex-col items-center justify-center gap-8 bg-black text-white px-8 text-center"
+        style={{ backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+      >
+        <div className="w-14 h-14 border border-[#ffb4ab] flex items-center justify-center">
+          <span className="text-[#ffb4ab] font-mono text-2xl">!</span>
         </div>
         <div className="space-y-2 max-w-md">
-          <h2 className="text-xl font-bold text-white">Connection Error</h2>
-          <p className="text-sm text-zinc-400 leading-relaxed">{error}</p>
+          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "Geist, sans-serif" }}>Connection Error</h2>
+          <p className="text-sm text-zinc-400 font-mono">{error}</p>
         </div>
         <button
           onClick={() => window.location.reload()}
-          className="px-8 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-sm font-bold transition-all duration-300 shadow-xl shadow-purple-600/20 active:scale-95"
+          className="bg-white text-black font-mono text-[11px] uppercase tracking-widest px-8 py-3 hover:bg-zinc-200 transition-colors"
         >
           Try to Reconnect
         </button>
@@ -150,22 +137,81 @@ export default function AttendeeStreamView({
     );
   }
 
+  // ── Loading state ─────────────────────────────────────────────────────────────
   if (!client || !call) {
     return (
-      <div className="w-full h-screen flex flex-col items-center justify-center gap-6 bg-black text-white selection:bg-purple-500/30">
-        <div className="relative">
-          <div className="w-24 h-24 rounded-full border-2 border-purple-500/20 flex items-center justify-center">
-            <Loader2 className="w-12 h-12 animate-spin text-purple-500" />
-          </div>
-          <div className="absolute -inset-4 bg-purple-500/10 blur-2xl rounded-full animate-pulse" />
-        </div>
+      <div className="w-full h-screen flex flex-col items-center justify-center gap-6 bg-black text-white"
+        style={{ backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
         <div className="text-center space-y-1">
-          <p className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-indigo-400">
-            Joining Live Stream
-          </p>
-          <p className="text-xs text-zinc-500 font-medium tracking-wide uppercase">
-            Securing your connection...
-          </p>
+          <p className="text-sm font-semibold text-white" style={{ fontFamily: "Geist, sans-serif" }}>Joining Live Stream</p>
+          <p className="text-xs text-zinc-500 font-mono uppercase tracking-widest">Securing your connection...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Ended state ───────────────────────────────────────────────────────────────
+  if (webinarEnded) {
+    return (
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-black text-white overflow-hidden relative">
+        {/* Decorative rings */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+          <div className="w-[800px] h-[800px] border border-zinc-800 rounded-full flex items-center justify-center">
+            <div className="w-[600px] h-[600px] border border-zinc-700 rounded-full flex items-center justify-center">
+              <div className="w-[400px] h-[400px] border border-zinc-600 rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        <div className="relative z-10 flex flex-col items-center text-center max-w-2xl px-6 gap-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-14 h-14 border border-zinc-700 flex items-center justify-center">
+              <span className="text-zinc-500 text-2xl font-mono">■</span>
+            </div>
+            <h1 className="text-4xl font-semibold tracking-tight text-white" style={{ fontFamily: "Geist, sans-serif" }}>
+              The Broadcast has ended.
+            </h1>
+            <p className="text-zinc-400" style={{ fontFamily: "Geist, sans-serif" }}>
+              Main stage transmission closed. Session data is compiling.
+            </p>
+          </div>
+
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+
+          {aiAgentId ? (
+            <div className="flex flex-col items-center gap-6 bg-zinc-950 border border-zinc-800 p-8 w-full">
+              <div className="flex flex-col items-center gap-2">
+                <span className="font-mono text-[11px] text-zinc-400 uppercase tracking-widest">Next Step</span>
+                <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "Geist, sans-serif" }}>
+                  Join the AI Breakout Room
+                </h3>
+                <p className="text-sm text-zinc-500 text-center max-w-md" style={{ fontFamily: "Geist, sans-serif" }}>
+                  Continue the discussion with an AI agent for a personalized consultation session.
+                </p>
+              </div>
+              <button
+                onClick={() => router.push(`/webinar/${webinarId}/call`)}
+                className="bg-white text-black font-mono text-[11px] uppercase tracking-widest px-8 py-4 hover:bg-zinc-200 transition-colors flex items-center gap-3 w-full sm:w-auto justify-center"
+              >
+                Connect Mic & Join Breakout
+              </button>
+              <button
+                onClick={() => router.push(`/webinar/${webinarId}`)}
+                className="font-mono text-[11px] text-zinc-500 hover:text-white transition-colors underline-offset-4 hover:underline uppercase tracking-widest"
+              >
+                Return to Library
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => router.push(`/webinar/${webinarId}`)}
+              className="border border-zinc-800 text-white font-mono text-[11px] uppercase tracking-widest px-8 py-3 hover:bg-zinc-900 transition-colors"
+            >
+              Return to Library
+            </button>
+          )}
         </div>
       </div>
     );
@@ -209,71 +255,98 @@ function AttendeeInnerView({
   const participants = useParticipants();
   const isLive = useIsCallLive();
 
-  // Find the host - in a livestream, the host is usually the only one with a video stream
-  // or we can assume the first participant who is not the current user is the host
   const hostParticipant = participants.find((p) => p.userId !== attendeeId && p.videoStream);
-
-  // If no one is streaming video, just take the first participant that isn't the current user
   const displayParticipant = hostParticipant || participants.find((p) => p.userId !== attendeeId);
+  const viewerCount = Math.max(0, participants.length - 1);
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen bg-black overflow-hidden selection:bg-purple-500/30">
-      {/* ── Main Cinema Area ── */}
-      <div className="flex-1 relative flex flex-col min-h-0 p-4 lg:p-6 overflow-y-auto custom-scrollbar">
+    <div className="flex flex-col h-[calc(100vh-56px)] bg-black text-white overflow-hidden">
+      <div className="flex flex-1 min-h-0 overflow-hidden">
 
-        {/* Cinematic Video Container */}
-        <div className="flex-shrink-0 min-h-[400px] lg:min-h-[500px] bg-zinc-950 rounded-[2.5rem] border border-white/5 flex items-center justify-center relative overflow-hidden shadow-2xl group transition-all duration-700">
+        {/* ── Video Canvas ────────────────────────────────────────── */}
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden border-r border-zinc-800 p-6">
+          <div className="w-full aspect-video bg-zinc-950 border border-zinc-800 relative group overflow-hidden">
 
-          {/* Top Overlays */}
-          <div className="absolute top-8 left-8 z-20 flex items-center gap-4 pointer-events-none">
-            {isLive && (
-              <div className="flex items-center gap-2 bg-red-600 px-4 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-[0.2em] shadow-lg shadow-red-600/30">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                Live
-              </div>
-            )}
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold text-zinc-300">
-              <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
-              Verified Stream
-            </div>
-          </div>
-
-          <div className="absolute top-8 right-8 z-20 pointer-events-none">
-            <div className="bg-black/40 backdrop-blur-xl border border-white/10 px-4 py-1.5 rounded-full text-[10px] font-bold text-zinc-300">
-              {/* Correct viewer count: total participants minus the host */}
-              {Math.max(0, participants.length - 1)} watching
-            </div>
-          </div>
-
-          {/* Player Content */}
-          {displayParticipant ? (
-            <div className="w-full h-full transform transition-transform duration-700">
-              <ParticipantView
-                participant={displayParticipant}
-                className="w-full h-full object-cover"
+            {/* Scanline effect */}
+            <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
+              <div
+                className="absolute top-0 left-0 right-0 h-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                style={{
+                  background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.04), transparent)",
+                  animation: "scanline 8s linear infinite",
+                }}
               />
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center gap-6 text-center max-w-sm px-6">
-              <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-purple-500/5 border border-purple-500/10 flex items-center justify-center">
-                  <Loader2 className="w-10 h-10 animate-spin text-purple-500/40" />
+
+            {/* LIVE badge */}
+            <div className="absolute top-6 left-6 z-20 flex items-center gap-3">
+              {isLive && (
+                <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 px-3 py-1.5">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                  <span className="font-mono text-[11px] text-white uppercase">LIVE</span>
+                  <span className="font-mono text-[11px] text-zinc-400 ml-1">REC_001</span>
                 </div>
-                <div className="absolute -inset-2 bg-purple-500/5 blur-xl rounded-full" />
-              </div>
-              <div className="space-y-2">
-                <p className="text-lg font-bold text-zinc-100">Waiting for Host</p>
-                <p className="text-xs text-zinc-500 leading-relaxed">
-                  The broadcast is ready and will start automatically as soon as the host goes live.
-                </p>
+              )}
+            </div>
+
+            {/* Viewer count */}
+            <div className="absolute top-6 right-6 z-20">
+              <div className="flex items-center gap-1.5 bg-zinc-900 border border-zinc-700 px-3 py-1.5">
+                <Users className="w-3 h-3 text-zinc-400" />
+                <span className="font-mono text-[11px] text-zinc-400">{viewerCount} watching</span>
               </div>
             </div>
-          )}
 
-          {/* CTA Overlay */}
-          {activeCTA && (
-            <div className="absolute inset-x-0 bottom-12 z-50 flex justify-center px-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
-              <div className="w-full max-w-xl">
+            {/* Player content */}
+            {displayParticipant ? (
+              <div className="w-full h-full">
+                <ParticipantView
+                  participant={displayParticipant}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-6 text-center px-6">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-600" />
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-zinc-400" style={{ fontFamily: "Geist, sans-serif" }}>
+                    Waiting for Host
+                  </p>
+                  <p className="text-xs text-zinc-600 font-mono">
+                    The broadcast will start automatically when the host goes live.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Hover controls overlay */}
+            <div className="absolute bottom-0 left-0 w-full h-24 opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              style={{ background: "linear-gradient(to top, black, transparent)" }}
+            >
+              <div className="absolute bottom-0 left-0 w-full flex items-center justify-between px-6 pb-4">
+                <div className="flex items-center gap-4">
+                  <button className="text-white hover:text-zinc-400 transition-colors">
+                    <Pause className="w-5 h-5" />
+                  </button>
+                  <button className="text-white hover:text-zinc-400 transition-colors">
+                    <Volume2 className="w-5 h-5" />
+                  </button>
+                  <span className="font-mono text-[11px] text-zinc-400">LIVE</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <button className="text-white hover:text-zinc-400 transition-colors">
+                    <Settings className="w-5 h-5" />
+                  </button>
+                  <button className="text-white hover:text-zinc-400 transition-colors">
+                    <Maximize2 className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* CTA Overlay */}
+            {activeCTA && (
+              <div className="absolute inset-x-0 bottom-0 z-50 p-6">
                 <CTABanner
                   type={activeCTA}
                   webinarId={webinarId}
@@ -282,46 +355,38 @@ function AttendeeInnerView({
                   onClose={() => setActiveCTA(null)}
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* ── Right Sidebar: Interactive Chat ── */}
-      <div className="w-full lg:w-[400px] border-l border-white/5 flex flex-col bg-zinc-950/50 shrink-0 h-[45vh] lg:h-full backdrop-blur-3xl">
-        <div className="p-4 lg:p-6 border-b border-white/5 flex flex-col gap-4 bg-white/5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Zap className="w-4 h-4 text-purple-400" />
-              <h2 className="text-sm font-black text-white uppercase tracking-widest">Interactive Chat</h2>
-            </div>
+        {/* ── Chat Sidebar ─────────────────────────────────────────── */}
+        <aside className="w-80 bg-zinc-950 flex flex-col h-full border-l border-zinc-800 shrink-0">
+          {/* Header */}
+          <div className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 bg-zinc-900">
+            <span className="font-mono text-[11px] text-white uppercase tracking-widest">Live Chat</span>
+            <span className="font-mono text-[11px] text-zinc-400 flex items-center gap-1">
+              <Users className="w-3.5 h-3.5" />
+              {viewerCount.toLocaleString()}
+            </span>
           </div>
 
-          {/* Persistent CTA Button */}
-          {initialStatus && initialStatus !== AttendedTypeEnum.CONVERTED && (
-            <button
-              onClick={() => setActiveCTA("BUY_NOW")}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-lg text-sm font-bold shadow-lg shadow-purple-500/20 transition-all active:scale-[0.98]"
-            >
-              BUY NOW
-            </button>
-          )}
-
-          {initialStatus === AttendedTypeEnum.CONVERTED && (
-            <div className="w-full py-2.5 px-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-sm font-bold flex items-center justify-center gap-2">
-              <ShieldCheck className="w-4 h-4" />
-              ACCESS UNLOCKED
-            </div>
-          )}
-        </div>
-        <div className="flex-1 min-h-0">
-          <AttendeeChatPanel
-            webinarId={webinarId}
-            attendeeId={attendeeId}
-            attendeeName={attendeeName}
-          />
-        </div>
+          {/* Chat */}
+          <div className="flex-1 min-h-0 overflow-hidden [&_.str-chat]:h-full [&_.str-chat__container]:h-full [&_.str-chat]:!bg-zinc-950 [&_.str-chat__main-panel]:!bg-zinc-950 [&_.str-chat__list]:!bg-zinc-950">
+            <AttendeeChatPanel
+              webinarId={webinarId}
+              attendeeId={attendeeId}
+              attendeeName={attendeeName}
+            />
+          </div>
+        </aside>
       </div>
+
+      <style>{`
+        @keyframes scanline {
+          0%   { transform: translateY(-100%); }
+          100% { transform: translateY(800px); }
+        }
+      `}</style>
     </div>
   );
 }

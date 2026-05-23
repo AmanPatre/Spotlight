@@ -86,7 +86,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
   };
 
   return (
-    <div className="flex flex-col w-full bg-[#27272A]/20 border border-border rounded-3xl overflow-hidden max-w-6xl mx-auto backdrop-blur-[106px]">
+    <div className="flex flex-col w-full bg-[#141313] border border-[#444748] rounded-2xl overflow-hidden max-w-6xl mx-auto shadow-2xl">
       <div className="flex flex-col md:flex-row w-full items-stretch">
         <div className="w-full md:w-1/3 p-6">
           <div className="space-y-6">
@@ -103,8 +103,8 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
                         animate={{
                           backgroundColor:
                             isCurrent || isCompleted
-                              ? "rgb(147, 51, 234)"
-                              : "rgb(31, 41, 55)",
+                              ? "rgb(255, 255, 255)"
+                              : "rgb(39, 39, 42)",
 
                           scale: [isCurrent && !isCompleted ? 0.8 : 1, 1],
 
@@ -121,7 +121,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
                               exit={{ opacity: 0, scale: 0.5 }}
                               transition={{ duration: 0.2 }}
                             >
-                              <Check className="w-5 h-5 text-white" />
+                              <Check className="w-5 h-5 text-[#141313]" />
                             </motion.div>
                           ) : (
                             <div>
@@ -137,7 +137,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
                               </motion.div>
 
                               {index < steps.length - 1 && (
-                                <div className="absolute top-8 left-4 w-0.5 h-16 bg-gray-700 overflow-hidden">
+                                <div className="absolute top-8 left-4 w-0.5 h-16 bg-[#27272a] overflow-hidden">
                                   <motion.div
                                     initial={{
                                       height:
@@ -147,7 +147,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
                                       height:
                                         isPast || isCompleted ? "100%" : "0%",
 
-                                      backgroundColor: "rgb(147, 51, 234)",
+                                      backgroundColor: "rgb(255, 255, 255)",
                                     }}
                                     transition={{
                                       duration: 0.5,
@@ -169,7 +169,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
                           color:
                             isCurrent || isCompleted
                               ? "rgb(255, 255, 255)"
-                              : "rgb(156, 163, 175)",
+                              : "rgb(196, 199, 200)",
                         }}
                         transition={{ duration: 0.3 }}
                         className="font-medium"
@@ -177,7 +177,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
                         {step.title}
                       </motion.h3>
 
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-[#c4c7c8]">
                         {step.description}
                       </p>
                     </div>
@@ -189,7 +189,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
         </div>
         <Separator
           orientation="vertical"
-          className="hidden md:block h-auto min-h-full"
+          className="hidden md:block h-auto min-h-full bg-[#444748]"
         />
 
         <div className="w-full md:w-2/3">
@@ -205,7 +205,7 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
               <div className="mb-6">
                 <h2 className="text-xl font-semibold">{currentStep.title}</h2>
 
-                <p className="text-gray-400">{currentStep.description}</p>
+                <p className="text-[#c4c7c8]">{currentStep.description}</p>
               </div>
 
               {/* Render the current step component */}
@@ -224,35 +224,35 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
         </div>
       </div>
 
-      <div className="w-full p-6 flex justify-between mt-auto border-t border-border/50">
+      <div className="w-full p-6 flex justify-between mt-auto border-t border-[#444748]">
         <Button
-            variant="outline"
-            onClick={handleBack}
-            disabled={isSubmitting}
-            className={cn(
-              "border-gray-700 text-white hover:bg-gray-800",
-              isFirstStep && "opacity-50 cursor-not-allowed",
-            )}
-          >
-            {isFirstStep ? "Cancel" : "Back"}
-          </Button>
+          variant="outline"
+          onClick={handleBack}
+          disabled={isSubmitting}
+          className={cn(
+            "border-[#444748] text-white hover:bg-[#1c1b1b]",
+            isFirstStep && "opacity-50 cursor-not-allowed",
+          )}
+        >
+          {isFirstStep ? "Cancel" : "Back"}
+        </Button>
 
-          <Button onClick={handleNext} disabled={isSubmitting}>
-            {isLastStep ? (
-              isSubmitting ? (
-                <>
-                  <Loader2 className="animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Complete"
-              )
+        <Button onClick={handleNext} disabled={isSubmitting} className="bg-white text-black hover:bg-white/90">
+          {isLastStep ? (
+            isSubmitting ? (
+              <>
+                <Loader2 className="animate-spin" />
+                Creating...
+              </>
             ) : (
-              "Next"
-            )}
+              "Complete"
+            )
+          ) : (
+            "Next"
+          )}
 
-            {!isLastStep && <ChevronRight className="ml-1 h-4 w-4" />}
-          </Button>
+          {!isLastStep && <ChevronRight className="ml-1 h-4 w-4" />}
+        </Button>
       </div>
     </div>
   );

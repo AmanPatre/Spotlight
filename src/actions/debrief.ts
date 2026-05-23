@@ -14,6 +14,11 @@ export const getWebinarDebriefs = async (webinarId: string) => {
                 attendance: {
                     select: {
                         attendeeId: true,
+                        user: {
+                            select: {
+                                name: true
+                            }
+                        }
                     },
                 },
             },

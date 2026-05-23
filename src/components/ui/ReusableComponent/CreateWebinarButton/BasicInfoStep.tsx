@@ -64,7 +64,7 @@ const BasicInfoStep = (props: Props) => {
           htmlFor="webinarName"
           className={cn(
             "text-sm font-medium",
-            errors.webinarName ? "text-red-400" : "text-gray-300",
+            errors.webinarName ? "text-red-400" : "text-[#e5e2e1]",
           )}
         >
           Webinar name <span className="text-red-400">*</span>
@@ -77,7 +77,7 @@ const BasicInfoStep = (props: Props) => {
           onChange={handleChange}
           placeholder="Introduction to Mochi"
           className={cn(
-            "flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "flex h-10 w-full rounded-md border border-[#444748] bg-[#1c1b1b] px-3 py-2 text-sm ring-offset-background placeholder:text-[#c4c7c8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
             errors.webinarName && "border-red-400 focus-visible:ring-red-400",
           )}
         />
@@ -89,7 +89,7 @@ const BasicInfoStep = (props: Props) => {
       <div className="space-y-2">
         <Label
           htmlFor="description"
-          className={errors.description ? "text-red-400" : ""}
+          className={cn(errors.description ? "text-red-400" : "text-[#e5e2e1]")}
         >
           Description <span className="text-red-400">*</span>
         </Label>
@@ -101,7 +101,7 @@ const BasicInfoStep = (props: Props) => {
           onChange={handleChange}
           placeholder="Tell customers what your webinar is about"
           className={cn(
-            "min-h-[100px] !bg-background/50 border border-input",
+            "min-h-[100px] !bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
             errors.description && "border-red-400 focus-visible:ring-red-400",
           )}
         />
@@ -113,7 +113,7 @@ const BasicInfoStep = (props: Props) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label className={errors.date ? "text-red-400" : ""}>
+          <Label className={cn(errors.date ? "text-red-400" : "text-[#e5e2e1]")}>
             Webinar Date <span className="text-red-400">*</span>
           </Label>
 
@@ -124,8 +124,8 @@ const BasicInfoStep = (props: Props) => {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal !bg-background/50 border border-input",
-                    !date && "text-gray-500",
+                    "w-full justify-start text-left font-normal !bg-[#1c1b1b] border-[#444748] text-white",
+                    !date && "text-[#c4c7c8]",
                     errors.date && "border-red-400 focus-visible:ring-red-400"
                   )}
                 >
@@ -134,7 +134,7 @@ const BasicInfoStep = (props: Props) => {
                 </Button>
               }
             />
-            <PopoverContent className="w-auto p-0 !bg-background/50 border border-input">
+            <PopoverContent className="w-auto p-0 !bg-[#1c1b1b] border-[#444748] text-white">
               <Calendar
                 mode="single"
                 selected={date}
@@ -154,13 +154,13 @@ const BasicInfoStep = (props: Props) => {
           {errors.date && <p className="text-sm text-red-400">{errors.date}</p>}
         </div>
         <div className="space-y-2">
-          <Label className={errors.time ? "text-red-400" : ""}>
+          <Label className={cn(errors.time ? "text-red-400" : "text-[#e5e2e1]")}>
             Webinar Time <span className="text-red-400">*</span>
           </Label>
 
           <div className="flex gap-2">
             <div className="relative flex-1">
-              <Clock className="absolute left-3 top-2.5 h-4 w-4 text-foreground" />
+              <Clock className="absolute left-3 top-2.5 h-4 w-4 text-[#c4c7c8]" />
 
               <Input
                 name="time"
@@ -168,7 +168,7 @@ const BasicInfoStep = (props: Props) => {
                 onChange={handleChange}
                 placeholder="12:00"
                 className={cn(
-                  "pl-9 !bg-background/50 border border-input",
+                  "pl-9 !bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
                   errors.time && "border-red-400 focus-visible:ring-red-400",
                 )}
               />
@@ -178,11 +178,11 @@ const BasicInfoStep = (props: Props) => {
               value={timeFormat || "AM"}
               onValueChange={handleTimeFormatChange}
             >
-              <SelectTrigger className="w-20 !bg-background/50 border border-input">
+              <SelectTrigger className="w-20 !bg-[#1c1b1b] border-[#444748] text-white">
                 <SelectValue placeholder="AM" />
               </SelectTrigger>
 
-              <SelectContent className="!bg-background border border-input">
+              <SelectContent className="!bg-[#1c1b1b] border-[#444748] text-white">
                 <SelectItem value="AM">AM</SelectItem>
                 <SelectItem value="PM">PM</SelectItem>
               </SelectContent>
@@ -192,7 +192,7 @@ const BasicInfoStep = (props: Props) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-gray-400 mt-4">
+      <div className="flex items-center gap-2 text-sm text-[#c4c7c8] mt-4">
         <div className="flex items-center">
           <Upload className="h-4 w-4 mr-2" />
           Uploading a video makes this webinar pre-recorded.
@@ -201,7 +201,7 @@ const BasicInfoStep = (props: Props) => {
         <div
           className={cn(
             buttonVariants({ variant: "outline" }),
-            "ml-auto relative border border-input hover:bg-background h-8 cursor-pointer"
+            "ml-auto relative border border-[#444748] !bg-[#1c1b1b] text-white hover:opacity-90 transition-opacity h-8 cursor-pointer"
           )}
         >
           Upload File

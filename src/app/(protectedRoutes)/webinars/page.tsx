@@ -1,17 +1,12 @@
 import { onAuthenticateUser } from "@/actions/auth";
-import PageHeader from "@/components/ui/ReusableComponent/PageHeader";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LeadIcon } from "@/icons/LeadIcon";
-import { Webcam, HomeIcon } from "lucide-react";
+import { ChevronRight, Plus, Video, SlidersHorizontal, Search } from "lucide-react";
 import { redirect } from "next/navigation";
 import React from "react";
 import { getWebinarByPresenterId } from "@/actions/webinar";
-import WebinarCard from "./_components/WebinarCard";
-import { Webinar } from "@/generated/prisma/client";
+import WebinarTabs from "./_components/WebinarTabs";
+import CreateWebinarButton from "@/components/ui/ReusableComponent/CreateWebinarButton";
 
-type Props = {};
-
-const Page = async (props: Props) => {
+const Page = async () => {
   const checkUser = await onAuthenticateUser();
 
   if (!checkUser.user) {
@@ -21,111 +16,49 @@ const Page = async (props: Props) => {
   const webinars = await getWebinarByPresenterId(checkUser?.user?.id);
 
   return (
-    <Tabs defaultValue="all" className="w-full flex flex-col gap-8">
-      <PageHeader
-        leftIcon={<HomeIcon className="w-3 h-3" />}
-        mainIcon={<Webcam className="w-12 h-12" />}
-        rightIcon={<LeadIcon className="w-4 h-4" />}
-        heading="The home to all your webinars"
-        placeholder="Search option..."
-      >
-        <TabsList className="bg-transparent space-x-2">
-          <TabsTrigger
-            value="all"
-            className="bg-[#18181b] border border-[#27272a] text-[#a1a1aa] data-[state=active]:bg-violet-600/10 data-[state=active]:border-violet-500/40 data-[state=active]:text-violet-400 px-5 py-2 rounded-md text-sm"
-          >
-            All
-          </TabsTrigger>
-
-          <TabsTrigger
-            value="upcoming"
-            className="bg-[#18181b] border border-[#27272a] text-[#a1a1aa] data-[state=active]:bg-violet-600/10 data-[state=active]:border-violet-500/40 data-[state=active]:text-violet-400 px-5 py-2 rounded-md text-sm"
-          >
-            Upcoming
-          </TabsTrigger>
-
-          <TabsTrigger
-            value="live"
-            className="bg-[#18181b] border border-[#27272a] text-[#a1a1aa] data-[state=active]:bg-emerald-600/10 data-[state=active]:border-emerald-500/40 data-[state=active]:text-emerald-400 px-5 py-2 rounded-md text-sm"
-          >
-            Live
-          </TabsTrigger>
-
-          <TabsTrigger
-            value="ended"
-            className="bg-[#18181b] border border-[#27272a] text-[#a1a1aa] data-[state=active]:bg-violet-600/10 data-[state=active]:border-violet-500/40 data-[state=active]:text-violet-400 px-5 py-2 rounded-md text-sm"
-          >
-            Ended
-          </TabsTrigger>
-        </TabsList>
-      </PageHeader>
-
-      <TabsContent
-        value="all"
-        className="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 place-items-start place-content-start gap-x-6 gap-y-10"
-      >
-        {webinars?.length > 0 ? (
-          webinars.map((webinar: Webinar, index: number) => (
-            <WebinarCard key={index} webinar={webinar} />
-          ))
-        ) : (
-          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12">
-            No Webinar found
+    <div className="w-full">
+      {/* Top Header Bar */}
+      <header className="h-16 flex items-center justify-between px-8 border-b border-[#2e2e2e] bg-black/40 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center gap-2 text-sm text-[#a1a1aa]">
+          <span className="hover:text-white cursor-pointer transition-colors">Spotlight</span>
+          <ChevronRight className="w-3 h-3" />
+          <span className="text-white font-medium">Webinars</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="relative hidden md:block">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#71717a]" />
+            <input
+              className="bg-[#1c1b1b] border border-[#2e2e2e] text-sm text-white rounded-md pl-9 pr-4 py-1.5 w-60 placeholder-[#71717a] focus:outline-none focus:border-white/20"
+              placeholder="Search..."
+              type="text"
+            />
           </div>
-        )}
-      </TabsContent>
+          <button className="w-8 h-8 rounded-md border border-[#2e2e2e] flex items-center justify-center text-[#a1a1aa] hover:text-white hover:bg-[#1c1b1b] transition-colors">
+            <SlidersHorizontal className="w-4 h-4" />
+          </button>
+          <CreateWebinarButton className="bg-white text-black px-4 py-1.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            Create Webinar
+          </CreateWebinarButton>
+        </div>
+      </header>
 
-      <TabsContent
-        value="upcoming"
-        className="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 place-items-start place-content-start gap-x-6 gap-y-10"
-      >
-        {webinars?.filter(w => w.webinarStatus === 'SCHEDULED' || w.webinarStatus === 'WAITING_ROOM').length > 0 ? (
-          webinars
-            .filter(w => w.webinarStatus === 'SCHEDULED' || w.webinarStatus === 'WAITING_ROOM')
-            .map((webinar: Webinar, index: number) => (
-              <WebinarCard key={index} webinar={webinar} />
-            ))
-        ) : (
-          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12 text-center">
-            No upcoming webinars
+      {/* Page Body */}
+      <div className="px-8 py-8 space-y-8">
+        {/* Page Title */}
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-lg bg-[#2b2a2a] border border-[#2e2e2e] flex items-center justify-center">
+            <Video className="w-6 h-6 text-white" />
           </div>
-        )}
-      </TabsContent>
+          <h1 className="text-2xl font-semibold text-white tracking-tight">
+            The home to all your webinars
+          </h1>
+        </div>
 
-      <TabsContent
-        value="live"
-        className="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 place-items-start place-content-start gap-x-6 gap-y-10"
-      >
-        {webinars?.filter(w => w.webinarStatus === 'LIVE').length > 0 ? (
-          webinars
-            .filter(w => w.webinarStatus === 'LIVE')
-            .map((webinar: Webinar, index: number) => (
-              <WebinarCard key={index} webinar={webinar} />
-            ))
-        ) : (
-          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12 text-center">
-            You are not live right now
-          </div>
-        )}
-      </TabsContent>
-
-      <TabsContent
-        value="ended"
-        className="w-full grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-4 place-items-start place-content-start gap-x-6 gap-y-10"
-      >
-        {webinars?.filter(w => w.webinarStatus === 'ENDED').length > 0 ? (
-          webinars
-            .filter(w => w.webinarStatus === 'ENDED')
-            .map((webinar: Webinar, index: number) => (
-              <WebinarCard key={index} webinar={webinar} />
-            ))
-        ) : (
-          <div className="w-full h-[200px] flex justify-center items-center text-primary font-semibold text-2xl col-span-12 text-center">
-            No ended webinars
-          </div>
-        )}
-      </TabsContent>
-    </Tabs>
+        {/* Tabs + Grid — client component to avoid base-ui flex conflict */}
+        <WebinarTabs webinars={webinars ?? []} />
+      </div>
+    </div>
   );
 };
 

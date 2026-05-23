@@ -52,17 +52,22 @@ export default function AttendeeLiveClient({
 
   if (loading) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black"
+        style={{ backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)", backgroundSize: "24px 24px" }}
+      >
+        <Loader2 className="w-8 h-8 animate-spin text-white" />
+        <p className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">Initializing session...</p>
       </div>
     );
   }
 
   if (!attendeeId) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center gap-4 text-white">
-        <Lock className="w-8 h-8 text-red-400" />
-        <p className="text-sm text-muted-foreground">
+      <div className="w-full h-full flex flex-col items-center justify-center gap-4 bg-black text-white">
+        <div className="w-10 h-10 border border-zinc-700 flex items-center justify-center">
+          <Lock className="w-5 h-5 text-zinc-500" />
+        </div>
+        <p className="font-mono text-[11px] text-zinc-500 uppercase tracking-widest">
           Redirecting to registration...
         </p>
       </div>

@@ -32,11 +32,11 @@ const AdditionalInfoStep = (props: Props) => {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <Label htmlFor="lock-chat" className="text-base font-medium">
+          <Label htmlFor="lock-chat" className="text-base font-medium text-[#e5e2e1]">
             Lock Chat
           </Label>
 
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-[#c4c7c8]">
             Turn it on to make chat visible to your users at all time
           </p>
         </div>
@@ -50,11 +50,11 @@ const AdditionalInfoStep = (props: Props) => {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <Label htmlFor="coupon-enabled" className="text-base font-medium">
+            <Label htmlFor="coupon-enabled" className="text-base font-medium text-[#e5e2e1]">
               Coupon Code
             </Label>
 
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[#c4c7c8]">
               Turn it on to offer discounts to your viewers
             </p>
           </div>
@@ -74,9 +74,9 @@ const AdditionalInfoStep = (props: Props) => {
               onChange={handleCouponCodeChange}
               placeholder="Paste the code here"
               className={cn(
-                "bg-background/50 border border-input",
+                "bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
                 errors.couponCode &&
-                  "border-red-400 focus-visible:ring-red-400",
+                "border-red-400 focus-visible:ring-red-400",
               )}
             />
 
@@ -84,7 +84,7 @@ const AdditionalInfoStep = (props: Props) => {
               <p className="text-sm text-red-400">{errors.couponCode}</p>
             )}
 
-            <div className="flex items-start gap-2 text-sm text-gray-400 mt-2">
+            <div className="flex items-start gap-2 text-sm text-[#c4c7c8] mt-2">
               <Info className="h-4 w-4 mt-0.5" />
 
               <p>

@@ -268,6 +268,109 @@ export const getAllLeads = async () => {
   }
 };
 
+/**
+ * PHASE 5: Fetch broad overview of all webinars for the leads dashboard
+ */
+export const getWebinarLeadsOverview = async () => {
+  try {
+    const auth = await onAuthenticateUser();
+    if (!auth.user) return { success: false, webinars: [] };
+
+    const webinars = await prismaClient.webinar.findMany({
+      where: { presenterId: auth.user.id },
+      select: {
+        id: true,
+        title: true,
+        webinarStatus: true,
+        startTime: true,
+        _count: {
+          select: {
+            attendances: {
+              where: {
+                attendedType: { not: AttendedTypeEnum.REGISTERED }
+              }
+            }
+          }
+        },
+        attendances: {
+          where: {
+            CallDebrief: { isNot: null }
+          },
+          select: {
+            CallDebrief: {
+              select: {
+                isHotLead: true,
+                summary: true,
+                score: true,
+              }
+            }
+          }
+        }
+      },
+      orderBy: { startTime: "desc" }
+    });
+
+    const processedWebinars = webinars.map(w => {
+      const hotLeadsCount = w.attendances.filter(a => a.CallDebrief?.isHotLead).length;
+      // Get a representative summary from the highest scoring lead if available
+      const bestDebrief = w.attendances.sort((a, b) => (b.CallDebrief?.score || 0) - (a.CallDebrief?.score || 0))[0]?.CallDebrief;
+
+      return {
+        id: w.id,
+        title: w.title,
+        status: w.webinarStatus,
+        date: w.startTime,
+        totalAttendees: w._count.attendances,
+        hotLeads: hotLeadsCount,
+        summary: bestDebrief?.summary || "No AI briefing available yet.",
+        pipelineValue: hotLeadsCount * 15000, // Mock value calculation for demo
+      };
+    });
+
+    return { success: true, webinars: processedWebinars };
+  } catch (error) {
+    console.error("Error fetching webinar leads overview", error);
+    return { success: false, webinars: [] };
+  }
+};
+
+/**
+ * PHASE 5: Fetch detailed leads for a specific webinar
+ */
+export const getWebinarLeadsDetail = async (webinarId: string) => {
+  try {
+    const auth = await onAuthenticateUser();
+    if (!auth.user) return { success: false, leads: null };
+
+    const webinar = await prismaClient.webinar.findUnique({
+      where: { id: webinarId, presenterId: auth.user.id },
+      select: { title: true, startTime: true, tags: true }
+    });
+
+    if (!webinar) return { success: false, leads: null };
+
+    const attendances = await prismaClient.attendance.findMany({
+      where: { webinarId },
+      include: {
+        user: true,
+        CallDebrief: true,
+      },
+      orderBy: {
+        joinedAt: "desc"
+      }
+    });
+
+    return {
+      success: true,
+      webinar,
+      leads: attendances
+    };
+  } catch (error) {
+    console.error("Error fetching webinar leads detail", error);
+    return { success: false, leads: null };
+  }
+};
+
 export const getAttendeeStatus = async (
   webinarId: string,
   attendeeId: string

@@ -8,6 +8,7 @@ interface Debrief {
     isHotLead: boolean;
     attendance: {
         attendeeId: string;
+        user?: { name: string };
     };
 }
 
@@ -19,10 +20,23 @@ interface Props {
 export default function DebriefWidget({ debriefs, totalAttendeesCount }: Props) {
     if (!debriefs || debriefs.length === 0) return null;
 
-    const hotLeadsCount = debriefs.filter((d) => d.isHotLead).length;
-    // Create a high-level actionable insight based on the summaries. (In a real scenario, this could be another LLM call).
-    // For now, we'll pick the top 3 hot leads if we know their names, or provide a general metric.
-    const pipelineValue = hotLeadsCount * 1200; // Mock calculation metric, e.g., $1200 per converted hot lead
+    const hotLeads = debriefs.filter((d) => d.score >= 8 || d.isHotLead);
+    const hotLeadsCount = hotLeads.length;
+
+    // Extract names of the hot leads for actionable insights
+    const hotLeadNames = hotLeads
+        .map(h => h.attendance.user?.name)
+        .filter(Boolean)
+        .slice(0, 3);
+
+    const namesList = hotLeadNames.length > 0
+        ? (hotLeadNames.length === 1
+            ? hotLeadNames[0]
+            : hotLeadNames.slice(0, -1).join(", ") + " and " + hotLeadNames[hotLeadNames.length - 1])
+        : "";
+
+    // Mock calculation metric, e.g., $1200 per converted hot lead
+    const pipelineValue = hotLeadsCount * 1200;
 
     return (
         <div className="w-full bg-background/5 border border-border p-6 rounded-2xl mb-8 flex flex-col md:flex-row shadow-sm gap-6 justify-between items-center bg-gradient-to-br from-indigo-500/5 to-purple-500/5">
@@ -58,7 +72,7 @@ export default function DebriefWidget({ debriefs, totalAttendeesCount }: Props) 
                 <p className="font-semibold mb-1 text-foreground/80">Actionable Insight</p>
                 <p className="text-foreground/60 leading-relaxed">
                     {hotLeadsCount > 0
-                        ? `Your AI agent identified ${hotLeadsCount} attendees with immediate buying intent. Check the pipeline below for their specific concerns and prioritize their callbacks.`
+                        ? `Your AI agent identified ${hotLeadsCount} attendees with immediate buying intent. Top leads include ${namesList}. Prioritize these callbacks today!`
                         : "The AI agent has summarized the calls. Currently, no attendees scored high enough to be classified as immediate hot leads. Consider following up with mid-tier participants."}
                 </p>
             </div>

@@ -57,7 +57,7 @@ const Header = ({ user }: Props) => {
           <input
             type="text"
             placeholder="Search..."
-            className="pl-8 pr-3 h-8 text-sm bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] placeholder:text-[#52525b] focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50 w-48 transition-all"
+            className="pl-8 pr-3 h-8 text-sm bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] placeholder:text-[#52525b] focus:outline-none focus:ring-1 focus:ring-[#ffffff] focus:border-[#ffffff] w-48 transition-all"
           />
         </div>
 
@@ -67,7 +67,7 @@ const Header = ({ user }: Props) => {
         </button>
 
         {/* AI lightning icon */}
-        <button className="flex items-center justify-center w-8 h-8 rounded-md bg-violet-600/10 border border-violet-500/30 text-violet-400 hover:bg-violet-600/20 transition-colors">
+        <button className="flex items-center justify-center w-8 h-8 rounded-md bg-[#ffffff] border border-[#27272a] text-[#141313] hover:bg-[#c6c6c7] transition-colors">
           <LightningIcon />
         </button>
 
