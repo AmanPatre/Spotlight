@@ -14,6 +14,7 @@ import MultiStepForm from "./MultiStepForm";
 import BasicInfoStep from "./BasicInfoStep";
 import CTAStep from "./CTAStep";
 import AdditionalInfoStep from "./AdditionalInfoStep";
+import ProductInfoStep from "./ProductInfoStep";
 
 type Props = {
   children?: React.ReactNode;
@@ -47,7 +48,12 @@ const CreateWebinarButton = ({ children, className }: Props) => {
         "Please provide the end-point for your customers through your webinar",
       component: <CTAStep />,
     },
-
+    {
+      id: "productInfo",
+      title: "Product Info",
+      description: "Define the product you are selling during the webinar",
+      component: <ProductInfoStep />,
+    },
     {
       id: "additionalInfo",
       title: "Additional information",

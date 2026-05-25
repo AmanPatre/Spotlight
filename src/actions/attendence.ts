@@ -21,6 +21,8 @@ export const getWebinarAttendence = async (
         id: true,
         ctaType: true,
         tags: true,
+        price: true,
+        currency: true,
         _count: {
           select: {
             attendances: true,
@@ -283,6 +285,9 @@ export const getWebinarLeadsOverview = async () => {
         title: true,
         webinarStatus: true,
         startTime: true,
+        summary: true,
+        price: true,
+        currency: true,
         _count: {
           select: {
             attendances: {
@@ -300,10 +305,10 @@ export const getWebinarLeadsOverview = async () => {
             CallDebrief: {
               select: {
                 isHotLead: true,
-                summary: true,
                 score: true,
               }
-            }
+            },
+            attendedType: true
           }
         }
       },
@@ -312,8 +317,7 @@ export const getWebinarLeadsOverview = async () => {
 
     const processedWebinars = webinars.map(w => {
       const hotLeadsCount = w.attendances.filter(a => a.CallDebrief?.isHotLead).length;
-      // Get a representative summary from the highest scoring lead if available
-      const bestDebrief = w.attendances.sort((a, b) => (b.CallDebrief?.score || 0) - (a.CallDebrief?.score || 0))[0]?.CallDebrief;
+      const convertedCount = w.attendances.filter(a => a.attendedType === AttendedTypeEnum.CONVERTED).length;
 
       return {
         id: w.id,
@@ -322,8 +326,8 @@ export const getWebinarLeadsOverview = async () => {
         date: w.startTime,
         totalAttendees: w._count.attendances,
         hotLeads: hotLeadsCount,
-        summary: bestDebrief?.summary || "No AI briefing available yet.",
-        pipelineValue: hotLeadsCount * 15000, // Mock value calculation for demo
+        summary: w.summary || "No AI briefing available yet. Run a webinar to generate insights.",
+        pipelineValue: (hotLeadsCount * (w.price || 0) * 0.7) + (convertedCount * (w.price || 0)),
       };
     });
 
@@ -344,7 +348,7 @@ export const getWebinarLeadsDetail = async (webinarId: string) => {
 
     const webinar = await prismaClient.webinar.findUnique({
       where: { id: webinarId, presenterId: auth.user.id },
-      select: { title: true, startTime: true, tags: true }
+      select: { title: true, startTime: true, tags: true, price: true, currency: true }
     });
 
     if (!webinar) return { success: false, leads: null };

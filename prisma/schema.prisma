@@ -80,7 +80,12 @@ model Webinar {
   lockChat        Boolean           @default(false)
   stripeProductId String?           @db.VarChar(255)
   aiAgentId       String?           @db.Uuid
+  summary         String?           @db.Text
   priceId         String?           @db.VarChar(255)
+  price           Float             @default(0)
+  currency        String            @default("INR")
+  originalPrice   Float?
+  productTitle    String?
   recordingUrl    String?
   thumbnail       String?
   createdAt       DateTime          @default(now())

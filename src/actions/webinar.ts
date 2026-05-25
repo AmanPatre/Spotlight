@@ -91,6 +91,10 @@ export const createWebinar = async (formData: WebinarFormState) => {
           : null,
         couponEnabled: formData.additionalInfo.couponEnabled || false,
         presenterId: presenterId,
+        productTitle: formData.productInfo.productTitle,
+        price: formData.productInfo.price,
+        currency: formData.productInfo.currency,
+        originalPrice: formData.productInfo.originalPrice,
       },
     });
 
@@ -184,13 +188,19 @@ export const updateWebinarStatus = async (
     });
 
     if (status === "ENDED") {
-      await inngest.send({
-        name: "app/webinar.ended",
-        data: {
-          webinarId,
-          presenterEmail: user.user.email,
-        },
-      });
+      console.log("Sending Inngest event: app/webinar.ended for webinar:", webinarId);
+      try {
+        const sendResult = await inngest.send({
+          name: "app/webinar.ended",
+          data: {
+            webinarId,
+            presenterEmail: user.user.email,
+          },
+        });
+        console.log("Inngest event sent successfully:", sendResult);
+      } catch (error) {
+        console.error("Failed to send Inngest event:", error);
+      }
     }
 
     revalidatePath(`/webinars/${webinarId}`);

@@ -74,10 +74,13 @@ const CTAStep = () => {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label
           htmlFor="ctaLabel"
-          className={cn(errors.ctaLabel ? "text-red-400" : "text-[#e5e2e1]")}
+          className={cn(
+            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            errors.ctaLabel ? "text-red-400" : "text-zinc-500"
+          )}
         >
           CTA Label <span className="text-red-400">*</span>
         </Label>
@@ -89,18 +92,18 @@ const CTAStep = () => {
           onChange={handleChange}
           placeholder="Let's Get Started"
           className={cn(
-            "!bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
-            errors.ctaLabel && "border-red-400 focus-visible:ring-red-400",
+            "flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent px-0 py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+            errors.ctaLabel && "border-red-400 focus-visible:border-red-400",
           )}
         />
 
         {errors.ctaLabel && (
-          <p className="text-sm text-red-400">{errors.ctaLabel}</p>
+          <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.ctaLabel}</p>
         )}
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="tags" className="text-[#e5e2e1]">Tags</Label>
+      <div className="space-y-3">
+        <Label htmlFor="tags" className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">Tags</Label>
 
         <Input
           id="tags"
@@ -108,22 +111,22 @@ const CTAStep = () => {
           onChange={(e) => setTagInput(e.target.value)}
           onKeyDown={handleAddTag}
           placeholder="Add tags and press Enter"
-          className="!bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]"
+          className="flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent px-0 py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors"
         />
 
         {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mt-2">
+          <div className="flex flex-wrap gap-2 mt-4">
             {tags.map((tag: string, index: number) => (
               <div
                 key={index}
-                className="flex items-center gap-1 bg-[#1c1b1b] border border-[#444748] text-white px-3 py-1 rounded-md"
+                className="flex items-center gap-2 bg-white/5 border border-zinc-800 text-zinc-300 px-3 py-1.5 rounded-none font-mono text-[10px] uppercase tracking-wider"
               >
                 {tag}
 
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="text-[#c4c7c8] hover:text-white"
+                  className="text-zinc-600 hover:text-white transition-colors"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -133,25 +136,25 @@ const CTAStep = () => {
         )}
       </div>
 
-      <div className="space-y-2 w-full">
-        <Label className="text-[#e5e2e1]">CTA Type</Label>
+      <div className="space-y-3 w-full">
+        <Label className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">CTA Type</Label>
 
         <Tabs
           value={ctaType}
           onValueChange={handleSelectCTAType}
           className="w-full"
         >
-          <TabsList className="w-full bg-transparent border border-[#444748] p-1 rounded-md">
+          <TabsList className="w-full bg-transparent border-b border-zinc-800 p-0 rounded-none h-12">
             <TabsTrigger
               value={CtaTypeEnum.BOOK_A_CALL}
-              className="w-1/2 text-[#c4c7c8] data-[state=active]:!bg-white data-[state=active]:!text-black"
+              className="w-1/2 h-full text-zinc-500 font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none"
             >
               Book a Call
             </TabsTrigger>
 
             <TabsTrigger
               value={CtaTypeEnum.BUY_NOW}
-              className="w-1/2 text-[#c4c7c8] data-[state=active]:!bg-white data-[state=active]:!text-black"
+              className="w-1/2 h-full text-zinc-500 font-mono text-[10px] uppercase tracking-widest data-[state=active]:bg-transparent data-[state=active]:text-white data-[state=active]:border-b-2 data-[state=active]:border-white rounded-none"
             >
               Buy Now
             </TabsTrigger>
@@ -160,8 +163,11 @@ const CTAStep = () => {
       </div>
 
       {ctaType === CtaTypeEnum.BOOK_A_CALL && (
-        <div className="space-y-2">
-          <Label className={cn(errors.aiAgent ? "text-red-400" : "text-[#e5e2e1]")}>
+        <div className="space-y-3">
+          <Label className={cn(
+            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            errors.aiAgent ? "text-red-400" : "text-zinc-500"
+          )}>
             AI agent <span className="text-red-400">*</span>
           </Label>
           <Select
@@ -172,7 +178,7 @@ const CTAStep = () => {
           >
             <SelectTrigger
               className={cn(
-                "w-full !bg-[#1c1b1b] border-[#444748] text-white",
+                "w-full h-12 rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent text-white px-0 focus:ring-0 focus:border-white transition-colors",
                 errors.aiAgent && "border-red-400",
               )}
             >
@@ -182,22 +188,22 @@ const CTAStep = () => {
                 }
               />
             </SelectTrigger>
-            <SelectContent className="!bg-[#1c1b1b] border-[#444748] text-white max-h-64">
+            <SelectContent className="bg-[#141313] border-zinc-800 text-zinc-100 rounded-none shadow-2xl">
               {assistants.map((a) => (
-                <SelectItem key={a.id} value={a.id}>
+                <SelectItem key={a.id} value={a.id} className="focus:bg-white focus:text-black">
                   {a.name || a.id}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {errors.aiAgent && (
-            <p className="text-sm text-red-400">{errors.aiAgent}</p>
+            <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.aiAgent}</p>
           )}
           {!loadingAssistants && assistants.length === 0 && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest mt-2">
               No assistants yet.{" "}
-              <Link href="/ai-agents" className="text-purple-400 underline">
-                Create one in AI Agents
+              <Link href="/ai-agents" className="text-white underline">
+                Create one
               </Link>
               .
             </p>

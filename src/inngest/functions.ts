@@ -24,7 +24,7 @@ export const processWebinarEnd = inngest.createFunction(
             return prismaClient.attendance.findMany({
                 where: {
                     webinarId,
-                    attendedType: "FOLLOW_UP",
+                    attendedType: { in: ["FOLLOW_UP", "CONVERTED"] },
                 },
                 include: {
                     user: true, // Attendee info
@@ -74,8 +74,8 @@ export const processWebinarEnd = inngest.createFunction(
 
                         // Find the call for this specific attendee in this webinar
                         const myCall = calls.find(c =>
-                            c.metadata?.webinarId === webinarId &&
-                            c.metadata?.attendeeId === attendance.attendeeId
+                            c.assistantOverrides?.metadata?.webinarId === webinarId &&
+                            c.assistantOverrides?.metadata?.attendeeId === attendance.attendeeId
                         );
 
                         vapiTranscript = myCall?.transcript || null;
@@ -102,7 +102,7 @@ export const processWebinarEnd = inngest.createFunction(
             `,
                     });
 
-                    const isHotLead = object.score >= 3;
+                    const isHotLead = object.score >= 6;
                     await prismaClient.callDebrief.upsert({
                         where: { attendanceId: attendance.id },
                         update: {
@@ -140,6 +140,39 @@ export const processWebinarEnd = inngest.createFunction(
                 });
             }
         }
+
+        // Step 3.5: Generate an overall webinar summary from all individual attendee summaries
+        await step.run("generate-webinar-summary", async () => {
+            // Collect all non-null summaries from the debrief records for this webinar
+            const debriefs = await prismaClient.callDebrief.findMany({
+                where: {
+                    attendance: { webinarId }
+                },
+                select: { summary: true, score: true }
+            });
+
+            if (debriefs.length === 0) return;
+
+            const summaryList = debriefs
+                .filter(d => d.summary)
+                .map((d, i) => `Attendee ${i + 1} (Score ${d.score}/10): ${d.summary}`)
+                .join("\n\n");
+
+            const { object } = await generateObject({
+                model: google("gemini-2.0-flash"),
+                schema: z.object({ overallSummary: z.string() }),
+                prompt: `You are a sales analytics assistant. Below are the individual AI-scored summaries from a webinar's breakout room sessions:
+
+${summaryList}
+
+Based on these responses, write a concise 2-3 sentence overall summary of how the audience responded to the webinar. Describe the general sentiment, conversion potential, and any notable patterns. Do not name specific individuals.`,
+            });
+
+            await prismaClient.webinar.update({
+                where: { id: webinarId },
+                data: { summary: object.overallSummary }
+            });
+        });
 
         // Step 4: Dispatch the summary email if we have hot leads
         if (hotLeads.length > 0 && presenterEmail) {

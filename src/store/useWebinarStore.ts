@@ -3,6 +3,7 @@ import {
   validateAdditionalInfo,
   validateBasicInfo,
   validateCTA,
+  validateProductInfo,
   ValidationErrors,
   ValidationResult,
 } from "@/lib/type";
@@ -30,6 +31,12 @@ export type WebinarFormState = {
     couponCode?: string;
     couponEnabled?: boolean;
   };
+  productInfo: {
+    productTitle?: string;
+    price?: number;
+    currency?: string;
+    originalPrice?: number;
+  };
 };
 
 type ValidationState = {
@@ -44,6 +51,11 @@ type ValidationState = {
   };
 
   additionalInfo: {
+    valid: boolean;
+    errors: ValidationErrors;
+  };
+
+  productInfo: {
     valid: boolean;
     errors: ValidationErrors;
   };
@@ -80,6 +92,11 @@ type WebinarStore = {
     value: WebinarFormState["additionalInfo"][K],
   ) => void;
 
+  updateProductInfoField: <K extends keyof WebinarFormState["productInfo"]>(
+    field: K,
+    value: WebinarFormState["productInfo"][K],
+  ) => void;
+
   validateStep: (stepId: keyof WebinarFormState) => boolean;
 
   getStepValidationErrors: (stepId: keyof WebinarFormState) => ValidationErrors;
@@ -109,13 +126,21 @@ const initialState: WebinarFormState = {
     couponCode: "",
     couponEnabled: false,
   },
+  productInfo: {
+    productTitle: "",
+    price: 0,
+    currency: "INR",
+    originalPrice: 0,
+  },
 };
 const initialValidation: ValidationState = {
   basicInfo: { valid: false, errors: {} },
 
   cta: { valid: false, errors: {} },
 
-  additionalInfo: { valid: true, errors: {} }, // Additional Info optional by default
+  additionalInfo: { valid: true, errors: {} },
+
+  productInfo: { valid: false, errors: {} },
 };
 
 export const useWebinarStore = create<WebinarStore>((set, get) => ({
@@ -191,6 +216,28 @@ export const useWebinarStore = create<WebinarStore>((set, get) => ({
     });
   },
 
+  updateProductInfoField: (field, value) => {
+    set((state) => {
+      const newProductInfo = {
+        ...state.formData.productInfo,
+        [field]: value,
+      };
+
+      const validationResult = validateProductInfo(newProductInfo);
+
+      return {
+        formData: {
+          ...state.formData,
+          productInfo: newProductInfo,
+        },
+        validation: {
+          ...state.validation,
+          productInfo: validationResult,
+        },
+      };
+    });
+  },
+
   setModalOpen: (open: boolean) => set({ isModalOpen: open }),
 
   setComplete: (complete: boolean) => set({ isComplete: complete }),
@@ -213,6 +260,10 @@ export const useWebinarStore = create<WebinarStore>((set, get) => ({
 
       case "additionalInfo":
         validationResult = validateAdditionalInfo(formData.additionalInfo);
+        break;
+
+      case "productInfo":
+        validationResult = validateProductInfo(formData.productInfo);
         break;
     }
 

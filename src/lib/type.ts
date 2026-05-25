@@ -85,6 +85,32 @@ export const validateAdditionalInfo = (data: {
   };
 };
 
+export const validateProductInfo = (data: {
+  productTitle?: string;
+  price?: number;
+  currency?: string;
+  originalPrice?: number;
+}): ValidationResult => {
+  const errors: ValidationErrors = {};
+
+  if (!data.productTitle?.trim()) {
+    errors.productTitle = "Product title is required";
+  }
+
+  if (data.price === undefined || data.price < 0) {
+    errors.price = "Valid price is required";
+  }
+
+  if (!data.currency) {
+    errors.currency = "Currency is required";
+  }
+
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+};
+
 export type AttendanceData = {
   count: number;
   users: Attendee[];

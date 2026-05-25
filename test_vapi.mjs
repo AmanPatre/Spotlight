@@ -1,17 +1,30 @@
-import dotenv from 'dotenv';
-dotenv.config();
+import fs from 'fs';
+import path from 'path';
 
-const VAPI_API_KEY = process.env.VAPI_API_KEY || process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+const envPath = path.resolve('.env');
+const envContent = fs.readFileSync(envPath, 'utf8');
+const vapiKeyMatch = envContent.match(/VAPI_API_KEY=(.+)/);
+const vapiKey = vapiKeyMatch ? vapiKeyMatch[1].trim() : null;
 
-async function fetchAssistant() {
-    const res = await fetch("https://api.vapi.ai/assistant/797aca99-aedf-4d19-8386-6f654698dd8f", {
-        headers: {
-            Authorization: `Bearer ${VAPI_API_KEY}`
-        }
-    });
-    const data = await res.json();
-    const fs = await import('fs');
-    fs.writeFileSync('agent_data.json', JSON.stringify(data, null, 2));
+if (!vapiKey) {
+    console.error("No VAPI_API_KEY found in .env");
+    process.exit(1);
 }
 
-fetchAssistant();
+async function testFetch() {
+    try {
+        const response = await fetch('https://api.vapi.ai/call?limit=2', {
+            headers: {
+                "Authorization": `Bearer ${vapiKey}`
+            }
+        });
+        const calls = await response.json();
+
+        fs.writeFileSync('vapi_calls.json', JSON.stringify(calls, null, 2));
+        console.log("Wrote calls to vapi_calls.json");
+    } catch (e) {
+        console.error("Fetch failed", e);
+    }
+}
+
+testFetch();

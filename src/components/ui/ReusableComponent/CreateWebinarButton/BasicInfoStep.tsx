@@ -63,8 +63,8 @@ const BasicInfoStep = (props: Props) => {
         <label
           htmlFor="webinarName"
           className={cn(
-            "text-sm font-medium",
-            errors.webinarName ? "text-red-400" : "text-[#e5e2e1]",
+            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            errors.webinarName ? "text-red-400" : "text-zinc-500",
           )}
         >
           Webinar name <span className="text-red-400">*</span>
@@ -77,19 +77,22 @@ const BasicInfoStep = (props: Props) => {
           onChange={handleChange}
           placeholder="Introduction to Mochi"
           className={cn(
-            "flex h-10 w-full rounded-md border border-[#444748] bg-[#1c1b1b] px-3 py-2 text-sm ring-offset-background placeholder:text-[#c4c7c8] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
-            errors.webinarName && "border-red-400 focus-visible:ring-red-400",
+            "flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent px-0 py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+            errors.webinarName && "border-red-400 focus-visible:border-red-400",
           )}
         />
 
         {errors.webinarName && (
-          <p className="text-sm text-red-400 mt-1">{errors.webinarName}</p>
+          <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.webinarName}</p>
         )}
       </div>
-      <div className="space-y-2">
+      <div className="space-y-3">
         <Label
           htmlFor="description"
-          className={cn(errors.description ? "text-red-400" : "text-[#e5e2e1]")}
+          className={cn(
+            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            errors.description ? "text-red-400" : "text-zinc-500"
+          )}
         >
           Description <span className="text-red-400">*</span>
         </Label>
@@ -101,19 +104,22 @@ const BasicInfoStep = (props: Props) => {
           onChange={handleChange}
           placeholder="Tell customers what your webinar is about"
           className={cn(
-            "min-h-[100px] !bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
-            errors.description && "border-red-400 focus-visible:ring-red-400",
+            "min-h-[100px] rounded-none border border-zinc-800 bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors",
+            errors.description && "border-red-400 focus-visible:border-red-400",
           )}
         />
 
         {errors.description && (
-          <p className="text-sm text-red-400">{errors.description}</p>
+          <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.description}</p>
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label className={cn(errors.date ? "text-red-400" : "text-[#e5e2e1]")}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div className="flex flex-col space-y-3 w-full">
+          <Label className={cn(
+            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            errors.date ? "text-red-400" : "text-zinc-500"
+          )}>
             Webinar Date <span className="text-red-400">*</span>
           </Label>
 
@@ -124,22 +130,22 @@ const BasicInfoStep = (props: Props) => {
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal !bg-[#1c1b1b] border-[#444748] text-white",
-                    !date && "text-[#c4c7c8]",
-                    errors.date && "border-red-400 focus-visible:ring-red-400"
+                    "w-full justify-start text-left rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent px-0 py-2 text-base focus-visible:ring-0 focus-visible:border-white transition-colors",
+                    !date && "text-zinc-700",
+                    errors.date && "border-red-400"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-3 h-4 w-4 text-zinc-500" />
                   {date ? format(date, "PPP") : "Select date"}
                 </Button>
               }
             />
-            <PopoverContent className="w-auto p-0 !bg-[#1c1b1b] border-[#444748] text-white">
+            <PopoverContent className="w-auto p-0 bg-[#141313] border-zinc-800 text-white rounded-none">
               <Calendar
                 mode="single"
                 selected={date}
                 onSelect={handleDateChange}
-                className="bg-background"
+                className="bg-transparent"
                 disabled={(date) => {
                   const today = new Date();
 
@@ -151,16 +157,20 @@ const BasicInfoStep = (props: Props) => {
             </PopoverContent>
           </Popover>
 
-          {errors.date && <p className="text-sm text-red-400">{errors.date}</p>}
+          {errors.date && <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.date}</p>}
         </div>
-        <div className="space-y-2">
-          <Label className={cn(errors.time ? "text-red-400" : "text-[#e5e2e1]")}>
+
+        <div className="flex flex-col space-y-3 w-full">
+          <Label className={cn(
+            "font-mono text-[10px] uppercase tracking-[0.2em]",
+            errors.time ? "text-red-400" : "text-zinc-500"
+          )}>
             Webinar Time <span className="text-red-400">*</span>
           </Label>
 
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Clock className="absolute left-3 top-2.5 h-4 w-4 text-[#c4c7c8]" />
+          <div className="flex gap-4">
+            <div className="relative flex-1 group">
+              <Clock className="absolute left-0 top-3.5 h-4 w-4 text-zinc-500" />
 
               <Input
                 name="time"
@@ -168,8 +178,8 @@ const BasicInfoStep = (props: Props) => {
                 onChange={handleChange}
                 placeholder="12:00"
                 className={cn(
-                  "pl-9 !bg-[#1c1b1b] border-[#444748] text-white placeholder:text-[#c4c7c8]",
-                  errors.time && "border-red-400 focus-visible:ring-red-400",
+                  "pl-8 flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors",
+                  errors.time && "border-red-400 focus-visible:border-red-400",
                 )}
               />
             </div>
@@ -178,17 +188,17 @@ const BasicInfoStep = (props: Props) => {
               value={timeFormat || "AM"}
               onValueChange={handleTimeFormatChange}
             >
-              <SelectTrigger className="w-20 !bg-[#1c1b1b] border-[#444748] text-white">
+              <SelectTrigger className="w-24 h-12 rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent text-zinc-400 font-mono text-xs focus:ring-0 focus:border-white transition-colors">
                 <SelectValue placeholder="AM" />
               </SelectTrigger>
 
-              <SelectContent className="!bg-[#1c1b1b] border-[#444748] text-white">
+              <SelectContent className="bg-[#141313] border-zinc-800 text-zinc-100 rounded-none">
                 <SelectItem value="AM">AM</SelectItem>
                 <SelectItem value="PM">PM</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          {errors.time && <p className="text-sm text-red-400">{errors.time}</p>}
+          {errors.time && <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.time}</p>}
         </div>
       </div>
 
@@ -211,7 +221,7 @@ const BasicInfoStep = (props: Props) => {
           />
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 

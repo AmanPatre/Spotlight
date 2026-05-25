@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ShieldCheck, Loader2, CreditCard, Lock, CheckCircle2 } from "lucide-react";
+import { getWebinarById } from "@/actions/webinar";
 
 type Props = {
     params: Promise<{ webinarid: string }>;
@@ -14,8 +15,10 @@ export default function CheckoutPage({ params }: Props) {
 
     const [webinarId, setWebinarId] = useState<string>("");
     const [attendeeId, setAttendeeId] = useState<string>("");
+    const [webinarData, setWebinarData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [pageLoading, setPageLoading] = useState(true);
 
     // Script Loading state
     const [scriptLoaded, setScriptLoaded] = useState(false);
@@ -34,8 +37,17 @@ export default function CheckoutPage({ params }: Props) {
     }, []);
 
     useEffect(() => {
-        params.then(({ webinarid }) => {
+        const fetchWebinar = async () => {
+            const { webinarid } = await params;
             setWebinarId(webinarid);
+
+            // Fetch webinar data
+            const data = await getWebinarById(webinarid);
+            if (data) {
+                setWebinarData(data);
+            } else {
+                setError("Webinar not found");
+            }
 
             // Try to get attendeeId from query param or localStorage
             const qpAttendeeId = searchParams.get("attendeeId");
@@ -45,7 +57,9 @@ export default function CheckoutPage({ params }: Props) {
                 const stored = localStorage.getItem(`spotlight_attendee_${webinarid}`);
                 if (stored) setAttendeeId(stored);
             }
-        });
+            setPageLoading(false);
+        };
+        fetchWebinar();
     }, [params, searchParams]);
 
     const handleCheckout = async () => {
@@ -67,7 +81,10 @@ export default function CheckoutPage({ params }: Props) {
             const orderRes = await fetch("/api/payment/razorpay/order", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: 9700, currency: "INR" }), // 9700 paise = 97 INR
+                body: JSON.stringify({
+                    webinarId: webinarId,
+                    currency: webinarData?.currency || "INR"
+                }),
             });
 
             const orderData = await orderRes.json();
@@ -142,104 +159,124 @@ export default function CheckoutPage({ params }: Props) {
         }
     };
 
-    return (
-        <div className="relative min-h-screen bg-background flex items-center justify-center px-4 py-16">
-            {/* Background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/10 via-background to-teal-900/10 pointer-events-none" />
+    if (pageLoading) {
+        return (
+            <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+            </div>
+        );
+    }
 
-            <div className="relative w-full max-w-md z-10">
+    return (
+        <div className="relative min-h-screen bg-[#0c0c0c] flex items-center justify-center px-4 py-16 overflow-hidden">
+            {/* Background elements */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-500/5 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative w-full max-w-xl z-10">
                 {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-widest mb-4">
+                <div className="text-center mb-12 space-y-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 border border-emerald-500/20 bg-emerald-500/5 rounded-none font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-500">
                         <Lock className="w-3 h-3" />
                         Secure Checkout
                     </div>
-                    <h1 className="text-3xl font-black text-foreground tracking-tight">
-                        Complete Your Purchase
+                    <h1 className="text-5xl font-semibold tracking-tight text-white" style={{ fontFamily: "Geist, sans-serif" }}>
+                        Complete Purchase
                     </h1>
-                    <p className="text-muted-foreground mt-2 text-sm">
-                        You&apos;re one step away from getting full access.
+                    <p className="text-zinc-500 font-mono text-[11px] uppercase tracking-widest">
+                        Final Step to Access {webinarData?.title || "Your Webinar"}
                     </p>
                 </div>
 
-                {/* Card */}
-                <div className="bg-card border border-border rounded-3xl p-8 shadow-2xl shadow-black/40">
-                    {/* Order Summary */}
-                    <div className="mb-6 p-4 rounded-2xl bg-secondary/50 border border-border">
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-3">
-                            Order Summary
-                        </p>
-                        <div className="flex justify-between items-center text-sm">
-                            <span className="text-foreground font-medium">Webinar Full Access</span>
-                            <span className="text-foreground font-bold">$97.00</span>
+                {/* Main Checkout Card */}
+                <div className="bg-[#141313] border border-zinc-800 rounded-none p-10 shadow-2xl space-y-10">
+                    {/* Order Details */}
+                    <div className="space-y-8">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-medium text-white">{webinarData?.productTitle || "Full Webinar Access"}</h3>
+                                <p className="text-xs text-zinc-500">Includes lifetime recording & exclusive materials</p>
+                            </div>
+                            <div className="text-right">
+                                <p className="text-2xl font-semibold text-white tracking-tight">
+                                    {webinarData?.currency === 'INR' ? '₹' : '$'}{webinarData?.price?.toLocaleString()}
+                                </p>
+                                {webinarData?.originalPrice && (
+                                    <p className="text-sm text-zinc-600 line-through font-mono">
+                                        {webinarData?.currency === 'INR' ? '₹' : '$'}{webinarData?.originalPrice?.toLocaleString()}
+                                    </p>
+                                )}
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
-                            <span>Lifetime access + Bonus materials</span>
-                            <span className="line-through text-red-400/70">$197.00</span>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-border flex justify-between items-center">
-                            <span className="text-xs text-emerald-400 font-bold">You save 51%</span>
-                            <span className="text-lg font-black text-foreground">$97.00</span>
+
+                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 flex justify-between items-center">
+                            <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest">Savings Applied</span>
+                            <span className="text-sm font-bold text-emerald-400">
+                                {webinarData?.originalPrice && webinarData.price < webinarData.originalPrice
+                                    ? `-${Math.round((1 - webinarData.price / webinarData.originalPrice) * 100)}% DISCOUNT`
+                                    : "OFFER PRICE"}
+                            </span>
                         </div>
                     </div>
 
-                    {/* Razorpay Information Box */}
-                    <div className="space-y-4 mb-6">
-                        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 flex gap-3 text-sm text-emerald-400">
-                            <ShieldCheck className="w-5 h-5 shrink-0" />
-                            <p>
-                                Payments are securely processed by <strong>Razorpay</strong>. Clicking the button below will open a secure checkout window.
-                            </p>
+                    {/* Razorpay Trust Box */}
+                    <div className="pt-6 border-t border-zinc-900">
+                        <div className="flex gap-4 items-start">
+                            <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 border border-zinc-800">
+                                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                            </div>
+                            <div className="space-y-1">
+                                <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">Payment Security</p>
+                                <p className="text-xs text-zinc-600 leading-relaxed">
+                                    Your information is encrypted and securely processed by Razorpay. We do not store your card details.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Error */}
-                    {error && (
-                        <div className="mb-4 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                            {error}
-                        </div>
-                    )}
-
-                    {/* Submit */}
-                    <button
-                        onClick={handleCheckout}
-                        disabled={loading}
-                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-black uppercase tracking-widest text-sm transition-all duration-300 shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2"
-                    >
-                        {loading ? (
-                            <>
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                                Processing...
-                            </>
-                        ) : (
-                            <>
-                                <Lock className="w-4 h-4" />
-                                Complete Purchase — $97.00
-                            </>
+                    {/* Submit Button */}
+                    <div className="space-y-4 pt-4">
+                        {error && (
+                            <div className="px-4 py-3 bg-red-500/5 border border-red-500/10 text-red-400 font-mono text-[10px] uppercase tracking-widest text-center">
+                                {error}
+                            </div>
                         )}
-                    </button>
 
-                    {/* Trust Badges */}
-                    <div className="mt-5 flex items-center justify-center gap-4 text-xs text-muted-foreground/60">
-                        <div className="flex items-center gap-1">
-                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500/60" />
-                            <span>256-bit SSL</span>
+                        <button
+                            onClick={handleCheckout}
+                            disabled={loading}
+                            className="w-full h-16 bg-white text-black font-bold uppercase tracking-[0.2em] text-xs hover:bg-zinc-200 transition-colors flex items-center justify-center gap-3 group disabled:opacity-50"
+                        >
+                            {loading ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                            )}
+                            Pay {webinarData?.currency === 'INR' ? '₹' : '$'}{webinarData?.price?.toLocaleString()} Securely
+                        </button>
+                    </div>
+
+                    {/* Post-pay trust badges */}
+                    <div className="flex justify-between pt-4 border-t border-zinc-900/50">
+                        <div className="text-center space-y-1 px-4 border-r border-zinc-900/50 flex-1">
+                            <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Encryption</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">256-BIT SSL</p>
                         </div>
-                        <div className="w-px h-3 bg-border" />
-                        <div className="flex items-center gap-1">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/60" />
-                            <span>30-day guarantee</span>
+                        <div className="text-center space-y-1 px-4 border-r border-zinc-900/50 flex-1">
+                            <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Guarantee</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">30 DAY REFUND</p>
                         </div>
-                        <div className="w-px h-3 bg-border" />
-                        <div className="flex items-center gap-1">
-                            <Lock className="w-3.5 h-3.5 text-emerald-500/60" />
-                            <span>Secure payment</span>
+                        <div className="text-center space-y-1 px-4 flex-1">
+                            <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Support</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">24/7 PRIORITY</p>
                         </div>
                     </div>
                 </div>
 
-                <p className="text-center text-xs text-muted-foreground/40 mt-6">
-                    This checkout is integrated with Razorpay test mode.
+                <p className="text-center text-[9px] font-mono text-zinc-700 uppercase tracking-[0.3em] mt-10">
+                    Trusted by 10,000+ creators worldwide
                 </p>
             </div>
         </div>

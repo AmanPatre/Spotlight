@@ -3,7 +3,26 @@ import Razorpay from "razorpay";
 
 export async function POST(req: Request) {
     try {
-        const { amount, currency } = await req.json();
+        const { amount, currency, webinarId } = await req.json();
+
+        if (!webinarId) {
+            return NextResponse.json({ error: "Webinar ID is required" }, { status: 400 });
+        }
+
+        // Fetch the webinar to verify the price
+        const { prismaClient } = await import("@/lib/prismaClient");
+        const webinar = await prismaClient.webinar.findUnique({
+            where: { id: webinarId },
+            select: { price: true, currency: true }
+        });
+
+        if (!webinar) {
+            return NextResponse.json({ error: "Webinar not found" }, { status: 404 });
+        }
+
+        // Amount in order request is in sub-units (paise/cents)
+        // Ensure we use the price from the database for security
+        const finalAmount = webinar.price * 100;
 
         if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
             return NextResponse.json(
@@ -18,8 +37,8 @@ export async function POST(req: Request) {
         });
 
         const options = {
-            amount: amount.toString(), // amount in smallest currency unit (paise)
-            currency: currency || "INR",
+            amount: Math.round(finalAmount).toString(), // amount in smallest currency unit (paise)
+            currency: webinar.currency || "INR",
             receipt: `receipt_${Date.now()}`,
         };
 
