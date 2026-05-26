@@ -11,14 +11,14 @@ export default function OBSSetupPanel({ call }: { call: Call | undefined }) {
   // Stream Video SDK embeds the stream key inside the RTMP address.
   // Full address: rtmps://ingress.stream-io-video.com:443/{stream_key}
   const fullRtmpAddress =
-    call?.state?.ingress?.rtmp?.address ??
-    call?.ingress?.rtmp?.address ??
+    (call?.state as any)?.ingress?.rtmp?.address ??
+    (call as any)?.ingress?.rtmp?.address ??
     null;
 
   // Try the explicit stream_key field first, then parse from the URL
   const explicitKey =
-    call?.state?.ingress?.rtmp?.stream_key ??
-    call?.ingress?.rtmp?.stream_key ??
+    (call?.state as any)?.ingress?.rtmp?.stream_key ??
+    (call as any)?.ingress?.rtmp?.stream_key ??
     null;
 
   const lastSlash = fullRtmpAddress?.lastIndexOf("/") ?? -1;

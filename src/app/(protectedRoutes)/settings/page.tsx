@@ -18,7 +18,7 @@ const page = async () => {
     redirect("/sign-in");
   }
 
-  const isConnected = !!userExist?.user?.razorpayAccountId;
+  const isConnected = !!userExist?.user?.stripeConnectId;
   const razorpayLink = "/settings"; // Placeholder for now or actual link if exists
 
   return (

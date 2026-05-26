@@ -10,6 +10,7 @@ import { CheckCircle2 } from "lucide-react";
 type Props = {
   webinarId: string;
   title: string;
+  description?: string | null;
   startTime: Date;
   presenterName: string;
   webinarStatus: WebinarStatusEnum;
@@ -18,6 +19,7 @@ type Props = {
 export default function LandingPageClient({
   webinarId,
   title,
+  description,
   startTime,
   presenterName,
   webinarStatus,
@@ -105,6 +107,11 @@ export default function LandingPageClient({
             >
               {title}
             </h1>
+            {description && (
+              <p className="text-zinc-500 text-lg font-medium max-w-2xl" style={{ fontFamily: "Geist, sans-serif" }}>
+                {description}
+              </p>
+            )}
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-zinc-900 border border-zinc-800 flex items-center justify-center text-white font-bold text-sm">
                 {presenterName.charAt(0).toUpperCase()}

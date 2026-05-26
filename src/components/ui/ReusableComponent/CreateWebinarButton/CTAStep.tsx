@@ -174,7 +174,7 @@ const CTAStep = () => {
             value={aiAgent || ""}
             disabled={loadingAssistants}
             onValueChange={(v) => {
-              updateCTAField("aiAgent", v);
+              updateCTAField("aiAgent", v || "");
             }}
           >
             <SelectTrigger

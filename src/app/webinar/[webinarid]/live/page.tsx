@@ -56,7 +56,6 @@ export default async function AttendeeLivePage({ params }: Props) {
       <div className="flex-1 min-h-0">
         <AttendeeLiveClient
           webinarId={webinarId}
-          webinarTitle={webinar.title}
           aiAgentId={webinar.aiAgentId}
         />
       </div>
