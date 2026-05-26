@@ -64,7 +64,8 @@ export default function AiAgentsClient() {
   const [creating, setCreating] = useState(false);
 
   const refresh = useCallback(async () => {
-    setLoadingList(true);
+    // Only set loading if not already loading to avoid unnecessary triggers
+    setLoadingList((prev) => !prev ? true : prev);
     const res = await getVapiAssistants();
     if (res.success && res.assistants) {
       setAssistants(res.assistants);
@@ -75,16 +76,21 @@ export default function AiAgentsClient() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    const init = async () => {
+      await refresh();
+    }
+    init();
   }, [refresh]);
 
   useEffect(() => {
     if (!selectedId) {
-      setName("");
-      setFirstMessage("");
-      setSystemPrompt("");
-      setProvider("google");
-      setModel("gemini-2.0-flash-001");
+      setTimeout(() => {
+        setName("");
+        setFirstMessage("");
+        setSystemPrompt("");
+        setProvider("google");
+        setModel("gemini-2.0-flash-001");
+      }, 0);
       return;
     }
 

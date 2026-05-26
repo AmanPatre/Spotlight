@@ -25,9 +25,9 @@ const ProductInfoStep = () => {
     ) => {
         const { name, value } = e.target;
         if (name === "price" || name === "originalPrice") {
-            updateProductInfoField(name as any, parseFloat(value) || 0);
+            updateProductInfoField(name as "price" | "originalPrice", parseFloat(value) || 0);
         } else {
-            updateProductInfoField(name as any, value);
+            updateProductInfoField(name as "productTitle" | "currency", value);
         }
     };
 
@@ -87,8 +87,8 @@ const ProductInfoStep = () => {
                             />
                         </div>
                         <Select
-                            value={(currency as any) || "INR"}
-                            onValueChange={(val) => updateProductInfoField("currency", val)}
+                            value={(currency as string) || "INR"}
+                            onValueChange={(val) => updateProductInfoField("currency", val as "INR" | "USD")}
                         >
                             <SelectTrigger className="w-24 h-12 rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent text-zinc-400 font-mono text-xs focus:ring-0 focus:border-white transition-colors">
                                 <SelectValue placeholder="INR" />
@@ -131,7 +131,7 @@ const ProductInfoStep = () => {
                     <div className="space-y-1">
                         <p className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest">Pricing Strategy Tip</p>
                         <p className="text-xs text-emerald-200/60 leading-relaxed">
-                            Setting an Original Price creates a "Discounted" badge in the AI breakout room. Higher perceived value leads to 14% higher conversion rates on average.
+                            Setting an Original Price creates a &quot;Discounted&quot; badge in the AI breakout room. Higher perceived value leads to 14% higher conversion rates on average.
                         </p>
                     </div>
                 </div>

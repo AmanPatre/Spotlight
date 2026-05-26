@@ -19,7 +19,8 @@ export async function GET(req: Request) {
             webinar,
             allWebinars
         });
-    } catch (e: any) {
-        return NextResponse.json({ error: e.message });
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Internal Server Error";
+        return NextResponse.json({ error: message });
     }
 }

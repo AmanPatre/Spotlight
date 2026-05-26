@@ -116,7 +116,7 @@ export const processWebinarEnd = inngest.createFunction(
                                         });
                                         const data = await response.json();
                                         const calls = Array.isArray(data) ? data : (data.results || []);
-                                        const myCall = calls.find((c: any) =>
+                                        const myCall = calls.find((c: { assistantOverrides?: { metadata?: { webinarId?: string; attendeeId?: string } } }) =>
                                             c.assistantOverrides?.metadata?.webinarId === webinarId &&
                                             c.assistantOverrides?.metadata?.attendeeId === attendance.attendeeId
                                         );

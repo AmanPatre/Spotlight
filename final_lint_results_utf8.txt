@@ -1,0 +1,65 @@
+﻿
+> webinaar-platform@0.1.0 lint
+> eslint
+
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\actions\attendence.ts
+  130:61  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\(protectedRoutes)\lead\[webinarId]\page.tsx
+  27:11  warning  'currency' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\(protectedRoutes)\webinars\[webinarid]\live\_components\LiveRoomClient.tsx
+  31:9  warning  'router' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\(protectedRoutes)\webinars\[webinarid]\live\_components\ParticipantSidebar.tsx
+  57:6  warning  React Hook useEffect has a missing dependency: 'fetchParticipants'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\api\payment\razorpay\order\route.ts
+  6:17  warning  'amount' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  6:25  warning  'currency' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\api\test-db\route.ts
+  22:17  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\webinar\[webinarid]\_components\LandingPageClient.tsx
+  22:3  warning  'description' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\webinar\[webinarid]\checkout\page.tsx
+   24:30  warning  'isLoaded' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  148:30  warning  'e' is defined but never used                  @typescript-eslint/no-unused-vars
+  160:63  error    Unexpected any. Specify a different type       @typescript-eslint/no-explicit-any
+  167:18  warning  'e' is defined but never used                  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\webinar\[webinarid]\live\_components\AttendeeLiveClient.tsx
+  19:3  warning  'webinarTitle' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\app\webinar\[webinarid]\live\_components\AttendeeStreamView.tsx
+  244:3  warning  'initialStatus' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\components\ui\ReusableComponent\CreateWebinarButton\BasicInfoStep.tsx
+  25:14  error    The `{}` ("empty object") type allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowObjectTypes' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  27:24  warning  'props' is defined but never used                                                                                                                                                                                                                                                                                                                                                          @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\components\ui\ReusableComponent\CreateWebinarButton\ProductInfoStep.tsx
+   28:44  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   30:44  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+   90:49  error  Unexpected any. Specify a different type                         @typescript-eslint/no-explicit-any
+  134:65  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+  134:76  error  `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`  react/no-unescaped-entities
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\components\ui\ReusableComponent\CreateWebinarButton\index.tsx
+   9:3   warning  'DialogHeader' is defined but never used  @typescript-eslint/no-unused-vars
+  20:30  warning  'ExternalLink' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\components\ui\ReusableComponent\LayoutComponents\Header.tsx
+  23:25  warning  '_user' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\MERN PROJECTS\spotlight\webinaar-platform\src\inngest\functions.ts
+  119:71  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 25 problems (10 errors, 15 warnings)
+

@@ -75,8 +75,8 @@ export default function AttendeeStreamView({
 
         try {
           await streamCall.join({ create: false });
-        } catch (joinErr: any) {
-          const msg = joinErr?.message ?? String(joinErr);
+        } catch (joinErr: unknown) {
+          const msg = joinErr instanceof Error ? joinErr.message : String(joinErr);
           if ((msg.includes("Call not found") || msg.includes("404")) && retries > 0) {
             await new Promise((r) => setTimeout(r, delay));
             return init(retries - 1, delay);
@@ -88,8 +88,8 @@ export default function AttendeeStreamView({
         setCall(streamCall);
 
         await updateAttendanceStatus(webinarId, attendeeId, AttendedTypeEnum.ATTENDED);
-      } catch (err: any) {
-        const msg = err?.message ?? String(err);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
         if (msg.includes("Call not found") || msg.includes("404")) {
           setError("The host hasn't started the stream yet. Hang tight!");
         } else if (msg.includes("403") || msg.includes("Forbidden")) {
@@ -106,7 +106,7 @@ export default function AttendeeStreamView({
 
   useEffect(() => {
     if (!call) return;
-    const unsubscribe = call.on("custom", (event: any) => {
+    const unsubscribe = call.on("custom", (event: { custom?: { type?: string; ctaType?: string } }) => {
       if (event.custom?.type === "CTA_TRIGGERED") {
         setActiveCTA(event.custom.ctaType as "BUY_NOW" | "BOOK_A_CALL");
       }

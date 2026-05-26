@@ -6,19 +6,21 @@ import { Loader2, Lock } from "lucide-react";
 import AttendeeStreamView from "./AttendeeStreamView";
 import EngagementTracker from "./EngagementTracker";
 import { getAttendeeStatus } from "@/actions/attendence";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum, CtaTypeEnum } from "@/generated/prisma/enums";
 
 type Props = {
   webinarId: string;
-  webinarTitle: string;
+  ctaType: CtaTypeEnum;
   aiAgentId: string | null;
 };
 
 export default function AttendeeLiveClient({
   webinarId,
-  webinarTitle,
   aiAgentId,
-}: Props) {
+}: {
+  webinarId: string;
+  aiAgentId: string | null;
+}) {
   const [attendeeId, setAttendeeId] = useState<string | null>(null);
   const [attendeeName, setAttendeeName] = useState<string>("Attendee");
   const [initialStatus, setInitialStatus] = useState<AttendedTypeEnum | null>(null);
@@ -35,8 +37,10 @@ export default function AttendeeLiveClient({
       // Not registered → bounce to landing page
       router.replace(`/webinar/${webinarId}`);
     } else {
-      setAttendeeId(storedId);
-      if (storedName) setAttendeeName(storedName);
+      setTimeout(() => {
+        if (storedId !== attendeeId) setAttendeeId(storedId);
+        if (storedName && storedName !== attendeeName) setAttendeeName(storedName);
+      }, 0);
 
       // Fetch current status
       getAttendeeStatus(webinarId, storedId)
@@ -49,7 +53,7 @@ export default function AttendeeLiveClient({
           setLoading(false);
         });
     }
-  }, [webinarId, router]);
+  }, [webinarId, router, attendeeId, attendeeName]);
 
   if (loading) {
     return (

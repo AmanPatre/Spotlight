@@ -1,5 +1,5 @@
 import React from "react";
-import { Activity, ArrowRight, ArrowUp, Calendar, Download, Mic, Minus, MoreHorizontal, Plus, TrendingUp, DollarSign, Loader2 } from "lucide-react";
+import { Activity, ArrowRight, Calendar, TrendingUp, DollarSign, Mic, Download } from "lucide-react";
 import { getHomeDashboardData } from "@/actions/dashboard";
 
 export const dynamic = 'force-dynamic';

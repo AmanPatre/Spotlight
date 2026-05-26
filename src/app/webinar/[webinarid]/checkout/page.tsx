@@ -2,8 +2,18 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldCheck, Loader2, CreditCard, Lock, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Loader2, CreditCard, Lock } from "lucide-react";
 import { getWebinarById } from "@/actions/webinar";
+import { useUser } from "@clerk/nextjs";
+
+type WebinarData = {
+    title?: string;
+    productTitle?: string | null;
+    description?: string | null;
+    price?: number;
+    originalPrice?: number | null;
+    currency?: string;
+};
 
 type Props = {
     params: Promise<{ webinarid: string }>;
@@ -11,11 +21,12 @@ type Props = {
 
 export default function CheckoutPage({ params }: Props) {
     const router = useRouter();
+    const { user: clerkUser } = useUser();
     const searchParams = useSearchParams();
 
     const [webinarId, setWebinarId] = useState<string>("");
     const [attendeeId, setAttendeeId] = useState<string>("");
-    const [webinarData, setWebinarData] = useState<any>(null);
+    const [webinarData, setWebinarData] = useState<WebinarData | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [pageLoading, setPageLoading] = useState(true);
@@ -97,21 +108,21 @@ export default function CheckoutPage({ params }: Props) {
 
             // 2. Open Razorpay Checkout Window
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder", // Replace with env in production
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder",
                 amount: orderData.amount,
                 currency: orderData.currency,
                 name: "Webinar Platform",
                 description: "Webinar Full Access",
                 order_id: orderData.id,
                 prefill: {
-                    name: "Test User",
-                    email: "test@example.com",
-                    contact: "9999999999",
+                    name: clerkUser?.fullName || "User",
+                    email: clerkUser?.primaryEmailAddress?.emailAddress || "",
+                    contact: "",
                 },
                 theme: {
                     color: "#059669", // emerald-600
                 },
-                handler: async function (response: any) {
+                handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
                     try {
                         // 3. Verify Payment
                         const verifyRes = await fetch("/api/payment/razorpay/verify", {
@@ -143,17 +154,18 @@ export default function CheckoutPage({ params }: Props) {
                     ondismiss: function () {
                         setLoading(false);
                     }
-                }
+                },
             };
 
-            const rzp = new (window as any).Razorpay(options);
-            rzp.on("payment.failed", function (response: any) {
+            const rzp = new (window as unknown as { Razorpay: new (options: unknown) => { on: (event: string, cb: (res: { error: { description: string } }) => void) => void; open: () => void } }).Razorpay(options);
+            rzp.on("payment.failed", function (response: { error: { description: string } }) {
                 setError(`Payment Failed: ${response.error.description}`);
                 setLoading(false);
             });
             rzp.open();
 
-        } catch (e) {
+        } catch (err: unknown) {
+            console.error("Razorpay Error:", err);
             setError("Network error. Please check your connection.");
             setLoading(false);
         }
@@ -201,11 +213,11 @@ export default function CheckoutPage({ params }: Props) {
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-semibold text-white tracking-tight">
-                                    {webinarData?.currency === 'INR' ? '₹' : '$'}{webinarData?.price?.toLocaleString()}
+                                    {webinarData?.currency === 'INR' ? '₹' : '$'}{(webinarData?.price || 0).toLocaleString()}
                                 </p>
                                 {webinarData?.originalPrice && (
                                     <p className="text-sm text-zinc-600 line-through font-mono">
-                                        {webinarData?.currency === 'INR' ? '₹' : '$'}{webinarData?.originalPrice?.toLocaleString()}
+                                        {webinarData?.currency === 'INR' ? '₹' : '$'}{(webinarData?.originalPrice || 0).toLocaleString()}
                                     </p>
                                 )}
                             </div>
@@ -214,8 +226,8 @@ export default function CheckoutPage({ params }: Props) {
                         <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 flex justify-between items-center">
                             <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest">Savings Applied</span>
                             <span className="text-sm font-bold text-emerald-400">
-                                {webinarData?.originalPrice && webinarData.price < webinarData.originalPrice
-                                    ? `-${Math.round((1 - webinarData.price / webinarData.originalPrice) * 100)}% DISCOUNT`
+                                {webinarData?.originalPrice && (webinarData.price || 0) < (webinarData.originalPrice || 0)
+                                    ? `-${Math.round((1 - (webinarData.price || 0) / (webinarData.originalPrice || 0)) * 100)}% DISCOUNT`
                                     : "OFFER PRICE"}
                             </span>
                         </div>
@@ -254,7 +266,7 @@ export default function CheckoutPage({ params }: Props) {
                             ) : (
                                 <CreditCard className="w-4 h-4 group-hover:scale-110 transition-transform" />
                             )}
-                            Pay {webinarData?.currency === 'INR' ? '₹' : '$'}{webinarData?.price?.toLocaleString()} Securely
+                            Pay {webinarData?.currency === 'INR' ? '₹' : '$'}{(webinarData?.price || 0).toLocaleString()} Securely
                         </button>
                     </div>
 

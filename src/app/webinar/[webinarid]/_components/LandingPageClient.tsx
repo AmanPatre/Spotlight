@@ -10,7 +10,6 @@ import { CheckCircle2 } from "lucide-react";
 type Props = {
   webinarId: string;
   title: string;
-  description: string;
   startTime: Date;
   presenterName: string;
   webinarStatus: WebinarStatusEnum;
@@ -19,7 +18,6 @@ type Props = {
 export default function LandingPageClient({
   webinarId,
   title,
-  description,
   startTime,
   presenterName,
   webinarStatus,
@@ -32,11 +30,15 @@ export default function LandingPageClient({
 
   useEffect(() => {
     const storedId = localStorage.getItem(`spotlight_attendee_${webinarId}`);
-    if (storedId) setAttendeeId(storedId);
+    if (storedId) {
+      setTimeout(() => {
+        if (storedId !== attendeeId) setAttendeeId(storedId);
+      }, 0);
+    }
     if (storedId && webinarStatus === WebinarStatusEnum.LIVE) {
       router.push(`/webinar/${webinarId}/live`);
     }
-  }, [webinarId, webinarStatus, router]);
+  }, [webinarId, webinarStatus, router, attendeeId]);
 
   useEffect(() => {
     const tick = () => {

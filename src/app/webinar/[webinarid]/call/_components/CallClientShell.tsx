@@ -24,10 +24,12 @@ export default function CallClientShell({ webinarId, assistantId }: Props) {
       router.replace(`/webinar/${webinarId}`);
       return;
     }
-    setAttendeeId(id);
-    if (name) setAttendeeName(name);
-    setLoading(false);
-  }, [router, webinarId]);
+    setTimeout(() => {
+      if (id !== attendeeId) setAttendeeId(id);
+      if (name && name !== attendeeName) setAttendeeName(name);
+      setLoading(false);
+    }, 0);
+  }, [router, webinarId, attendeeId, attendeeName]);
 
   if (loading) {
     return (

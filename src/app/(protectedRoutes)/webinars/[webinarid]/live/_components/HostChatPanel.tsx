@@ -10,7 +10,7 @@ import {
 } from "stream-chat-react";
 import { StreamChat, Channel as StreamChannel } from "stream-chat";
 import "stream-chat-react/dist/css/index.css";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 type Props = {
   webinarId: string;

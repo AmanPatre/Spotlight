@@ -3,7 +3,7 @@ import Razorpay from "razorpay";
 
 export async function POST(req: Request) {
     try {
-        const { amount, currency, webinarId } = await req.json();
+        const { webinarId } = await req.json();
 
         if (!webinarId) {
             return NextResponse.json({ error: "Webinar ID is required" }, { status: 400 });
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         const order = await razorpay.orders.create(options);
 
         return NextResponse.json(order);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Razorpay Order Error:", error);
         return NextResponse.json(
             { error: "Error creating order" },

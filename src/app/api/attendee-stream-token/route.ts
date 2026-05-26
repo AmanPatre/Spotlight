@@ -32,10 +32,11 @@ export async function POST(req: NextRequest) {
     const token = client.generateUserToken({ user_id: attendeeId });
 
     return NextResponse.json({ token });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error generating attendee stream token:", error);
+    const message = error instanceof Error ? error.message : "Failed to generate token";
     return NextResponse.json(
-      { error: error.message || "Failed to generate token" },
+      { error: message },
       { status: 500 }
     );
   }

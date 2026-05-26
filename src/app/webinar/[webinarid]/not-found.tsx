@@ -10,7 +10,7 @@ export default function WebinarNotFound() {
 
             <h1 className="text-4xl font-semibold mb-4 text-white">Webinar Not Found</h1>
             <p className="text-[#a1a1aa] text-lg max-w-md mb-10 leading-relaxed">
-                The webinar you are looking for might have ended, the link could be invalid, or it hasn't been created yet.
+                The webinar you are looking for might have ended, the link could be invalid, or it hasn&apos;t been created yet.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">

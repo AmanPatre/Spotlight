@@ -7,9 +7,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "../../input";
 import { Info } from "lucide-react";
 
-type Props = {};
-
-const AdditionalInfoStep = (props: Props) => {
+const AdditionalInfoStep = () => {
   const { formData, updateAdditionalInfoField, getStepValidationErrors } =
     useWebinarStore();
   const { lockChat, couponCode, couponEnabled } = formData.additionalInfo;

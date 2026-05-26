@@ -17,10 +17,11 @@ export async function GET() {
     console.log("Generating token for user:", user.id);
     const token = client.generateUserToken({ user_id: user.id });
     return NextResponse.json({ token });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error generating stream token:", error);
+    const message = error instanceof Error ? error.message : "Failed to generate token";
     return NextResponse.json(
-      { error: error.message || "Failed to generate token" },
+      { error: message },
       { status: 500 }
     );
   }

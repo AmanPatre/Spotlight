@@ -3,7 +3,7 @@
 import { AttendedTypeEnum, CtaTypeEnum } from "@/generated/prisma/enums";
 import { prismaClient } from "@/lib/prismaClient";
 import { AttendanceData } from "@/lib/type";
-import { revalidatePath } from "next/cache";
+import { onAuthenticateUser } from "./auth";
 
 // we are geting the webinar info here
 
@@ -107,7 +107,7 @@ export const getWebinarAttendence = async (
         }
 
         if (result[type].count > 0) {
-          const whereClause: { webinarId: string; attendedType?: any } = { webinarId };
+          const whereClause: { webinarId: string; attendedType?: AttendedTypeEnum | { not: AttendedTypeEnum } } = { webinarId };
 
           if (type === AttendedTypeEnum.REGISTERED) {
             // No additional filter, we want everyone
@@ -239,8 +239,6 @@ export const updateAttendanceStatus = async (
     return { success: false };
   }
 };
-
-import { onAuthenticateUser } from "./auth";
 
 /**
  * PHASE 5: Fetch all leads across all webinars for a user

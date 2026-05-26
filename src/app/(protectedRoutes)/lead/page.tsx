@@ -1,6 +1,6 @@
 import { getWebinarLeadsOverview } from "@/actions/attendence";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";
-import { Loader2, ArrowRight, Video, PlayCircle } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { formatCurrency } from "@/lib/utils";

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getWebinarAttendence } from "@/actions/attendence";
 import { AttendedTypeEnum } from "@/generated/prisma/enums";
 import { Users, Search, RefreshCw } from "lucide-react";
@@ -16,7 +16,7 @@ export default function ParticipantSidebar({ webinarId }: { webinarId: string })
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
-  const fetchParticipants = async () => {
+  const fetchParticipants = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getWebinarAttendence(webinarId, { inlcudeUsers: true });
@@ -44,14 +44,17 @@ export default function ParticipantSidebar({ webinarId }: { webinarId: string })
     } finally {
       setLoading(false);
     }
-  };
+  }, [webinarId]);
 
   useEffect(() => {
-    fetchParticipants();
+    // Move initialization logic here
+    void (async () => {
+      await fetchParticipants();
+    })();
     // Poll every 10 seconds to keep it fresh
     const interval = setInterval(fetchParticipants, 10000);
     return () => clearInterval(interval);
-  }, [webinarId]);
+  }, [fetchParticipants, webinarId]);
 
   const filteredParticipants = participants.filter(p =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

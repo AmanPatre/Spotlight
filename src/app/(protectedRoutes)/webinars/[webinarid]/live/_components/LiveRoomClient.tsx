@@ -28,7 +28,6 @@ export default function LiveRoomClient({
   ctaType,
 }: Props) {
   const { user: clerkUser, isLoaded } = useUser();
-  const router = useRouter();
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<ReturnType<
     StreamVideoClient["call"]
@@ -104,7 +103,7 @@ export default function LiveRoomClient({
         initCalledRef.current = false;
       }
     };
-  }, [isLoaded, clerkUser?.id, webinarId, webinarTitle]);
+  }, [isLoaded, clerkUser, webinarId, webinarTitle]);
 
   if (!isLoaded || (!client && !error)) {
     return (

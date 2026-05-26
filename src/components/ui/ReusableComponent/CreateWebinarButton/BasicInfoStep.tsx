@@ -22,9 +22,7 @@ import {
   SelectValue,
 } from "../../select";
 
-type Props = {};
-
-const BasicInfoStep = (props: Props) => {
+const BasicInfoStep = () => {
   const { formData, updateBasicInfoField, getStepValidationErrors } =
     useWebinarStore();
   const { webinarName, description, date, time, timeFormat } =

@@ -14,8 +14,6 @@ import {
   Tag,
   Pointer,
   Settings,
-  CirclePlay,
-  RotateCcw
 } from "lucide-react";
 import { format } from "date-fns";
 import { AttendedTypeEnum, WebinarStatusEnum, CtaTypeEnum } from "@/generated/prisma/enums";
@@ -173,8 +171,8 @@ export default function WebinarDetailClient({
         <button
           onClick={() => setActiveTab("overview")}
           className={`pb-3 border-b-2 text-sm font-medium flex items-center gap-2 transition-all ${activeTab === "overview"
-              ? "border-white text-white"
-              : "border-transparent text-[#c4c7c8] hover:text-white"
+            ? "border-white text-white"
+            : "border-transparent text-[#c4c7c8] hover:text-white"
             }`}
         >
           <LayoutDashboard className="w-4.5 h-4.5" />
@@ -183,8 +181,8 @@ export default function WebinarDetailClient({
         <button
           onClick={() => setActiveTab("pipeline")}
           className={`pb-3 border-b-2 text-sm font-medium flex items-center gap-2 transition-all ${activeTab === "pipeline"
-              ? "border-white text-white"
-              : "border-transparent text-[#c4c7c8] hover:text-white"
+            ? "border-white text-white"
+            : "border-transparent text-[#c4c7c8] hover:text-white"
             }`}
         >
           <Kanban className="w-4.5 h-4.5" />

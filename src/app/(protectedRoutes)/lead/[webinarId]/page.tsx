@@ -1,7 +1,7 @@
 import { getWebinarLeadsDetail } from "@/actions/attendence";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, User, Globe } from "lucide-react";
+import { ArrowLeft, ChevronRight, Globe } from "lucide-react";
 import React from "react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -62,30 +62,24 @@ export default async function LeadDetailPage({ params }: Props) {
                 {/* Converted Section */}
                 <LeadSection
                     title="Converted (Closed Deals)"
-                    count={convertedLeads.length}
                     leads={convertedLeads}
                     price={price}
-                    currency={currency}
                     isConverted
                 />
 
                 {/* Hot Leads Section */}
                 <LeadSection
                     title="Hot Leads (Score 8-10)"
-                    count={hotLeads.length}
                     leads={hotLeads}
                     price={price}
-                    currency={currency}
                     isHot
                 />
 
                 {/* Standard Leads Section */}
                 <LeadSection
                     title="Standard Leads (Score 1-7)"
-                    count={standardLeads.length}
                     leads={standardLeads}
                     price={price}
-                    currency={currency}
                 />
             </div>
         </div>
@@ -103,7 +97,7 @@ function StatCard({ label, value, highlighted = false }: { label: string, value:
     );
 }
 
-function LeadSection({ title, count, leads, price, currency, isHot = false, isConverted = false }: { title: string, count: number, leads: { id: string; user: { name: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], price: number, currency: string, isHot?: boolean, isConverted?: boolean }) {
+function LeadSection({ title, leads, price, isHot = false, isConverted = false }: { title: string, leads: { id: string; user: { name: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], price: number, isHot?: boolean, isConverted?: boolean }) {
     if (leads.length === 0) return null;
 
     return (

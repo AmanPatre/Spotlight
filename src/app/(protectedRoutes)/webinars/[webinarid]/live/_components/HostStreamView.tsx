@@ -6,7 +6,7 @@ import {
   useCallStateHooks,
   ParticipantView,
 } from "@stream-io/video-react-sdk";
-import { ArrowLeft, Power, Eye, VideoOff, Loader2, MessageSquare, Users, Settings, Mic, MicOff, Video, Flame } from "lucide-react";
+import { ArrowLeft, Power, Eye, VideoOff, Loader2, Settings, Mic, MicOff, Video, Flame } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { updateWebinarStatus } from "@/actions/webinar";
 import { WebinarStatusEnum } from "@/generated/prisma/enums";

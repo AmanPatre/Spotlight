@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -17,7 +16,7 @@ import CTAStep from "./CTAStep";
 import AdditionalInfoStep from "./AdditionalInfoStep";
 import ProductInfoStep from "./ProductInfoStep";
 import { cn } from "@/lib/utils";
-import { CheckCircle2, Copy, ExternalLink, X } from "lucide-react";
+import { CheckCircle2, Copy, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 

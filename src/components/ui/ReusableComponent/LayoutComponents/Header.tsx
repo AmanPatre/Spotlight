@@ -20,7 +20,7 @@ const routeLabel: Record<string, string> = {
   billing: "Billing",
 };
 
-const Header = ({ user }: Props) => {
+const Header = () => {
   const pathname = usePathname();
   const router = useRouter();
   const segments = pathname.split("/").filter(Boolean);
