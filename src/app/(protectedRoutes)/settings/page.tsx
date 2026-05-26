@@ -1,5 +1,4 @@
 import { onAuthenticateUser } from "@/actions/auth";
-import { getStripeOAuthLink } from "@/lib/stripe/utils";
 import { cn } from "@/lib/utils";
 import { LucideAlertCircle, LucideArrowRight, LucideCheckCircle2 } from "lucide-react";
 import Link from "next/link";
@@ -19,8 +18,8 @@ const page = async () => {
     redirect("/sign-in");
   }
 
-  const isConnected = !!userExist?.user?.stripeConnectId;
-  const stripeLink = getStripeOAuthLink("api/stripe-connect", userExist.user.id);
+  const isConnected = !!userExist?.user?.razorpayAccountId;
+  const razorpayLink = "/settings"; // Placeholder for now or actual link if exists
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -99,7 +98,7 @@ const page = async () => {
             <div className="border-b border-[#444748] pb-4 mb-8 flex items-center justify-between">
               <div>
                 <h2 className="text-[18px] font-semibold text-[#ffffff] uppercase tracking-tight" style={{ fontFamily: 'Geist, sans-serif' }}>Financial Gateway</h2>
-                <p className="text-[12px] font-mono text-[#c4c7c8] mt-1 uppercase tracking-widest">Stripe Connect Integration</p>
+                <p className="text-[12px] font-mono text-[#c4c7c8] mt-1 uppercase tracking-widest">Razorpay Account Integration</p>
               </div>
               <div className={cn(
                 "px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-widest border",
@@ -125,7 +124,7 @@ const page = async () => {
                   <p className="text-[12px] font-mono text-[#71717a] mt-1 uppercase leading-relaxed">
                     {isConnected
                       ? "Your account is verified. Live conversion processing is active."
-                      : "Stripe connection is pending. Attendees cannot purchase during sessions."}
+                      : "Razorpay connection is pending. Attendees cannot purchase during sessions."}
                   </p>
                 </div>
               </div>
@@ -136,7 +135,7 @@ const page = async () => {
                 Redirect to encrypted external gateway for protocol completion
               </p>
               <Link
-                href={stripeLink}
+                href={razorpayLink}
                 className={cn(
                   "flex items-center gap-2.5 px-6 py-2.5 rounded-none text-[12px] font-bold transition-all tracking-[0.2em] uppercase",
                   isConnected

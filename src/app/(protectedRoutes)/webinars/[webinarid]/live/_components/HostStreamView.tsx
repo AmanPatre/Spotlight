@@ -134,7 +134,7 @@ export default function HostStreamView({
             className="bg-white text-black font-medium text-[12px] px-5 py-2.5 rounded hover:bg-[#e5e2e1] transition-colors flex items-center gap-2 disabled:opacity-50"
           >
             <Power className="w-4 h-4" />
-            {ending ? "Ending..." : "End Stream & Launch AI Breakouts"}
+            {ending ? "Ending..." : "End Stream"}
           </button>
         </div>
       </header>
@@ -191,10 +191,8 @@ export default function HostStreamView({
             <div className="w-px h-8 bg-[#444748] mx-2"></div>
 
             <Popover>
-              <PopoverTrigger>
-                <button className="h-12 w-12 rounded-full border border-[#444748] bg-[#141313] flex items-center justify-center hover:bg-[#2a2a2a] text-[#c4c7c8] hover:text-white transition-colors group">
-                  <Settings className="w-5 h-5" />
-                </button>
+              <PopoverTrigger className="h-12 w-12 rounded-full border border-[#444748] bg-[#141313] flex items-center justify-center hover:bg-[#2a2a2a] text-[#c4c7c8] hover:text-white transition-colors group">
+                <Settings className="w-5 h-5" />
               </PopoverTrigger>
               <PopoverContent className="w-80 bg-[#1c1b1b] border-[#444748] p-1.5 rounded-2xl shadow-2xl text-white mb-4" align="center" side="top">
                 <DeviceControlPanel />
@@ -202,10 +200,8 @@ export default function HostStreamView({
             </Popover>
 
             <Popover>
-              <PopoverTrigger>
-                <button className="h-12 w-12 rounded-full border border-[#444748] bg-[#141313] flex items-center justify-center hover:bg-[#2a2a2a] text-[#c4c7c8] hover:text-white transition-colors group">
-                  <Flame className="w-5 h-5" />
-                </button>
+              <PopoverTrigger className="h-12 w-12 rounded-full border border-[#444748] bg-[#141313] flex items-center justify-center hover:bg-[#2a2a2a] text-[#c4c7c8] hover:text-white transition-colors group">
+                <Flame className="w-5 h-5" />
               </PopoverTrigger>
               <PopoverContent className="w-80 bg-[#1c1b1b] border-[#444748] p-1.5 rounded-2xl shadow-2xl text-white mb-4" align="center" side="top">
                 <CTAControlPanel call={call} aiAgentId={aiAgentId} ctaType={ctaType} />

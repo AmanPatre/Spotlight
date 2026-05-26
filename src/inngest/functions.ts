@@ -19,127 +19,194 @@ export const processWebinarEnd = inngest.createFunction(
 
 
 
-        // Step 2: Fetch all attendees who went to the breakout room
-        const breakoutAttendances = await step.run("fetch-breakout-attendees", async () => {
+        // Step 2: Fetch all attendees who were in the webinar (not just registered)
+        const breakoutAttendances = await step.run("fetch-active-attendees", async () => {
             return prismaClient.attendance.findMany({
                 where: {
                     webinarId,
-                    attendedType: { in: ["FOLLOW_UP", "CONVERTED"] },
+                    attendedType: { in: ["ATTENDED", "ADDED_TO_CART", "BREAKOUT_ROOM", "FOLLOW_UP", "CONVERTED"] },
                 },
                 include: {
-                    user: true, // Attendee info
+                    user: true,
                     webinar: true,
                 },
             });
         });
 
-        // Step 2.5: Now wait 5 minutes for VAPI calls to sync/complete before scoring
-        // (Moved here so we don't wait if there are no attendees)
-        await step.sleep("wait-for-calls-sync", "5m");
-
         if (!breakoutAttendances || breakoutAttendances.length === 0) {
-            return { message: "No breakout attendees found." };
+            return { message: "No active attendees found." };
         }
 
         const webinar = breakoutAttendances[0].webinar;
+        const isBookCall = webinar.ctaType === "BOOK_A_CALL";
+
+        // Step 2.5: Only wait for calls if it's a Book a Call session (AI based)
+        if (isBookCall) {
+            await step.sleep("wait-for-calls-sync", "5m");
+        }
+
+        const webinarPrice = webinar.price || 0;
+        const currency = webinar.currency || "INR";
+
+        // Calculate actual live duration
+        const liveDurationSeconds = Math.max(
+            ((new Date().getTime() - new Date(webinar.startTime).getTime()) / 1000),
+            (webinar.duration || 60) * 60
+        );
+        // If the webinar was shorter than scheduled, use the actual time it was live
+        const effectiveDuration = Math.min(liveDurationSeconds, (webinar.duration || 60) * 60);
+        const thresholdSeconds = effectiveDuration * 0.7; // 70% of actual live time (Lowered for reliability)
 
         const hotLeads: { name: string; email: string; score: number; summary: string }[] = [];
+        const convertedLeads: { name: string; email: string; score: number; summary: string }[] = [];
 
         // Step 3: Loop through attendees to score leads
-        // Note: step.run allows us to track each scoring individually and retry them safely if they fail
         for (const attendance of breakoutAttendances) {
+            const isBuyNow = webinar.ctaType === "BUY_NOW";
+            const isBookACall = webinar.ctaType === "BOOK_A_CALL";
+            const isConverter = attendance.attendedType === "CONVERTED";
+            const isCartAbandoned = attendance.attendedType === "ADDED_TO_CART";
+            const clickedBookCall = isBookACall && (attendance.attendedType === "BREAKOUT_ROOM" || attendance.attendedType === "FOLLOW_UP");
+            const stayedUntilEnd = (attendance.watchTime || 0) >= thresholdSeconds;
+
+            console.log(`Scoring ${attendance.user.name}: watchTime=${attendance.watchTime}, threshold=${thresholdSeconds}, status=${attendance.attendedType}`);
+
             const result = await step.run(`score-lead-${attendance.id}`, async () => {
                 try {
-                    // Normally you'd fetch the specific VAPI transcript here using an integration 
-                    // For now, we mock the transcript string assuming it's fetched from VAPI's /call endpoint.
-                    // In a production scenario: 
-                    // const vapiCall = await fetch(`https://api.vapi.ai/call/${attendance.user.id}`, ...);
-                    const mockTranscript = `The attendee ${attendance.user.name} said: "This is exactly what I need! How do I pay right now? I'm ready to get started immediately."`;
+                    let score = 2;
+                    let summary = "Cold Lead: Left early and did not interact.";
+                    let isHotLead = false;
 
-                    // Ensure Google API Key is available
-                    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-                        console.warn("GOOGLE_GENERATIVE_AI_API_KEY missing");
-                        return null;
+                    // 1. Prioritize Conversion (Universal)
+                    if (isConverter) {
+                        score = 10;
+                        summary = "Converted: Payment verified successfully.";
                     }
+                    // 2. Scoring Logic for BUY_NOW
+                    else if (isBuyNow) {
+                        if (isCartAbandoned) {
+                            score = 8;
+                            summary = "Hot Lead (Cart Abandoned): Clicked 'Buy Now' but did not complete payment.";
+                        } else if (stayedUntilEnd) {
+                            score = 5;
+                            summary = "Warm Lead: Stayed until the very end of the webinar.";
+                        }
+                    }
+                    // 3. Scoring Logic for BOOK_A_CALL
+                    else if (isBookACall) {
+                        // Try AI Score first if they joined breakout (Status: BREAKOUT_ROOM or FOLLOW_UP)
+                        let aiScoreResult = null;
+                        const joinedBreakout = attendance.attendedType === "BREAKOUT_ROOM" || attendance.attendedType === "FOLLOW_UP";
 
-                    // Step 3.1: Fetch real transcript from Vapi
-                    let vapiTranscript = null;
-                    try {
-                        const response = await fetch(`https://api.vapi.ai/call?assistantId=${webinar.aiAgentId}&limit=50`, {
-                            headers: {
-                                "Authorization": `Bearer ${process.env.VAPI_API_KEY}`,
+                        if (joinedBreakout) {
+                            try {
+                                console.log(`Starting AI Scoring for ${attendance.user.name}...`);
+                                if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+                                    console.error("CRITICAL: GOOGLE_GENERATIVE_AI_API_KEY is not defined in environment.");
+                                }
+
+                                const mockTranscript = `The attendee ${attendance.user.name} joined the breakout room but the full transcript is unavailable. They showed interest in booking a call.`;
+                                let vapiTranscript = null;
+
+                                // Fetch from Vapi
+                                if (process.env.VAPI_API_KEY && webinar.aiAgentId) {
+                                    try {
+                                        const response = await fetch(`https://api.vapi.ai/call?assistantId=${webinar.aiAgentId}&limit=50`, {
+                                            headers: { "Authorization": `Bearer ${process.env.VAPI_API_KEY}` }
+                                        });
+                                        const data = await response.json();
+                                        const calls = Array.isArray(data) ? data : (data.results || []);
+                                        const myCall = calls.find((c: any) =>
+                                            c.assistantOverrides?.metadata?.webinarId === webinarId &&
+                                            c.assistantOverrides?.metadata?.attendeeId === attendance.attendeeId
+                                        );
+                                        vapiTranscript = myCall?.transcript || null;
+                                        if (vapiTranscript) console.log(`Found Vapi transcript for ${attendance.user.name}`);
+                                    } catch (e) { console.error("Vapi fetch error", e); }
+                                }
+
+                                const finalTranscript = vapiTranscript || mockTranscript;
+
+                                if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+                                    const { object } = await generateObject({
+                                        model: google("gemini-2.0-flash"),
+                                        schema: z.object({
+                                            summary: z.string(),
+                                            score: z.number().min(1).max(10),
+                                        }),
+                                        prompt: `Analyze this sales call for ${attendance.user.name}. 
+                                        Webinar Type: ${webinar.ctaType}
+                                        Product: ${webinar.productTitle}
+                                        Price: ${webinar.price}
+                                        Transcript: ${finalTranscript}
+                                        
+                                        If the transcript is generic, focus on the fact that they spent time in a 1-on-1 breakout session.
+                                        Provide a 1-2 sentence summary of their interest and a score from 1-10.`,
+                                    });
+                                    aiScoreResult = object;
+                                    console.log(`Success: AI Score for ${attendance.user.name} = ${object.score}`);
+                                }
+                            } catch (e) {
+                                console.error(`AI Scoring failed for ${attendance.user.name}:`, e);
                             }
-                        });
-                        const calls = await response.json() as any[];
+                        }
 
-                        // Find the call for this specific attendee in this webinar
-                        const myCall = calls.find(c =>
-                            c.assistantOverrides?.metadata?.webinarId === webinarId &&
-                            c.assistantOverrides?.metadata?.attendeeId === attendance.attendeeId
-                        );
-
-                        vapiTranscript = myCall?.transcript || null;
-                    } catch (e) {
-                        console.error("Vapi fetch error", e);
+                        if (aiScoreResult) {
+                            score = aiScoreResult.score;
+                            summary = aiScoreResult.summary;
+                        } else if (clickedBookCall) {
+                            score = 8;
+                            summary = "High Intent: Clicked 'Book a Call' but did not complete the AI session.";
+                        } else if (stayedUntilEnd) {
+                            score = 5;
+                            summary = "Warm Lead: Stayed until the very last minute.";
+                        }
+                    }
+                    // 4. Default Fallback for anyone else who stayed long enough
+                    else if (stayedUntilEnd) {
+                        score = 5;
+                        summary = "Warm Lead: Stayed until the end of the session.";
                     }
 
-                    const finalTranscript = vapiTranscript || mockTranscript;
+                    isHotLead = score >= 6;
 
-                    // Use Gemini to score the lead
-                    const { object } = await generateObject({
-                        model: google("gemini-2.0-flash"),
-                        schema: z.object({
-                            summary: z.string().describe("A 1-2 sentence high-level summary of the call."),
-                            score: z.number().min(1).max(10).describe("A rating from 1-10 on how hot this lead is, based on buying/intent signals."),
-                        }),
-                        prompt: `
-              Analyze the following sales call transcript between an AI sales agent and an attendee named ${attendance.user.name}.
-              Give a 1-10 lead score based on their intent to purchase or book a meeting. 8-10 means immediate high buying intent. 
-              Also, write a 1-2 sentence debrief summary of their concerns/interest.
-              
-              Transcript:
-              ${finalTranscript}
-            `,
-                    });
-
-                    const isHotLead = object.score >= 6;
                     await prismaClient.callDebrief.upsert({
                         where: { attendanceId: attendance.id },
-                        update: {
-                            score: object.score,
-                            summary: object.summary,
-                            isHotLead
-                        },
-                        create: {
-                            attendanceId: attendance.id,
-                            score: object.score,
-                            summary: object.summary,
-                            isHotLead
-                        }
+                        update: { score, summary, isHotLead },
+                        create: { attendanceId: attendance.id, score, summary, isHotLead }
                     });
 
                     return {
                         name: attendance.user.name,
                         email: attendance.user.email,
-                        score: object.score,
-                        summary: object.summary,
-                        isHotLead
+                        score,
+                        summary,
+                        isHotLead,
+                        isConverted: isConverter
                     };
                 } catch (error) {
                     console.error("Scoring failed for", attendance.id, error);
-                    return null; // Skip if it explicitly fails
+                    return null;
                 }
             });
 
-            if (result && result.isHotLead) {
-                hotLeads.push({
+            if (result) {
+                const leadData = {
                     name: result.name,
                     email: result.email,
                     score: result.score,
                     summary: result.summary,
-                });
+                };
+
+                if (result.isConverted) {
+                    convertedLeads.push(leadData);
+                } else if (result.isHotLead) {
+                    hotLeads.push(leadData);
+                }
             }
         }
+
+        const pipelineValue = convertedLeads.length * webinarPrice;
 
         // Step 3.5: Generate an overall webinar summary from all individual attendee summaries
         await step.run("generate-webinar-summary", async () => {
@@ -175,17 +242,20 @@ Based on these responses, write a concise 2-3 sentence overall summary of how th
         });
 
         // Step 4: Dispatch the summary email if we have hot leads
-        if (hotLeads.length > 0 && presenterEmail) {
+        if (presenterEmail) {
             await step.run("send-hot-leads-digest", async () => {
                 try {
                     await resend.emails.send({
                         from: "Spotlight Notifications <onboarding@resend.dev>", // Default for Resend sandbox
                         to: [presenterEmail],
-                        subject: `🚨 Hot Leads Available: ${webinar.title}`,
+                        subject: `📊 Webinar Report: ${webinar.title}`,
                         react: HotLeadsDigest({
                             webinarTitle: webinar.title,
                             hotLeads,
+                            convertedLeads,
                             totalAttendees: breakoutAttendances.length,
+                            pipelineValue,
+                            currency,
                         }) as React.ReactElement,
                     });
                 } catch (error) {
@@ -198,7 +268,9 @@ Based on these responses, write a concise 2-3 sentence overall summary of how th
         return {
             message: "Webinar processed successfully.",
             totalProcessed: breakoutAttendances.length,
-            hotLeadsCount: hotLeads.length
+            hotLeadsCount: hotLeads.length,
+            convertedCount: convertedLeads.length,
+            revenue: pipelineValue
         };
     },
 );

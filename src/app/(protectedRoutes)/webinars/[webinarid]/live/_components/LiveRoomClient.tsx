@@ -41,8 +41,7 @@ export default function LiveRoomClient({
   const clientRef = useRef<StreamVideoClient | null>(null);
 
   useEffect(() => {
-    if (!isLoaded || !clerkUser) return;
-    if (initCalledRef.current) return; // already initializing or done
+    if (!isLoaded || !clerkUser || initCalledRef.current) return;
     initCalledRef.current = true;
 
     const initStream = async () => {
@@ -58,10 +57,7 @@ export default function LiveRoomClient({
 
         const streamUser: User = {
           id: clerkUser.id,
-          name:
-            clerkUser.fullName ??
-            clerkUser.emailAddresses[0]?.emailAddress ??
-            "Host",
+          name: clerkUser.fullName ?? clerkUser.emailAddresses[0]?.emailAddress ?? "Host",
           image: clerkUser.imageUrl,
         };
 
@@ -71,8 +67,6 @@ export default function LiveRoomClient({
           token: data.token,
         });
 
-        // Store in ref so the cleanup can disconnect it even if state
-        // hasn't updated yet (important for Strict Mode).
         clientRef.current = videoClient;
 
         const streamCall = videoClient.call("livestream", webinarId);
@@ -82,7 +76,6 @@ export default function LiveRoomClient({
           },
         });
 
-        // Join the call so WebRTC is established and call state is synced
         await streamCall.join();
 
         setClient(videoClient);
@@ -90,27 +83,27 @@ export default function LiveRoomClient({
       } catch (err: any) {
         console.error("Stream init error:", err);
         setError(`Stream error: ${err.message || "Unknown error"}`);
-        // Allow retry
         initCalledRef.current = false;
       }
     };
 
     initStream();
 
-    // Warn on tab close/refresh
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
       e.returnValue = "Leaving will end your live stream for all attendees. Are you sure?";
     };
     window.addEventListener("beforeunload", handleBeforeUnload);
 
-    // Cleanup: disconnect on unmount
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
-      clientRef.current?.disconnectUser();
-      clientRef.current = null;
+      if (clientRef.current) {
+        clientRef.current.disconnectUser();
+        clientRef.current = null;
+        initCalledRef.current = false;
+      }
     };
-  }, [isLoaded, clerkUser, webinarId, webinarTitle]);
+  }, [isLoaded, clerkUser?.id, webinarId, webinarTitle]);
 
   if (!isLoaded || (!client && !error)) {
     return (

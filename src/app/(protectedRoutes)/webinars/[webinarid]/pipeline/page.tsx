@@ -64,6 +64,8 @@ const page = async ({ params }: Props) => {
         <DebriefWidget
           debriefs={debriefData.debriefs}
           totalAttendeesCount={totalAttendeesCount}
+          price={(pipelineData as any).price || 0}
+          currency={(pipelineData as any).currency || "INR"}
         />
       )}
 

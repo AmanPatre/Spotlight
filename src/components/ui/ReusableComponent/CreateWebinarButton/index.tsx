@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useWebinarStore } from "@/store/useWebinarStore";
+import { useRouter } from "next/navigation";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,10 @@ import BasicInfoStep from "./BasicInfoStep";
 import CTAStep from "./CTAStep";
 import AdditionalInfoStep from "./AdditionalInfoStep";
 import ProductInfoStep from "./ProductInfoStep";
+import { cn } from "@/lib/utils";
+import { CheckCircle2, Copy, ExternalLink, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type Props = {
   children?: React.ReactNode;
@@ -22,6 +27,7 @@ type Props = {
 };
 
 const CreateWebinarButton = ({ children, className }: Props) => {
+  const router = useRouter();
   const { isModalOpen, setModalOpen, isComplete, setComplete } =
     useWebinarStore();
   const [webinarLink, setWebinarLink] = useState<string>("");
@@ -63,9 +69,12 @@ const CreateWebinarButton = ({ children, className }: Props) => {
     },
   ];
   return (
-    <Dialog open={isModalOpen} onOpenChange={setModalOpen}>
+    <Dialog open={isModalOpen} onOpenChange={(open) => {
+      setModalOpen(open);
+      if (!open) setComplete(false);
+    }}>
       <DialogTrigger
-        className={className || "rounded-xl flex gap-2 items-center hover:cursor-pointer px-4 py-2 border border-border bg-primary/10 backdrop-blur-sm text-sm font-normal text-primary hover:bg-primary-20"}
+        className={cn(className, "rounded-xl flex gap-2 items-center hover:cursor-pointer px-4 py-2 border border-border bg-primary/10 backdrop-blur-sm text-sm font-normal text-primary hover:bg-primary-20")}
       >
         {children || (
           <>
@@ -74,12 +83,67 @@ const CreateWebinarButton = ({ children, className }: Props) => {
           </>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] p-0 border-none bg-transparent">
+      <DialogContent className={cn("p-0 border-none bg-transparent shadow-none", isComplete ? "sm:max-w-[500px]" : "sm:max-w-[900px]")}>
         {isComplete ? (
-          <div className="bg-muted text-primary rounded-lg overflow-hidden">
-            <DialogTitle className="sr-only">Webinar Created</DialogTitle>
+          <div className="bg-[#141313] border border-[#444748] rounded-2xl overflow-hidden max-w-lg mx-auto shadow-2xl p-8 text-center space-y-6 relative">
+            <button
+              onClick={() => setModalOpen(false)}
+              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-            {/* SuccessStep */}
+            <div className="flex justify-center">
+              <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center border border-emerald-500/20">
+                <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h2 className="text-2xl font-bold text-white">Webinar Scheduled!</h2>
+              <p className="text-zinc-400 text-sm">
+                Your webinar has been successfully created. You can now share the link with your audience.
+              </p>
+            </div>
+
+            <div className="bg-[#1c1b1b] border border-[#2e2e2e] p-4 rounded-xl space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1 overflow-hidden">
+                  <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest text-left mb-1">Webinar Link</p>
+                  <p className="text-sm text-white truncate font-mono text-left">{webinarLink}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 hover:bg-[#2e2e2e] text-zinc-400 hover:text-white"
+                  onClick={() => {
+                    navigator.clipboard.writeText(webinarLink);
+                    toast.success("Link copied to clipboard!");
+                  }}
+                >
+                  <Copy className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-4">
+              <Button
+                variant="outline"
+                className="border-[#2e2e2e] text-white hover:bg-[#1c1b1b]"
+                onClick={() => setModalOpen(false)}
+              >
+                Close
+              </Button>
+              <Button
+                className="bg-white text-black hover:bg-white/90"
+                onClick={() => {
+                  setModalOpen(false);
+                  router.push("/webinars");
+                }}
+              >
+                Go to Dashboard
+              </Button>
+            </div>
           </div>
         ) : (
           <>

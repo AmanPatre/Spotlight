@@ -63,7 +63,10 @@ const MultiStepForm = ({ steps, onComplete }: Props) => {
         const result = await createWebinar(formData);
 
         if (result.status === 200 && result.webinarId) {
-          toast.success("Your webinar has been created successfully.");
+          toast.success("Webinar Scheduled!", {
+            description: "Your session has been created and is ready to go live.",
+            duration: 5000,
+          });
           onComplete(result.webinarId);
         } else {
           toast.error(

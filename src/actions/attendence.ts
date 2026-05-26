@@ -137,6 +137,8 @@ export const getWebinarAttendence = async (
       success: true,
       data: result,
       ctaType: webinar.ctaType,
+      price: webinar.price || 0,
+      currency: webinar.currency || "INR",
       webinarTags: webinar.tags || [],
     };
   } catch (error) {
@@ -327,7 +329,7 @@ export const getWebinarLeadsOverview = async () => {
         totalAttendees: w._count.attendances,
         hotLeads: hotLeadsCount,
         summary: w.summary || "No AI briefing available yet. Run a webinar to generate insights.",
-        pipelineValue: (hotLeadsCount * (w.price || 0) * 0.7) + (convertedCount * (w.price || 0)),
+        pipelineValue: convertedCount * (w.price || 0),
       };
     });
 
@@ -399,3 +401,28 @@ export const getAttendeeStatus = async (
   }
 };
 
+export const updateWatchTime = async (
+  webinarId: string,
+  attendeeId: string,
+  duration: number
+) => {
+  try {
+    await prismaClient.attendance.update({
+      where: {
+        attendeeId_webinarId: {
+          attendeeId,
+          webinarId,
+        },
+      },
+      data: {
+        watchTime: {
+          increment: duration,
+        },
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating watch time", error);
+    return { success: false };
+  }
+};

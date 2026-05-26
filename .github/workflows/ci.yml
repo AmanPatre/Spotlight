@@ -1,0 +1,49 @@
+name: Spotlight CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: Lint, Type-Check, and Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Type Check
+        run: npx tsc --noEmit
+
+      - name: Build Check
+        run: npm run build
+        env:
+          # Dummy values for CI build check (not used for real DB access)
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dummy
+          CLERK_SECRET_KEY: sk_test_dummy
+          NEXT_PUBLIC_STREAM_API_KEY: dummy_key
+          STREAM_SECRET_KEY: dummy_secret
+          RAZORPAY_KEY_ID: rzp_test_dummy
+          RAZORPAY_KEY_SECRET: dummy_secret
+          VAPI_API_KEY: dummy_vapi
+          RESEND_API_KEY: dummy_resend
+          NEXT_PUBLIC_VAPI_PUBLIC_KEY: dummy_vapi_public

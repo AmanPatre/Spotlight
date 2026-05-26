@@ -126,6 +126,7 @@ model Attendance {
   updatedAt    DateTime         @updatedAt
   attendeeId   String           @db.Uuid
   userId       String?          @db.Uuid
+  watchTime    Int              @default(0) // Duration in seconds
 
   @@unique([attendeeId, webinarId])
   @@index([webinarId])

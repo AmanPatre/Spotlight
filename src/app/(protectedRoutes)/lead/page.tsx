@@ -3,6 +3,7 @@ import { WebinarStatusEnum } from "@/generated/prisma/enums";
 import { Loader2, ArrowRight, Video, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import React from "react";
+import { formatCurrency } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
@@ -73,7 +74,7 @@ export default async function LeadPage() {
                   <div className="space-y-1">
                     <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Pipeline</span>
                     <p className="text-2xl font-semibold text-white tracking-tight">
-                      ${(webinar.pipelineValue / 1000000).toFixed(1)}M
+                      {formatCurrency(webinar.pipelineValue)}
                     </p>
                   </div>
                 </div>

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ChevronRight, User, Globe } from "lucide-react";
 import React from "react";
+import { formatCurrency } from "@/lib/utils";
 
 type Props = {
     params: Promise<{ webinarId: string }>;
@@ -53,7 +54,7 @@ export default async function LeadDetailPage({ params }: Props) {
                 <div className="flex gap-4">
                     <StatCard label="Total Attendees" value={leads.length} />
                     <StatCard label="Hot Leads" value={hotLeads.length} highlighted />
-                    <StatCard label="Total Value" value={`${currency === 'INR' ? '₹' : '$'}${(totalValue / 1000).toFixed(1)}k`} />
+                    <StatCard label="Total Value" value={formatCurrency(totalValue)} />
                 </div>
             </div>
 
@@ -143,7 +144,7 @@ function LeadSection({ title, count, leads, price, currency, isHot = false, isCo
                                     </div>
                                 </TableCell>
                                 <TableCell className="text-zinc-400 font-mono text-[13px]">
-                                    {currency === 'INR' ? '₹' : '$'}{isConverted ? price.toLocaleString() : isHot ? (price * 0.7).toLocaleString() : (price * 0.1).toLocaleString()}
+                                    {formatCurrency(isConverted ? price : isHot ? (price * 0.7) : (price * 0.1))}
                                 </TableCell>
                                 <TableCell className="text-zinc-400 max-w-md text-[13px] leading-relaxed py-4">
                                     {lead.CallDebrief?.summary || "Attended main broadcast. Interaction data pending AI synthesis."}

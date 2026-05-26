@@ -3,6 +3,7 @@ import { Geist } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider"
 import { ClerkProvider } from "@clerk/nextjs"
+import { Toaster } from "sonner";
 
 const geist = Geist({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
+            <Toaster position="top-center" richColors />
           </ThemeProvider>
         </body>
       </html>

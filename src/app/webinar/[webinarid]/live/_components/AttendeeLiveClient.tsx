@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Lock } from "lucide-react";
 import AttendeeStreamView from "./AttendeeStreamView";
+import EngagementTracker from "./EngagementTracker";
 import { getAttendeeStatus } from "@/actions/attendence";
 import { AttendedTypeEnum } from "@/generated/prisma/enums";
 
@@ -75,12 +76,15 @@ export default function AttendeeLiveClient({
   }
 
   return (
-    <AttendeeStreamView
-      webinarId={webinarId}
-      attendeeId={attendeeId}
-      attendeeName={attendeeName}
-      aiAgentId={aiAgentId}
-      initialStatus={initialStatus}
-    />
+    <>
+      <EngagementTracker webinarId={webinarId} attendeeId={attendeeId} />
+      <AttendeeStreamView
+        webinarId={webinarId}
+        attendeeId={attendeeId}
+        attendeeName={attendeeName}
+        aiAgentId={aiAgentId}
+        initialStatus={initialStatus}
+      />
+    </>
   );
 }

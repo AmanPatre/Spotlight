@@ -4,6 +4,7 @@ import { prismaClient } from "@/lib/prismaClient";
 import { onAuthenticateUser } from "./auth";
 import { getVapiAssistants } from "./vapi";
 import { AttendedTypeEnum, WebinarStatusEnum } from "@/generated/prisma/enums";
+import { formatCurrency } from "@/lib/utils";
 
 export const getHomeDashboardData = async () => {
     try {
@@ -112,7 +113,7 @@ export const getHomeDashboardData = async () => {
                 metrics: {
                     totalAttendees,
                     activeAgents,
-                    pipelineValue: `$${(pipelineValue / 1000000).toFixed(1)}M`
+                    pipelineValue: formatCurrency(pipelineValue)
                 },
                 upcoming: upcoming.map(u => ({
                     title: u.title,

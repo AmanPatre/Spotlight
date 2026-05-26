@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import VapiCallRoom from "./VapiCallRoom";
+import EngagementTracker from "../../live/_components/EngagementTracker";
 
 type Props = {
   webinarId: string;
@@ -59,11 +60,14 @@ export default function CallClientShell({ webinarId, assistantId }: Props) {
   }
 
   return (
-    <VapiCallRoom
-      webinarId={webinarId}
-      assistantId={assistantId}
-      attendeeName={attendeeName}
-      attendeeId={attendeeId}
-    />
+    <>
+      <EngagementTracker webinarId={webinarId} attendeeId={attendeeId} />
+      <VapiCallRoom
+        webinarId={webinarId}
+        assistantId={assistantId}
+        attendeeName={attendeeName}
+        attendeeId={attendeeId}
+      />
+    </>
   );
 }

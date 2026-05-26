@@ -171,9 +171,10 @@ const CTAStep = () => {
             AI agent <span className="text-red-400">*</span>
           </Label>
           <Select
-            value={!loadingAssistants && aiAgent ? aiAgent : undefined}
+            value={aiAgent || ""}
+            disabled={loadingAssistants}
             onValueChange={(v) => {
-              if (v) updateCTAField("aiAgent", v);
+              updateCTAField("aiAgent", v);
             }}
           >
             <SelectTrigger
@@ -186,12 +187,14 @@ const CTAStep = () => {
                 placeholder={
                   loadingAssistants ? "Loading assistants…" : "Select an assistant"
                 }
-              />
+              >
+                {aiAgent && assistants.find(a => a.id === aiAgent)?.name}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent className="bg-[#141313] border-zinc-800 text-zinc-100 rounded-none shadow-2xl">
               {assistants.map((a) => (
                 <SelectItem key={a.id} value={a.id} className="focus:bg-white focus:text-black">
-                  {a.name || a.id}
+                  {a.name || "Unnamed Agent"}
                 </SelectItem>
               ))}
             </SelectContent>
