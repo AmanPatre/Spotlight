@@ -80,9 +80,10 @@ export default function LiveRoomClient({
 
         setClient(videoClient);
         setCall(streamCall);
-      } catch (err: any) {
-        console.error("Stream init error:", err);
-        setError(`Stream error: ${err.message || "Unknown error"}`);
+      } catch (err) {
+        const error = err as Error;
+        console.error("Stream init error:", error);
+        setError(`Stream error: ${error.message || "Unknown error"}`);
         initCalledRef.current = false;
       }
     };

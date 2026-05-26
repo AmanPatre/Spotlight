@@ -1,11 +1,11 @@
 "use client";
 
-import { useCall, useCallStateHooks } from "@stream-io/video-react-sdk";
+import { Call } from "@stream-io/video-react-sdk";
 import { Copy, Monitor } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export default function OBSSetupPanel({ call }: { call: any }) {
+export default function OBSSetupPanel({ call }: { call: Call | undefined }) {
   const [copied, setCopied] = useState<"rtmp" | "key" | null>(null);
 
   // Stream Video SDK embeds the stream key inside the RTMP address.

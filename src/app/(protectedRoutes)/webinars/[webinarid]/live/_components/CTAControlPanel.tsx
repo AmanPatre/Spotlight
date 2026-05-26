@@ -5,10 +5,12 @@ import { Zap, PhoneCall, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { CtaTypeEnum } from "@/generated/prisma/enums";
 
+import { Call } from "@stream-io/video-react-sdk";
+
 type CTAType = "BUY_NOW" | "BOOK_A_CALL";
 
 type Props = {
-  call: any;
+  call: Call | undefined;
   aiAgentId: string | null;
   ctaType: CtaTypeEnum;
 };
@@ -76,7 +78,7 @@ export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
 
       {!aiAgentId && (
         <p className="text-[11px] text-yellow-500/80">
-          ⚠️ "Book a Call" CTA is hidden — no AI agent configured for this
+          ⚠️ &quot;Book a Call&quot; CTA is hidden &mdash; no AI agent configured for this
           webinar.
         </p>
       )}

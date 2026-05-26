@@ -103,7 +103,7 @@ function StatCard({ label, value, highlighted = false }: { label: string, value:
     );
 }
 
-function LeadSection({ title, count, leads, price, currency, isHot = false, isConverted = false }: { title: string, count: number, leads: any[], price: number, currency: string, isHot?: boolean, isConverted?: boolean }) {
+function LeadSection({ title, count, leads, price, currency, isHot = false, isConverted = false }: { title: string, count: number, leads: { id: string; user: { name: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], price: number, currency: string, isHot?: boolean, isConverted?: boolean }) {
     if (leads.length === 0) return null;
 
     return (

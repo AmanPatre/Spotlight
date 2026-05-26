@@ -42,10 +42,10 @@ export async function onAuthenticateUser() {
       status: 201,
       user: newUser,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.log("error:", error);
     // Write the error to a file so we can debug it
-  
+
     return {
       status: 500,
       error: "internal server error",

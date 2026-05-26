@@ -107,7 +107,7 @@ export const getWebinarAttendence = async (
         }
 
         if (result[type].count > 0) {
-          let whereClause: any = { webinarId };
+          const whereClause: { webinarId: string; attendedType?: any } = { webinarId };
 
           if (type === AttendedTypeEnum.REGISTERED) {
             // No additional filter, we want everyone
