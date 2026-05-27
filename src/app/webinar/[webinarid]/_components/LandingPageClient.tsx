@@ -25,7 +25,12 @@ export default function LandingPageClient({
   webinarStatus,
 }: Props) {
   const [attendeeId, setAttendeeId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Countdown state
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -121,7 +126,7 @@ export default function LandingPageClient({
                   {presenterName}
                 </p>
                 <p className="text-zinc-500 text-sm" style={{ fontFamily: "Geist, sans-serif" }}>
-                  {new Date(startTime).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                  {mounted ? new Date(startTime).toLocaleDateString(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "Loading date..."}
                 </p>
               </div>
             </div>

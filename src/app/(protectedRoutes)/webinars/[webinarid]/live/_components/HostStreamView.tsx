@@ -84,9 +84,13 @@ export default function HostStreamView({
     setEnding(true);
     try {
       await call.stopLive();
-      await updateWebinarStatus(webinarId, WebinarStatusEnum.ENDED);
-      toast.success("Webinar ended.");
-      router.push(`/webinars/${webinarId}`);
+      const result = await updateWebinarStatus(webinarId, WebinarStatusEnum.ENDED);
+      if (result.status === 200) {
+        toast.success(`Webinar ended. Inngest: ${result.debug || "OK"}`);
+        router.push(`/webinars/${webinarId}`);
+      } else {
+        toast.error(`Error finishing webinar: ${result.message}`);
+      }
     } catch {
       toast.error("Failed to end stream. Please try again.");
     } finally {

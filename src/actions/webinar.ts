@@ -187,8 +187,8 @@ export const updateWebinarStatus = async (
       data: { webinarStatus: status },
     });
 
+    let inngestMsg = "Not triggered";
     if (status === "ENDED") {
-      console.log("Sending Inngest event: app/webinar.ended for webinar:", webinarId);
       try {
         const sendResult = await inngest.send({
           name: "app/webinar.ended",
@@ -197,17 +197,20 @@ export const updateWebinarStatus = async (
             presenterEmail: user.user.email,
           },
         });
-        console.log("Inngest event sent successfully:", sendResult);
-      } catch (error) {
-        console.error("Failed to send Inngest event:", error);
+        inngestMsg = "Sent ID: " + (sendResult.ids?.[0] || "success");
+      } catch (error: any) {
+        inngestMsg = "Error: " + (error.message || String(error));
       }
     }
 
     revalidatePath(`/webinars/${webinarId}`);
-    return { status: 200, message: "Status updated successfully" };
-  } catch (error) {
-    console.error("Error updating webinar status", error);
-    return { status: 500, message: "Failed to update status" };
+    return {
+      status: 200,
+      message: "Status updated",
+      debug: inngestMsg
+    };
+  } catch (error: any) {
+    return { status: 500, message: "Prisma or Server Error: " + error.message };
   }
 };
 
