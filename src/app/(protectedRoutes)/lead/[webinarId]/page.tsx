@@ -24,7 +24,6 @@ export default async function LeadDetailPage({ params }: Props) {
     // Dynamic calculation: Converted leads at full price, Hot leads at 70%, Standard at 10%
     const price = webinar.price || 0;
     const totalValue = (convertedLeads.length * price) + (hotLeads.length * price * 0.7) + (standardLeads.length * price * 0.1);
-    const currency = webinar.currency || "INR";
 
     return (
         <div className="w-full max-w-7xl mx-auto px-6 py-10 space-y-10">

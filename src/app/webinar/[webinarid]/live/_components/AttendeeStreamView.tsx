@@ -227,7 +227,6 @@ export default function AttendeeStreamView({
           aiAgentId={aiAgentId}
           activeCTA={activeCTA}
           setActiveCTA={setActiveCTA}
-          initialStatus={initialStatus}
         />
       </StreamCall>
     </StreamVideo>
@@ -241,7 +240,6 @@ function AttendeeInnerView({
   aiAgentId,
   activeCTA,
   setActiveCTA,
-  initialStatus,
 }: {
   webinarId: string;
   attendeeId: string;
@@ -249,7 +247,6 @@ function AttendeeInnerView({
   aiAgentId: string | null;
   activeCTA: "BUY_NOW" | "BOOK_A_CALL" | null;
   setActiveCTA: (v: "BUY_NOW" | "BOOK_A_CALL" | null) => void;
-  initialStatus: AttendedTypeEnum | null;
 }) {
   const { useParticipants, useIsCallLive } = useCallStateHooks();
   const participants = useParticipants();

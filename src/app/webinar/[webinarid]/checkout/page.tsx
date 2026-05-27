@@ -145,7 +145,7 @@ export default function CheckoutPage({ params }: Props) {
                             setError("Payment verification failed");
                             setLoading(false);
                         }
-                    } catch (e) {
+                    } catch {
                         setError("Error verifying payment");
                         setLoading(false);
                     }

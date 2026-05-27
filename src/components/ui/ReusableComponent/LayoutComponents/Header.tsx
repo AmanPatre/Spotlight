@@ -7,10 +7,6 @@ import { LightningIcon } from "@/icons/LightningIcon";
 import { User } from "../../../../generated/prisma/browser";
 import CreateWebinarButton from "../CreateWebinarButton";
 
-type Props = {
-  user: User;
-};
-
 const routeLabel: Record<string, string> = {
   home: "Dashboard",
   webinars: "Webinars",

@@ -8,12 +8,6 @@ import EngagementTracker from "./EngagementTracker";
 import { getAttendeeStatus } from "@/actions/attendence";
 import { AttendedTypeEnum, CtaTypeEnum } from "@/generated/prisma/enums";
 
-type Props = {
-  webinarId: string;
-  ctaType: CtaTypeEnum;
-  aiAgentId: string | null;
-};
-
 export default function AttendeeLiveClient({
   webinarId,
   aiAgentId,

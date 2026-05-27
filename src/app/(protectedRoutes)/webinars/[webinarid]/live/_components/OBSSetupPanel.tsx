@@ -5,20 +5,29 @@ import { Copy, Monitor } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+interface IngressConfig {
+  ingress?: {
+    rtmp?: {
+      address?: string;
+      stream_key?: string;
+    };
+  };
+}
+
 export default function OBSSetupPanel({ call }: { call: Call | undefined }) {
   const [copied, setCopied] = useState<"rtmp" | "key" | null>(null);
 
   // Stream Video SDK embeds the stream key inside the RTMP address.
   // Full address: rtmps://ingress.stream-io-video.com:443/{stream_key}
   const fullRtmpAddress =
-    (call?.state as any)?.ingress?.rtmp?.address ??
-    (call as any)?.ingress?.rtmp?.address ??
+    (call?.state as IngressConfig)?.ingress?.rtmp?.address ??
+    (call as IngressConfig)?.ingress?.rtmp?.address ??
     null;
 
   // Try the explicit stream_key field first, then parse from the URL
   const explicitKey =
-    (call?.state as any)?.ingress?.rtmp?.stream_key ??
-    (call as any)?.ingress?.rtmp?.stream_key ??
+    (call?.state as IngressConfig)?.ingress?.rtmp?.stream_key ??
+    (call as IngressConfig)?.ingress?.rtmp?.stream_key ??
     null;
 
   const lastSlash = fullRtmpAddress?.lastIndexOf("/") ?? -1;
