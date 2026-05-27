@@ -1,4 +1,4 @@
-import { Webinar } from "@/generated/prisma/client";
+import { Webinar } from "@prisma/client";
 import { Calendar, Clock, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";

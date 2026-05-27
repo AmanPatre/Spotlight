@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Webinar } from "@/generated/prisma/client";
+import { Webinar } from "@prisma/client";
 import WebinarCard from "./WebinarCard";
 
 const TABS = ["All", "Upcoming", "Live", "Ended"] as const;
@@ -46,8 +46,8 @@ export default function WebinarTabs({ webinars }: { webinars: Webinar[] }) {
                             key={tab}
                             onClick={() => setActive(tab)}
                             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${active === tab
-                                    ? "bg-[#3a3939] text-white border border-[#444]"
-                                    : "text-[#a1a1aa] hover:text-white hover:bg-[#1c1b1b]"
+                                ? "bg-[#3a3939] text-white border border-[#444]"
+                                : "text-[#a1a1aa] hover:text-white hover:bg-[#1c1b1b]"
                                 }`}
                         >
                             {tab}

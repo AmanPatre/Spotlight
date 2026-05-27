@@ -16,7 +16,7 @@ import {
   Settings,
 } from "lucide-react";
 import { format } from "date-fns";
-import { AttendedTypeEnum, WebinarStatusEnum, CtaTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum, WebinarStatusEnum, CtaTypeEnum } from "@prisma/client";
 import { getWebinarById } from "@/actions/webinar";
 import { getWebinarAttendence } from "@/actions/attendence";
 import WebinarStatusControls from "./WebinarStatusControls";

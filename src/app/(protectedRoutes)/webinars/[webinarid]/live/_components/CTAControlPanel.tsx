@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Zap, PhoneCall, ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
-import { CtaTypeEnum } from "@/generated/prisma/enums";
+import { CtaTypeEnum } from "@prisma/client";
 
 import { Call } from "@stream-io/video-react-sdk";
 

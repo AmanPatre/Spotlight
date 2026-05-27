@@ -9,11 +9,10 @@ import {
 import { ArrowLeft, Power, Eye, VideoOff, Loader2, Settings, Mic, MicOff, Video, Flame } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { updateWebinarStatus } from "@/actions/webinar";
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum, CtaTypeEnum } from "@prisma/client";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import HostChatPanel from "./HostChatPanel";
-import { CtaTypeEnum } from "@/generated/prisma/enums";
 import CTAControlPanel from "./CTAControlPanel";
 import DeviceControlPanel from "./DeviceControlPanel";
 import ParticipantSidebar from "./ParticipantSidebar";

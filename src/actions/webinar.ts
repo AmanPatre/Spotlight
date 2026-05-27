@@ -4,7 +4,7 @@ import { WebinarFormState } from "@/store/useWebinarStore";
 import { onAuthenticateUser } from "./auth";
 import { prismaClient } from "@/lib/prismaClient";
 import { revalidatePath } from "next/cache";
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum } from "@prisma/client";
 import { getVapiAssistantById } from "./vapi";
 import { inngest } from "@/inngest/client";
 

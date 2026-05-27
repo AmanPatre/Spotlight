@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import { prismaClient } from "@/lib/prismaClient";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 
 export async function POST(req: Request) {
     try {

@@ -3,7 +3,7 @@
 import { prismaClient } from "@/lib/prismaClient";
 import { onAuthenticateUser } from "./auth";
 import { getVapiAssistants } from "./vapi";
-import { AttendedTypeEnum, WebinarStatusEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum, WebinarStatusEnum } from "@prisma/client";
 import { formatCurrency } from "@/lib/utils";
 
 export const getHomeDashboardData = async () => {

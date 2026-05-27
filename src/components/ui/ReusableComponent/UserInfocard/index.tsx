@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Attendee, CallDebrief } from "@/generated/prisma/client";
+import { Attendee, CallDebrief } from "@prisma/client";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { FlameIcon, User } from "lucide-react";

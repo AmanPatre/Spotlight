@@ -11,7 +11,7 @@ import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { useUser } from "@clerk/nextjs";
 import { Loader2 } from "lucide-react";
 import HostStreamView from "./HostStreamView";
-import { CtaTypeEnum } from "@/generated/prisma/enums";
+import { CtaTypeEnum } from "@prisma/client";
 
 type Props = {
   webinarId: string;

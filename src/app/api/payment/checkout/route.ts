@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prismaClient } from "@/lib/prismaClient";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 
 /**
  * POST /api/payment/checkout

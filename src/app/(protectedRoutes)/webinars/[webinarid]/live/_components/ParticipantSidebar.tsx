@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getWebinarAttendence } from "@/actions/attendence";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 import { Users, Search, RefreshCw } from "lucide-react";
 
 type Participant = {

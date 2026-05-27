@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getWebinarStatus } from "@/actions/webinar";
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum } from "@prisma/client";
 import { toast } from "sonner";
 
 type Props = {

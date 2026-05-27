@@ -1,5 +1,4 @@
-import { Attendee } from "@/generated/prisma/client";
-import { CtaTypeEnum } from "@/generated/prisma/enums";
+import { Attendee, CtaTypeEnum } from "@prisma/client";
 
 export type ValidationErrors = Record<string, string>;
 

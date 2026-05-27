@@ -6,7 +6,7 @@ import { Loader2, Lock } from "lucide-react";
 import AttendeeStreamView from "./AttendeeStreamView";
 import EngagementTracker from "./EngagementTracker";
 import { getAttendeeStatus } from "@/actions/attendence";
-import { AttendedTypeEnum, CtaTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 
 export default function AttendeeLiveClient({
   webinarId,

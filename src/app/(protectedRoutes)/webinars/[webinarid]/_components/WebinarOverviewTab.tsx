@@ -1,6 +1,6 @@
 "use client";
 
-import { WebinarStatusEnum, CtaTypeEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum, CtaTypeEnum } from "@prisma/client";
 import { Bot, Lock, Tag, Ticket } from "lucide-react";
 
 type Props = {

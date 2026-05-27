@@ -1,6 +1,6 @@
 "use server";
 
-import { AttendedTypeEnum, CtaTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum, CtaTypeEnum } from "@prisma/client";
 import { prismaClient } from "@/lib/prismaClient";
 import { AttendanceData } from "@/lib/type";
 import { onAuthenticateUser } from "./auth";

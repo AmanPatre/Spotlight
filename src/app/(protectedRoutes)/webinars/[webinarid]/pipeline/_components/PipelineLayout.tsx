@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import UserInfoCard from "@/components/ui/ReusableComponent/UserInfocard";
-import { Attendee, CallDebrief } from "@/generated/prisma/client";
+import { Attendee, CallDebrief } from "@prisma/client";
 import React from "react";
 import LowTierToggle from "./LowTierToggle";
 

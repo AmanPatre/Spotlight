@@ -1,5 +1,5 @@
 import { getWebinarLeadsOverview } from "@/actions/attendence";
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum } from "@prisma/client";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";

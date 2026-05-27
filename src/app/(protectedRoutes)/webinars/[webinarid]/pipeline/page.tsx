@@ -1,7 +1,7 @@
 import { getWebinarAttendence } from "@/actions/attendence";
 import { getWebinarDebriefs } from "@/actions/debrief";
 import PageHeader from "@/components/ui/ReusableComponent/PageHeader";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 import { HomeIcon } from "@/icons/HomeIcon";
 import { LeadIcon } from "@/icons/LeadIcon";
 import { PipelineIcon } from "@/icons/PipelineIcon";

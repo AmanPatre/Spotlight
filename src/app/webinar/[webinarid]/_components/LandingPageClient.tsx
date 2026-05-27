@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum } from "@prisma/client";
 import RegistrationForm from "./RegistrationForm";
 import WaitingRoom from "./WaitingRoom";
 import { CheckCircle2 } from "lucide-react";

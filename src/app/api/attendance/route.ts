@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 import { updateAttendanceStatus } from "@/actions/attendence";
 
 /**

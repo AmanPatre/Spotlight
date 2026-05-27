@@ -1,4 +1,4 @@
-import { CtaTypeEnum } from "@/generated/prisma/enums";
+import { CtaTypeEnum } from "@prisma/client";
 import {
   validateAdditionalInfo,
   validateBasicInfo,

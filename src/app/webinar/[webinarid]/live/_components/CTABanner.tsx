@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShoppingBag, PhoneCall, Loader2, X } from "lucide-react";
 import { updateAttendanceStatus } from "@/actions/attendence";
-import { AttendedTypeEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum } from "@prisma/client";
 import { toast } from "sonner";
 
 type CTAType = "BUY_NOW" | "BOOK_A_CALL";

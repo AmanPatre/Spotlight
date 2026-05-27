@@ -1,7 +1,7 @@
 "use client";
 
 import { updateWebinarStatus } from "@/actions/webinar";
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";

@@ -1,6 +1,6 @@
 "use client";
 
-import { WebinarStatusEnum } from "@/generated/prisma/enums";
+import { WebinarStatusEnum } from "@prisma/client";
 import { format } from "date-fns";
 import { CalendarDays, Clock, Copy, ExternalLink } from "lucide-react";
 import { useState } from "react";

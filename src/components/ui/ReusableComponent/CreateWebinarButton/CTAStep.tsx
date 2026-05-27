@@ -7,7 +7,7 @@ import { Input } from "../../input";
 import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "../../tabs";
-import { CtaTypeEnum } from "@/generated/prisma/enums";
+import { CtaTypeEnum } from "@prisma/client";
 import { getVapiAssistants } from "@/actions/vapi";
 import type { VapiAssistantSummary } from "@/lib/vapi-types";
 import {

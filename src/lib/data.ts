@@ -1,7 +1,7 @@
 import { HomeIcon } from "@/icons/HomeIcon";
 import { LeadIcon } from "@/icons/LeadIcon";
 import { SettingsIcon } from "@/icons/SettingsIcon";
-import { CallStatusEnum } from "@/generated/prisma/browser";
+import { CallStatusEnum } from "@prisma/client";
 import { Sparkle, Webcam } from "lucide-react";
 export const sidebarData = [
   {

@@ -15,7 +15,7 @@ import AttendeeChatPanel from "./AttendeeChatPanel";
 import CTABanner from "./CTABanner";
 import { updateAttendanceStatus } from "@/actions/attendence";
 import { getWebinarStatus } from "@/actions/webinar";
-import { AttendedTypeEnum, WebinarStatusEnum } from "@/generated/prisma/enums";
+import { AttendedTypeEnum, WebinarStatusEnum } from "@prisma/client";
 import { useRouter } from "next/navigation";
 
 type Props = {
