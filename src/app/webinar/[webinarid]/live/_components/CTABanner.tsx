@@ -14,6 +14,11 @@ type Props = {
   webinarId: string;
   attendeeId: string;
   aiAgentId: string | null;
+  metadata?: {
+    ctaLabel?: string | null;
+    productTitle?: string | null;
+    price?: number | null;
+  } | null;
   onClose: () => void;
 };
 
@@ -36,14 +41,19 @@ const CTA_CONFIG = {
   },
 } as const;
 
-export default function CTABanner({ type, webinarId, attendeeId, aiAgentId, onClose }: Props) {
+export default function CTABanner({ type, webinarId, attendeeId, aiAgentId, metadata, onClose }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const config = CTA_CONFIG[type];
   const Icon = config.icon;
 
-  const actionLabel =
-    type === "BOOK_A_CALL" && aiAgentId ? "Join Breakout Room" : config.actionLabel;
+  const dynamicTitle = metadata?.productTitle || config.title;
+  const dynamicActionLabel = metadata?.ctaLabel || (type === "BOOK_A_CALL" && aiAgentId ? "Join Breakout Room" : config.actionLabel);
+
+  const priceDisplay = metadata?.price ? ` for only ₹${metadata.price}` : "";
+  const dynamicDescription = metadata?.productTitle
+    ? `Get access to ${metadata.productTitle}${priceDisplay}. Exclusive webinar offer!`
+    : config.description;
 
   const handleAction = async () => {
     if (type === "BOOK_A_CALL" && !aiAgentId) {
@@ -88,13 +98,13 @@ export default function CTABanner({ type, webinarId, attendeeId, aiAgentId, onCl
             {config.label}
           </span>
           <h2 className="text-2xl font-semibold text-white tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
-            {config.title}
+            {dynamicTitle}
           </h2>
         </div>
       </div>
 
       <p className="text-sm text-zinc-400" style={{ fontFamily: "Geist, sans-serif" }}>
-        {config.description}
+        {dynamicDescription}
       </p>
 
       <button
@@ -107,7 +117,7 @@ export default function CTABanner({ type, webinarId, attendeeId, aiAgentId, onCl
         ) : (
           <Icon className="w-4 h-4" />
         )}
-        {loading ? "Processing..." : actionLabel}
+        {loading ? "Processing..." : dynamicActionLabel}
       </button>
     </div>
   );

@@ -4,6 +4,14 @@ import Link from "next/link";
 import { ArrowLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { formatCurrency } from "@/lib/utils";
+import PipelineValueToggle from "./_components/PipelineValueToggle";
+
+interface Lead {
+    id: string;
+    user: { name: string; email: string };
+    CallDebrief?: { score?: number | null; summary?: string | null } | null;
+    attendedType: string;
+}
 
 type Props = {
     params: Promise<{ webinarid: string }>;
@@ -11,19 +19,32 @@ type Props = {
 
 export default async function LeadDetailPage({ params }: Props) {
     const { webinarid } = await params;
-    const { success, webinar, leads } = await getWebinarLeadsDetail(webinarid);
+    const { success, webinar, leads: rawLeads } = await getWebinarLeadsDetail(webinarid);
 
-    if (!success || !webinar || !leads) {
+    if (!success || !webinar || !rawLeads) {
         notFound();
     }
 
-    const convertedLeads = leads.filter(l => l.attendedType === "CONVERTED");
-    const hotLeads = leads.filter(l => l.attendedType !== "CONVERTED" && l.CallDebrief?.score && l.CallDebrief.score >= 8);
-    const standardLeads = leads.filter(l => l.attendedType !== "CONVERTED" && (!l.CallDebrief?.score || l.CallDebrief.score < 8));
+    const leads = rawLeads as Lead[];
 
-    // Dynamic calculation: Converted leads at full price, Hot leads at 70%, Standard at 10%
+    const convertedLeads = leads.filter(l => l.attendedType === "CONVERTED");
+
+    // Hot leads: score >= 8 AND not yet converted
+    const hotLeads = leads.filter(l =>
+        l.attendedType !== "CONVERTED" &&
+        (l.CallDebrief?.score || 0) >= 8
+    );
+
+    // Since hotLeads already excludes converted, all hot leads are unconverted
+    const unconvertedHotLeadsCount = hotLeads.length;
+
+    const standardLeads = leads.filter(l =>
+        l.attendedType !== "CONVERTED" &&
+        !((l.CallDebrief?.score || 0) >= 8)
+    );
+
     const price = webinar.price || 0;
-    const totalValue = (convertedLeads.length * price) + (hotLeads.length * price * 0.7) + (standardLeads.length * price * 0.1);
+    const currency = webinar.currency || "INR";
 
     return (
         <div className="w-full max-w-7xl mx-auto px-6 py-10 space-y-10">
@@ -49,12 +70,15 @@ export default async function LeadDetailPage({ params }: Props) {
                     </div>
                 </div>
 
-                {/* Highlight Stats */}
-                <div className="flex gap-4">
-                    <StatCard label="Total Attendees" value={leads.length} />
-                    <StatCard label="Hot Leads" value={hotLeads.length} highlighted />
-                    <StatCard label="Total Value" value={formatCurrency(totalValue)} />
-                </div>
+                {/* Highlight Stats via Client Toggle */}
+                <PipelineValueToggle
+                    convertedCount={convertedLeads.length}
+                    hotLeadsCount={hotLeads.length}
+                    unconvertedHotLeadsCount={unconvertedHotLeadsCount}
+                    totalAttendeesCount={leads.length}
+                    price={price}
+                    currency={currency}
+                />
             </div>
 
             <div className="space-y-16 pt-6">

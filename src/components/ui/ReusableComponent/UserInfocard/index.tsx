@@ -16,7 +16,7 @@ const UserInfoCard = ({ customer, tags, className, debrief }: Props) => {
     <div
       className={cn(
         "flex flex-col w-full text-white p-5 gap-4 rounded-2xl border border-[#27272a] bg-[#18181b]/40 backdrop-blur-xl transition-all hover:bg-[#18181b]/60 hover:border-white/10",
-        debrief?.isHotLead ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/50" : "",
+        debrief && debrief.score >= 8 ? "border-orange-500/30 bg-orange-500/5 hover:border-orange-500/50" : "",
         className,
       )}
     >
@@ -30,7 +30,7 @@ const UserInfoCard = ({ customer, tags, className, debrief }: Props) => {
             <p className="text-[12px] font-medium text-[#71717a] truncate max-w-[180px]">{customer.email}</p>
           </div>
         </div>
-        {debrief?.isHotLead && (
+        {debrief && debrief.score >= 8 && (
           <Badge variant="default" className="bg-orange-500/10 text-orange-500 border border-orange-500/20 px-2.5 py-0.5 rounded-full font-bold shadow-none">
             <FlameIcon className="w-3 h-3 mr-1.5" />
             Hot

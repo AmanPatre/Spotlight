@@ -30,6 +30,9 @@ const LivePage = async ({ params }: Props) => {
         webinarTitle={webinar.title}
         aiAgentId={webinar.aiAgentId}
         ctaType={webinar.ctaType}
+        ctaLabel={webinar.ctaLabel}
+        productTitle={webinar.productTitle}
+        price={webinar.price}
       />
     </div>
   );

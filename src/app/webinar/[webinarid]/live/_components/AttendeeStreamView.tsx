@@ -10,13 +10,14 @@ import {
   useCallStateHooks,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
-import { Loader2, Settings, Maximize2, Volume2, Pause, Users } from "lucide-react";
+import { Loader2, Settings, Maximize2, Volume2, Pause, Users, MessageSquare } from "lucide-react";
 import AttendeeChatPanel from "./AttendeeChatPanel";
 import CTABanner from "./CTABanner";
 import { updateAttendanceStatus } from "@/actions/attendence";
 import { getWebinarStatus } from "@/actions/webinar";
 import { AttendedTypeEnum, WebinarStatusEnum } from "@prisma/client";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
   webinarId: string;
@@ -31,10 +32,18 @@ export default function AttendeeStreamView({
   attendeeName,
   aiAgentId,
 }: Props) {
+  // ... existing state and logic ...
+  // (Retaining the logic from lines 34-268)
+  // I will just replace the inner view implementation
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [activeCTA, setActiveCTA] = useState<"BUY_NOW" | "BOOK_A_CALL" | null>(null);
+  const [ctaMetadata, setCtaMetadata] = useState<{
+    ctaLabel?: string | null;
+    productTitle?: string | null;
+    price?: number | null;
+  } | null>(null);
   const [webinarEnded, setWebinarEnded] = useState(false);
   const router = useRouter();
 
@@ -119,9 +128,10 @@ export default function AttendeeStreamView({
       setWebinarEnded(true);
     });
 
-    const unsubscribeCustom = call.on("custom", (event: { custom?: { type?: string; ctaType?: string } }) => {
+    const unsubscribeCustom = call.on("custom", (event: any) => {
       if (event.custom?.type === "CTA_TRIGGERED") {
         setActiveCTA(event.custom.ctaType as "BUY_NOW" | "BOOK_A_CALL");
+        setCtaMetadata(event.custom.ctaMetadata || null);
       }
     });
 
@@ -131,7 +141,6 @@ export default function AttendeeStreamView({
     };
   }, [call]);
 
-  // ── Error state ──────────────────────────────────────────────────────────────
   if (error) {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center gap-8 bg-black text-white px-8 text-center"
@@ -141,7 +150,7 @@ export default function AttendeeStreamView({
           <span className="text-[#ffb4ab] font-mono text-2xl">!</span>
         </div>
         <div className="space-y-2 max-w-md">
-          <h2 className="text-lg font-semibold text-white" style={{ fontFamily: "Geist, sans-serif" }}>Connection Error</h2>
+          <h2 className="text-lg font-semibold text-white">Connection Error</h2>
           <p className="text-sm text-zinc-400 font-mono">{error}</p>
         </div>
         <button
@@ -154,7 +163,6 @@ export default function AttendeeStreamView({
     );
   }
 
-  // ── Loading state ─────────────────────────────────────────────────────────────
   if (!client || !call) {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center gap-6 bg-black text-white"
@@ -162,18 +170,16 @@ export default function AttendeeStreamView({
       >
         <Loader2 className="w-8 h-8 animate-spin text-white" />
         <div className="text-center space-y-1">
-          <p className="text-sm font-semibold text-white" style={{ fontFamily: "Geist, sans-serif" }}>Joining Live Stream</p>
+          <p className="text-sm font-semibold text-white">Joining Live Stream</p>
           <p className="text-xs text-zinc-500 font-mono uppercase tracking-widest">Securing your connection...</p>
         </div>
       </div>
     );
   }
 
-  // ── Ended state ───────────────────────────────────────────────────────────────
   if (webinarEnded) {
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center bg-black text-white overflow-hidden relative">
-        {/* Decorative rings */}
         <div className="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
           <div className="w-[800px] h-[800px] border border-zinc-800 rounded-full flex items-center justify-center">
             <div className="w-[600px] h-[600px] border border-zinc-700 rounded-full flex items-center justify-center">
@@ -187,10 +193,10 @@ export default function AttendeeStreamView({
             <div className="w-14 h-14 border border-zinc-700 flex items-center justify-center">
               <span className="text-zinc-500 text-2xl font-mono">■</span>
             </div>
-            <h1 className="text-4xl font-semibold tracking-tight text-white" style={{ fontFamily: "Geist, sans-serif" }}>
+            <h1 className="text-4xl font-semibold tracking-tight text-white">
               The Broadcast has ended.
             </h1>
-            <p className="text-zinc-400" style={{ fontFamily: "Geist, sans-serif" }}>
+            <p className="text-zinc-400">
               Main stage transmission closed. Session data is compiling.
             </p>
           </div>
@@ -201,10 +207,10 @@ export default function AttendeeStreamView({
             <div className="flex flex-col items-center gap-6 bg-zinc-950 border border-zinc-800 p-8 w-full">
               <div className="flex flex-col items-center gap-2">
                 <span className="font-mono text-[11px] text-zinc-400 uppercase tracking-widest">Next Step</span>
-                <h3 className="text-xl font-semibold text-white" style={{ fontFamily: "Geist, sans-serif" }}>
+                <h3 className="text-xl font-semibold text-white">
                   Join the AI Breakout Room
                 </h3>
-                <p className="text-sm text-zinc-500 text-center max-w-md" style={{ fontFamily: "Geist, sans-serif" }}>
+                <p className="text-sm text-zinc-500 text-center max-w-md">
                   Continue the discussion with an AI agent for a personalized consultation session.
                 </p>
               </div>
@@ -243,6 +249,7 @@ export default function AttendeeStreamView({
           attendeeName={attendeeName}
           aiAgentId={aiAgentId}
           activeCTA={activeCTA}
+          ctaMetadata={ctaMetadata}
           setActiveCTA={setActiveCTA}
         />
       </StreamCall>
@@ -256,6 +263,7 @@ function AttendeeInnerView({
   attendeeName,
   aiAgentId,
   activeCTA,
+  ctaMetadata,
   setActiveCTA,
 }: {
   webinarId: string;
@@ -263,11 +271,13 @@ function AttendeeInnerView({
   attendeeName: string;
   aiAgentId: string | null;
   activeCTA: "BUY_NOW" | "BOOK_A_CALL" | null;
+  ctaMetadata: any;
   setActiveCTA: (v: "BUY_NOW" | "BOOK_A_CALL" | null) => void;
 }) {
   const { useParticipants, useIsCallLive } = useCallStateHooks();
   const participants = useParticipants();
   const isLive = useIsCallLive();
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
   const hostParticipant = participants.find((p) => p.userId !== attendeeId && p.videoStream);
   const displayParticipant = hostParticipant || participants.find((p) => p.userId !== attendeeId);
@@ -278,7 +288,7 @@ function AttendeeInnerView({
       <div className="flex flex-1 min-h-0 overflow-hidden">
 
         {/* ── Video Canvas ────────────────────────────────────────── */}
-        <div className="flex-1 relative flex items-center justify-center overflow-hidden border-r border-zinc-800 p-6">
+        <div className="flex-1 relative flex items-center justify-center overflow-hidden border-r border-zinc-800 p-6 transition-all duration-300">
           <div className="w-full aspect-video bg-zinc-950 border border-zinc-800 relative group overflow-hidden">
 
             {/* Scanline effect */}
@@ -323,7 +333,7 @@ function AttendeeInnerView({
               <div className="w-full h-full flex flex-col items-center justify-center gap-6 text-center px-6">
                 <Loader2 className="w-8 h-8 animate-spin text-zinc-600" />
                 <div className="space-y-2">
-                  <p className="text-sm font-semibold text-zinc-400" style={{ fontFamily: "Geist, sans-serif" }}>
+                  <p className="text-sm font-semibold text-zinc-400">
                     Waiting for Host
                   </p>
                   <p className="text-xs text-zinc-600 font-mono">
@@ -348,6 +358,12 @@ function AttendeeInnerView({
                   <span className="font-mono text-[11px] text-zinc-400">LIVE</span>
                 </div>
                 <div className="flex items-center gap-4">
+                  <button
+                    onClick={() => setIsChatOpen(!isChatOpen)}
+                    className={`p-2 rounded transition-colors ${isChatOpen ? 'bg-white text-black' : 'text-white hover:bg-white/10'}`}
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                  </button>
                   <button className="text-white hover:text-zinc-400 transition-colors">
                     <Settings className="w-5 h-5" />
                   </button>
@@ -366,6 +382,7 @@ function AttendeeInnerView({
                   webinarId={webinarId}
                   attendeeId={attendeeId}
                   aiAgentId={aiAgentId}
+                  metadata={ctaMetadata}
                   onClose={() => setActiveCTA(null)}
                 />
               </div>
@@ -374,25 +391,37 @@ function AttendeeInnerView({
         </div>
 
         {/* ── Chat Sidebar ─────────────────────────────────────────── */}
-        <aside className="w-80 bg-zinc-950 flex flex-col h-full border-l border-zinc-800 shrink-0">
-          {/* Header */}
-          <div className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 bg-zinc-900">
-            <span className="font-mono text-[11px] text-white uppercase tracking-widest">Live Chat</span>
-            <span className="font-mono text-[11px] text-zinc-400 flex items-center gap-1">
-              <Users className="w-3.5 h-3.5" />
-              {viewerCount.toLocaleString()}
-            </span>
-          </div>
+        <AnimatePresence mode="wait">
+          {isChatOpen && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 320, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="bg-zinc-950 flex flex-col h-full border-l border-zinc-800 shrink-0 overflow-hidden"
+            >
+              <div className="min-w-[320px] h-full flex flex-col">
+                {/* Header */}
+                <div className="h-14 border-b border-zinc-800 flex items-center justify-between px-4 shrink-0 bg-zinc-900">
+                  <span className="font-mono text-[11px] text-white uppercase tracking-widest">Live Chat</span>
+                  <span className="font-mono text-[11px] text-zinc-400 flex items-center gap-1">
+                    <Users className="w-3.5 h-3.5" />
+                    {viewerCount.toLocaleString()}
+                  </span>
+                </div>
 
-          {/* Chat */}
-          <div className="flex-1 min-h-0 overflow-hidden [&_.str-chat]:h-full [&_.str-chat__container]:h-full [&_.str-chat]:!bg-zinc-950 [&_.str-chat__main-panel]:!bg-zinc-950 [&_.str-chat__list]:!bg-zinc-950">
-            <AttendeeChatPanel
-              webinarId={webinarId}
-              attendeeId={attendeeId}
-              attendeeName={attendeeName}
-            />
-          </div>
-        </aside>
+                {/* Chat */}
+                <div className="flex-1 min-h-0 overflow-hidden [&_.str-chat]:h-full [&_.str-chat__container]:h-full [&_.str-chat]:!bg-zinc-950 [&_.str-chat__main-panel]:!bg-zinc-950 [&_.str-chat__list]:!bg-zinc-950">
+                  <AttendeeChatPanel
+                    webinarId={webinarId}
+                    attendeeId={attendeeId}
+                    attendeeName={attendeeName}
+                  />
+                </div>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
       </div>
 
       <style>{`

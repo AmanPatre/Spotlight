@@ -13,9 +13,19 @@ type Props = {
   call: Call | undefined;
   aiAgentId: string | null;
   ctaType: CtaTypeEnum;
+  ctaLabel?: string | null;
+  productTitle?: string | null;
+  price?: number | null;
 };
 
-export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
+export default function CTAControlPanel({
+  call,
+  aiAgentId,
+  ctaType,
+  ctaLabel,
+  productTitle,
+  price,
+}: Props) {
   const [sending, setSending] = useState<CTAType | null>(null);
 
   const sendCTA = async (ctaType: CTAType) => {
@@ -25,7 +35,15 @@ export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
     }
     setSending(ctaType);
     try {
-      await call.sendCustomEvent({ type: "CTA_TRIGGERED", ctaType });
+      await call.sendCustomEvent({
+        type: "CTA_TRIGGERED",
+        ctaType,
+        ctaMetadata: {
+          ctaLabel,
+          productTitle,
+          price,
+        }
+      });
       toast.success(
         ctaType === "BUY_NOW"
           ? "Buy Now CTA sent to all attendees!"

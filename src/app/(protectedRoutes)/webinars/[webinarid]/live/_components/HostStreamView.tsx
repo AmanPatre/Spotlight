@@ -6,7 +6,7 @@ import {
   useCallStateHooks,
   ParticipantView,
 } from "@stream-io/video-react-sdk";
-import { ArrowLeft, Power, Eye, VideoOff, Loader2, Settings, Mic, MicOff, Video, Flame } from "lucide-react";
+import { ArrowLeft, Power, Eye, VideoOff, Loader2, Settings, Mic, MicOff, Video, Flame, MessageSquare } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { updateWebinarStatus } from "@/actions/webinar";
 import { WebinarStatusEnum, CtaTypeEnum } from "@prisma/client";
@@ -16,12 +16,16 @@ import HostChatPanel from "./HostChatPanel";
 import CTAControlPanel from "./CTAControlPanel";
 import DeviceControlPanel from "./DeviceControlPanel";
 import ParticipantSidebar from "./ParticipantSidebar";
+import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
   webinarId: string;
   webinarTitle?: string;
   aiAgentId: string | null;
   ctaType: CtaTypeEnum;
+  ctaLabel?: string | null;
+  productTitle?: string | null;
+  price?: number | null;
   hostId: string;
   hostName: string;
 };
@@ -31,6 +35,9 @@ export default function HostStreamView({
   webinarTitle,
   aiAgentId,
   ctaType,
+  ctaLabel,
+  productTitle,
+  price,
   hostId,
   hostName,
 }: Props) {
@@ -45,6 +52,7 @@ export default function HostStreamView({
   const [ending, setEnding] = useState(false);
   const [devicesReady, setDevicesReady] = useState(false);
   const [activeTab, setActiveTab] = useState<"chat" | "participants">("chat");
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
   // Enable camera and mic automatically when the host enters the room
   useEffect(() => {
@@ -151,7 +159,7 @@ export default function HostStreamView({
       {/* Main Workspace */}
       <main className="flex-1 flex overflow-hidden">
         {/* Center Stage: Video Player Area */}
-        <section className="flex-1 bg-[#0e0e0e] flex flex-col relative">
+        <section className="flex-1 bg-[#0e0e0e] flex flex-col relative transition-all duration-300">
           {/* Video Canvas */}
           <div className="flex-1 p-6 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="w-full h-full max-w-6xl relative border border-[#444748] bg-black rounded overflow-hidden group">
@@ -213,43 +221,71 @@ export default function HostStreamView({
                 <Flame className="w-5 h-5" />
               </PopoverTrigger>
               <PopoverContent className="w-80 bg-[#1c1b1b] border-[#444748] p-1.5 rounded-2xl shadow-2xl text-white mb-4" align="center" side="top">
-                <CTAControlPanel call={call} aiAgentId={aiAgentId} ctaType={ctaType} />
+                <CTAControlPanel
+                  call={call}
+                  aiAgentId={aiAgentId}
+                  ctaType={ctaType}
+                  ctaLabel={ctaLabel}
+                  productTitle={productTitle}
+                  price={price}
+                />
               </PopoverContent>
             </Popover>
+
+            <div className="w-px h-8 bg-[#444748] mx-2"></div>
+
+            <button
+              onClick={() => setIsChatOpen(!isChatOpen)}
+              className={`h-12 w-12 rounded-full border border-[#444748] flex items-center justify-center hover:bg-[#2a2a2a] transition-colors group ${isChatOpen ? 'bg-white text-black' : 'bg-[#141313] text-[#c4c7c8] hover:text-white'}`}
+            >
+              <MessageSquare className="w-5 h-5" />
+            </button>
           </div>
         </section>
 
         {/* Right Panel: Communications */}
-        <aside className="w-[360px] border-l border-[#444748] bg-[#141313] flex flex-col shrink-0">
-          {/* Tabs */}
-          <div className="flex border-b border-[#444748] shrink-0 px-2">
-            <button
-              onClick={() => setActiveTab("chat")}
-              className={`flex-1 py-4 flex justify-center border-b-2 transition-colors ${activeTab === "chat" ? "border-white text-white" : "border-transparent text-[#c4c7c8] hover:border-[#444748]"}`}
+        <AnimatePresence mode="wait">
+          {isChatOpen && (
+            <motion.aside
+              initial={{ width: 0, opacity: 0 }}
+              animate={{ width: 360, opacity: 1 }}
+              exit={{ width: 0, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="border-l border-[#444748] bg-[#141313] flex flex-col shrink-0 overflow-hidden"
             >
-              <span className="font-mono text-[12px] uppercase font-bold tracking-wider">Chat</span>
-            </button>
-            <button
-              onClick={() => setActiveTab("participants")}
-              className={`flex-1 py-4 flex justify-center border-b-2 transition-colors ${activeTab === "participants" ? "border-white text-white" : "border-transparent text-[#c4c7c8] hover:border-[#444748]"}`}
-            >
-              <span className="font-mono text-[12px] uppercase font-bold tracking-wider">Participants</span>
-            </button>
-          </div>
+              <div className="min-w-[360px] h-full flex flex-col">
+                {/* Tabs */}
+                <div className="flex border-b border-[#444748] shrink-0 px-2">
+                  <button
+                    onClick={() => setActiveTab("chat")}
+                    className={`flex-1 py-4 flex justify-center border-b-2 transition-colors ${activeTab === "chat" ? "border-white text-white" : "border-transparent text-[#c4c7c8] hover:border-[#444748]"}`}
+                  >
+                    <span className="font-mono text-[12px] uppercase font-bold tracking-wider">Chat</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveTab("participants")}
+                    className={`flex-1 py-4 flex justify-center border-b-2 transition-colors ${activeTab === "participants" ? "border-white text-white" : "border-transparent text-[#c4c7c8] hover:border-[#444748]"}`}
+                  >
+                    <span className="font-mono text-[12px] uppercase font-bold tracking-wider">Participants</span>
+                  </button>
+                </div>
 
-          {/* Tab Content */}
-          <div className="flex-1 overflow-hidden flex flex-col">
-            {activeTab === "chat" ? (
-              <HostChatPanel
-                webinarId={webinarId}
-                hostId={hostId}
-                hostName={hostName}
-              />
-            ) : (
-              <ParticipantSidebar webinarId={webinarId} />
-            )}
-          </div>
-        </aside>
+                {/* Tab Content */}
+                <div className="flex-1 overflow-hidden flex flex-col">
+                  {activeTab === "chat" ? (
+                    <HostChatPanel
+                      webinarId={webinarId}
+                      hostId={hostId}
+                      hostName={hostName}
+                    />
+                  ) : (
+                    <ParticipantSidebar webinarId={webinarId} />
+                  )}
+                </div>
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
       </main>
     </div>
   );

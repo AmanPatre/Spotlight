@@ -17,11 +17,21 @@ const sidebarData = [
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const [mounted, setMounted] = React.useState(false);
 
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return (
+    <nav className="fixed left-0 top-0 h-full w-[240px] flex flex-col py-6 border-r border-[#444748] z-50 bg-[#141313]">
+      {/* Placeholder to prevent layout shift */}
+    </nav>
+  );
   return (
-    <nav className="fixed left-0 top-0 h-full w-[240px] flex flex-col py-6 border-r border-[#444748] z-50">
+    <nav className="fixed left-0 top-0 h-full w-[240px] flex flex-col py-6 border-r border-[#444748] z-50 bg-[#09090b]">
       {/* Brand / Header */}
-      <div className="px-6 mb-10 flex items-center gap-3">
+      <div className="px-6 mb-6 flex items-center gap-3">
         <div className="w-8 h-8 rounded bg-[#ffffff] flex items-center justify-center">
           <Activity className="text-[#2f3131] w-[18px] h-[18px] stroke-[2.5]" />
         </div>

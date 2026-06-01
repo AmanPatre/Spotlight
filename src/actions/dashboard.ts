@@ -14,7 +14,9 @@ export const getHomeDashboardData = async () => {
         // 1. Fetch Basic Metrics
         const webinars = await prismaClient.webinar.findMany({
             where: { presenterId: auth.user.id },
-            include: {
+            select: {
+                id: true,
+                price: true,
                 _count: {
                     select: {
                         attendances: {
@@ -26,9 +28,13 @@ export const getHomeDashboardData = async () => {
                 },
                 attendances: {
                     where: {
-                        CallDebrief: { isNot: null }
+                        OR: [
+                            { CallDebrief: { isNot: null } },
+                            { attendedType: AttendedTypeEnum.CONVERTED }
+                        ]
                     },
                     select: {
+                        attendedType: true,
                         CallDebrief: {
                             select: {
                                 isHotLead: true,
@@ -41,9 +47,11 @@ export const getHomeDashboardData = async () => {
         });
 
         const totalAttendees = webinars.reduce((sum, w) => sum + w._count.attendances, 0);
-        const totalHotLeads = webinars.reduce((sum, w) =>
-            sum + w.attendances.filter(a => a.CallDebrief?.isHotLead).length, 0);
-        const pipelineValue = totalHotLeads * 15000; // Mock multiplier for demo
+
+        const pipelineValue = webinars.reduce((sum, w) => {
+            const convertedCount = w.attendances.filter(a => a.attendedType === AttendedTypeEnum.CONVERTED).length;
+            return sum + (convertedCount * (w.price || 0));
+        }, 0);
 
         // 2. Fetch Active Agents
         const vapi = await getVapiAssistants();

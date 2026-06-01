@@ -316,7 +316,10 @@ export const getWebinarLeadsOverview = async () => {
     });
 
     const processedWebinars = webinars.map(w => {
-      const hotLeadsCount = w.attendances.filter(a => a.CallDebrief?.isHotLead).length;
+      const hotLeadsCount = w.attendances.filter(a =>
+        (a.CallDebrief?.score || 0) >= 8 &&
+        a.attendedType !== AttendedTypeEnum.CONVERTED
+      ).length;
       const convertedCount = w.attendances.filter(a => a.attendedType === AttendedTypeEnum.CONVERTED).length;
 
       return {
@@ -325,6 +328,7 @@ export const getWebinarLeadsOverview = async () => {
         status: w.webinarStatus,
         date: w.startTime,
         totalAttendees: w._count.attendances,
+        convertedCount,
         hotLeads: hotLeadsCount,
         summary: w.summary || "No AI briefing available yet. Run a webinar to generate insights.",
         pipelineValue: convertedCount * (w.price || 0),

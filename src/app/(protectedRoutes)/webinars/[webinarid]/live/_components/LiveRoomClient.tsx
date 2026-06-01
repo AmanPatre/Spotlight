@@ -18,6 +18,9 @@ type Props = {
   webinarTitle: string;
   aiAgentId: string | null;
   ctaType: CtaTypeEnum;
+  ctaLabel?: string | null;
+  productTitle?: string | null;
+  price?: number | null;
 };
 
 export default function LiveRoomClient({
@@ -25,6 +28,9 @@ export default function LiveRoomClient({
   webinarTitle,
   aiAgentId,
   ctaType,
+  ctaLabel,
+  productTitle,
+  price,
 }: Props) {
   const { user: clerkUser, isLoaded } = useUser();
   const [client, setClient] = useState<StreamVideoClient | null>(null);
@@ -137,8 +143,12 @@ export default function LiveRoomClient({
       <StreamCall call={call}>
         <HostStreamView
           webinarId={webinarId}
+          webinarTitle={webinarTitle}
           aiAgentId={aiAgentId}
           ctaType={ctaType}
+          ctaLabel={ctaLabel}
+          productTitle={productTitle}
+          price={price}
           hostId={clerkUser!.id}
           hostName={
             clerkUser!.fullName ??

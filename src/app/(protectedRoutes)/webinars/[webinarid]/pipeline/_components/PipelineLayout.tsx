@@ -18,13 +18,18 @@ const PipelineLayout = ({ title, count, users, tags, debriefs = [] }: Props) => 
     return debriefs.find((d) => d.attendance.attendeeId === userId)?.score || 0;
   };
 
+  const isHot = (id: string) => {
+    const d = debriefs.find((deb) => deb.attendance.attendeeId === id);
+    return (d?.score || 0) >= 8;
+  };
+
   // Sort users by score descending.
   const sortedUsers = [...users].sort((a, b) => getScore(b.id) - getScore(a.id));
 
   // Split into tiers
-  const hotUsers = sortedUsers.filter(u => getScore(u.id) >= 8);
-  const midUsers = sortedUsers.filter(u => getScore(u.id) >= 4 && getScore(u.id) < 8);
-  const lowUsers = sortedUsers.filter(u => getScore(u.id) < 4); // Score 1-3, or 0 (no score)
+  const hotUsers = sortedUsers.filter(u => isHot(u.id));
+  const midUsers = sortedUsers.filter(u => !isHot(u.id) && getScore(u.id) >= 4);
+  const lowUsers = sortedUsers.filter(u => !isHot(u.id) && getScore(u.id) < 4);
 
   return (
     <div className="flex-shrink-0 w-[350px] p-5 border border-border bg-background/10 rounded-xl backdrop-blur-2xl flex flex-col max-h-[80vh]">
