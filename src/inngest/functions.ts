@@ -49,11 +49,12 @@ export const processWebinarEnd = inngest.createFunction(
         const currency = webinar.currency || "INR";
 
         // Calculate actual live duration
+        const actualEndTime = webinar.endTime ? new Date(webinar.endTime).getTime() : new Date().getTime();
         const liveDurationSeconds = Math.max(
-            ((new Date().getTime() - new Date(webinar.startTime).getTime()) / 1000),
-            (webinar.duration || 60) * 60
+            ((actualEndTime - new Date(webinar.startTime).getTime()) / 1000),
+            0
         );
-        // If the webinar was shorter than scheduled, use the actual time it was live
+        // If the webinar was shorter than scheduled, use the actual time it was live for thresholding
         const effectiveDuration = Math.min(liveDurationSeconds, (webinar.duration || 60) * 60);
         const thresholdSeconds = effectiveDuration * 0.7; // 70% of actual live time (Lowered for reliability)
 

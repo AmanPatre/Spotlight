@@ -180,9 +180,17 @@ export const updateWebinarStatus = async (
     const user = await onAuthenticateUser();
     if (!user.user) return { status: 401, message: "Unauthorized" };
 
+    const updateData: { webinarStatus: WebinarStatusEnum; endTime?: Date } = {
+      webinarStatus: status
+    };
+
+    if (status === WebinarStatusEnum.ENDED) {
+      updateData.endTime = new Date();
+    }
+
     await prismaClient.webinar.update({
       where: { id: webinarId, presenterId: user.user.id },
-      data: { webinarStatus: status },
+      data: updateData,
     });
 
     let inngestMsg = "Not triggered";
