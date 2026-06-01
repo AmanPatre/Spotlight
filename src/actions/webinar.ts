@@ -141,8 +141,8 @@ export const getWebinarByPresenterId = async (
   }
 }
 export const getWebinarById = async (webinarId: string) => {
+  noStore();
   try {
-    console.log("Fetching webinar with ID:", webinarId);
     const webinar = await prismaClient.webinar.findUnique({
       where: { id: webinarId },
       include: {
@@ -198,8 +198,8 @@ export const updateWebinarStatus = async (
           },
         });
         inngestMsg = "Sent ID: " + (sendResult.ids?.[0] || "success");
-      } catch (error: any) {
-        inngestMsg = "Error: " + (error.message || String(error));
+      } catch (error: unknown) {
+        inngestMsg = "Error: " + (error instanceof Error ? error.message : String(error));
       }
     }
 
@@ -210,8 +210,8 @@ export const updateWebinarStatus = async (
       message: "Status updated",
       debug: inngestMsg
     };
-  } catch (error: any) {
-    return { status: 500, message: "Prisma or Server Error: " + error.message };
+  } catch (error: unknown) {
+    return { status: 500, message: "Prisma or Server Error: " + (error instanceof Error ? error.message : String(error)) };
   }
 };
 

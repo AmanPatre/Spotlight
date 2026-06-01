@@ -1,17 +1,17 @@
 import { getWebinarLeadsDetail } from "@/actions/attendence";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ChevronRight, Globe } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import React from "react";
 import { formatCurrency } from "@/lib/utils";
 
 type Props = {
-    params: Promise<{ webinarId: string }>;
+    params: Promise<{ webinarid: string }>;
 };
 
 export default async function LeadDetailPage({ params }: Props) {
-    const { webinarId } = await params;
-    const { success, webinar, leads } = await getWebinarLeadsDetail(webinarId);
+    const { webinarid } = await params;
+    const { success, webinar, leads } = await getWebinarLeadsDetail(webinarid);
 
     if (!success || !webinar || !leads) {
         notFound();

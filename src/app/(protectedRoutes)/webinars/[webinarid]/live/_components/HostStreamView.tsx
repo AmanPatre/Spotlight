@@ -83,19 +83,24 @@ export default function HostStreamView({
   const handleEndStream = async () => {
     if (!call) return;
     setEnding(true);
+    let success = false;
     try {
       await call.stopLive();
       const result = await updateWebinarStatus(webinarId, WebinarStatusEnum.ENDED);
       if (result.status === 200) {
+        success = true;
         toast.success(`Webinar ended. Inngest: ${result.debug || "OK"}`);
-        router.push(`/webinars/${webinarId}`);
+        // Force a total browser reload to bypass Next.js stubborn router cache
+        window.location.href = `/webinars/${webinarId}`;
       } else {
         toast.error(`Error finishing webinar: ${result.message}`);
       }
     } catch {
       toast.error("Failed to end stream. Please try again.");
     } finally {
-      setEnding(false);
+      if (!success) {
+        setEnding(false);
+      }
     }
   };
 

@@ -4,7 +4,6 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bell, Search, ChevronRight } from "lucide-react";
 import { LightningIcon } from "@/icons/LightningIcon";
-import { User } from "@prisma/client";
 import CreateWebinarButton from "../CreateWebinarButton";
 
 const routeLabel: Record<string, string> = {

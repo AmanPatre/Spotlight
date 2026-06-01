@@ -3,6 +3,8 @@ import { getWebinarAttendence } from "@/actions/attendence";
 import { notFound } from "next/navigation";
 import WebinarDetailClient from "./_components/WebinarDetailClient";
 
+export const dynamic = 'force-dynamic';
+
 type Props = {
   params: Promise<{ webinarid: string }>;
 };

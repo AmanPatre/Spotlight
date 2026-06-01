@@ -23,7 +23,6 @@ type Props = {
   attendeeId: string;
   attendeeName: string;
   aiAgentId: string | null;
-  initialStatus: AttendedTypeEnum | null;
 };
 
 export default function AttendeeStreamView({
@@ -31,7 +30,6 @@ export default function AttendeeStreamView({
   attendeeId,
   attendeeName,
   aiAgentId,
-  initialStatus,
 }: Props) {
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<Call | null>(null);

@@ -81,7 +81,6 @@ export default function AttendeeLiveClient({
         attendeeId={attendeeId}
         attendeeName={attendeeName}
         aiAgentId={aiAgentId}
-        initialStatus={initialStatus}
       />
     </>
   );

@@ -1,5 +1,5 @@
 import { onAuthenticateUser } from "@/actions/auth";
-import { ChevronRight, Plus, Video, SlidersHorizontal, Search } from "lucide-react";
+import { ChevronRight, Plus, Video } from "lucide-react";
 import { redirect } from "next/navigation";
 import React from "react";
 import { getWebinarByPresenterId } from "@/actions/webinar";
