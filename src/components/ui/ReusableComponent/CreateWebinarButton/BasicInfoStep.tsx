@@ -25,7 +25,7 @@ import {
 const BasicInfoStep = () => {
   const { formData, updateBasicInfoField, getStepValidationErrors } =
     useWebinarStore();
-  const { webinarName, description, date, time, timeFormat } =
+  const { webinarName, description, date, time } =
     formData.basicInfo;
   const errors = getStepValidationErrors("basicInfo");
 

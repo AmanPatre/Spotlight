@@ -11,24 +11,23 @@ import { inngest } from "@/inngest/client";
 function combineDateTime(
   date: Date,
   timeStr: string,
-  timeFormat: "AM" | "PM",
 ): Date {
   const [hoursStr, minutesStr] = timeStr.split(":");
 
-  let hours = Number.parseInt(hoursStr, 10);
+  const hours = Number.parseInt(hoursStr, 10);
   const minutes = Number.parseInt(minutesStr || "0", 10);
 
-  // Convert to 24-hour format
-  if (timeFormat === "PM" && hours < 12) {
-    hours += 12;
-  } else if (timeFormat === "AM" && hours === 12) {
-    hours = 0;
-  }
+  // Input date is normalized to UTC midnight, and time is in 24h IST (UTC+5:30).
+  // Reconstruct the full IST datetime as UTC by subtracting 5h30m (330 minutes).
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
 
-  const result = new Date(date);
-  result.setHours(hours, minutes, 0, 0);
+  // Create a UTC timestamp representing the IST time
+  const istAsUtcMs =
+    Date.UTC(year, month, day, hours, minutes, 0, 0) - 330 * 60 * 1000;
 
-  return result;
+  return new Date(istAsUtcMs);
 }
 
 export const createWebinar = async (formData: WebinarFormState) => {
@@ -63,7 +62,6 @@ export const createWebinar = async (formData: WebinarFormState) => {
     const combinedDateTime = combineDateTime(
       formData.basicInfo.date,
       formData.basicInfo.time,
-      formData.basicInfo.timeFormat || "AM",
     );
 
     const now = new Date();
