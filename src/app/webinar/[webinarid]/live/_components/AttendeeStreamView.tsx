@@ -106,12 +106,31 @@ export default function AttendeeStreamView({
 
   useEffect(() => {
     if (!call) return;
-    const unsubscribe = call.on("custom", (event: { custom?: { type?: string; ctaType?: string } }) => {
+
+    const checkEnded = () => {
+      if (call.state.endedAt) {
+        setWebinarEnded(true);
+      }
+    };
+
+    // Initial check
+    checkEnded();
+
+    // Listen for events
+    const unsubscribeEnded = call.on("call.ended", () => {
+      setWebinarEnded(true);
+    });
+
+    const unsubscribeCustom = call.on("custom", (event: { custom?: { type?: string; ctaType?: string } }) => {
       if (event.custom?.type === "CTA_TRIGGERED") {
         setActiveCTA(event.custom.ctaType as "BUY_NOW" | "BOOK_A_CALL");
       }
     });
-    return () => unsubscribe();
+
+    return () => {
+      unsubscribeEnded();
+      unsubscribeCustom();
+    };
   }, [call]);
 
   // ── Error state ──────────────────────────────────────────────────────────────

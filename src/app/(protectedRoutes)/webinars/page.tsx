@@ -5,6 +5,8 @@ import React from "react";
 import { getWebinarByPresenterId } from "@/actions/webinar";
 import WebinarTabs from "./_components/WebinarTabs";
 import CreateWebinarButton from "@/components/ui/ReusableComponent/CreateWebinarButton";
+import { Suspense } from "react";
+import WebinarFilterButton from "./_components/WebinarFilterButton";
 
 const Page = async () => {
   const checkUser = await onAuthenticateUser();
@@ -25,17 +27,9 @@ const Page = async () => {
           <span className="text-white font-medium">Webinars</span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="relative hidden md:block">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[#71717a]" />
-            <input
-              className="bg-[#1c1b1b] border border-[#2e2e2e] text-sm text-white rounded-md pl-9 pr-4 py-1.5 w-60 placeholder-[#71717a] focus:outline-none focus:border-white/20"
-              placeholder="Search..."
-              type="text"
-            />
-          </div>
-          <button className="w-8 h-8 rounded-md border border-[#2e2e2e] flex items-center justify-center text-[#a1a1aa] hover:text-white hover:bg-[#1c1b1b] transition-colors">
-            <SlidersHorizontal className="w-4 h-4" />
-          </button>
+          <Suspense fallback={<div className="w-8 h-8 rounded-md border border-[#2e2e2e] bg-[#1c1b1b] animate-pulse"></div>}>
+            <WebinarFilterButton />
+          </Suspense>
           <CreateWebinarButton className="bg-white text-black px-4 py-1.5 rounded-md text-sm font-medium hover:bg-white/90 transition-colors flex items-center gap-2">
             <Plus className="w-4 h-4" />
             Create Webinar

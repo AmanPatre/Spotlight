@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { WebinarStatusEnum } from "@prisma/client";
 import RegistrationForm from "./RegistrationForm";
@@ -65,16 +65,16 @@ export default function LandingPageClient({
     return () => clearInterval(id);
   }, [startTime]);
 
-  const handleRegistrationSuccess = (id: string) => {
+  const handleRegistrationSuccess = useCallback((id: string) => {
     setAttendeeId(id);
     if (webinarStatus === WebinarStatusEnum.LIVE) {
       router.push(`/webinar/${webinarId}/live`);
     }
-  };
+  }, [webinarStatus, router, webinarId]);
 
-  const handleGoLive = () => {
+  const handleGoLive = useCallback(() => {
     router.push(`/webinar/${webinarId}/live`);
-  };
+  }, [router, webinarId]);
 
   const pad = (n: number) => String(n).padStart(2, "0");
 

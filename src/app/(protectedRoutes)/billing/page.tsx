@@ -8,17 +8,17 @@ export default function BillingPage() {
   const [isAnnual, setIsAnnual] = useState(true);
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-white p-6 md:p-10 space-y-10 font-sans selection:bg-purple-500/30">
+    <div className="min-h-screen bg-[#0c0c0c] text-white p-6 md:p-10 space-y-10 font-sans selection:bg-white/30">
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/5 blur-[120px] rounded-full" />
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/5 blur-[120px] rounded-full" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[30%] h-[30%] bg-emerald-600/5 blur-[100px] rounded-full" />
       </div>
 
       {/* Header */}
       <div className="relative flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-bold tracking-tight text-white mb-3">
+          <h1 className="text-4xl font-bold tracking-tight text-white mb-3" style={{ fontFamily: 'Geist, sans-serif' }}>
             Billing & Payments
           </h1>
           <p className="text-[#a1a1aa] max-w-2xl text-base leading-relaxed">
@@ -26,7 +26,7 @@ export default function BillingPage() {
           </p>
         </div>
         <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-[#1a1a1a] border border-[#2e2e2e] rounded-full shadow-sm text-[13px] text-[#a1a1aa]">
-          <ShieldCheck className="w-4 h-4 text-purple-500" />
+          <ShieldCheck className="w-4 h-4 text-white" />
           <span className="font-medium">Secure checkout via Razorpay</span>
           <div className="ml-1 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
@@ -35,15 +35,15 @@ export default function BillingPage() {
       {/* Subscription & Payment Method Grid */}
       <div className="relative grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Active Plan Card */}
-        <div className="lg:col-span-2 bg-[#141414] border border-[#27272a] rounded-xl p-8 shadow-2xl relative overflow-hidden group hover:border-purple-500/30 transition-all duration-500">
+        <div className="lg:col-span-2 bg-[#141414] border border-[#27272a] rounded-xl p-8 shadow-2xl relative overflow-hidden group hover:border-white/30 transition-all duration-500">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity duration-700 pointer-events-none">
-            <Zap className="w-48 h-48 text-purple-500 rotate-12" />
+            <Zap className="w-48 h-48 text-zinc-500 rotate-12" />
           </div>
 
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-semibold text-white flex items-center gap-3">
+            <h2 className="text-xl font-semibold text-white flex items-center gap-3" style={{ fontFamily: 'Geist, sans-serif' }}>
               Active Subscription
-              <span className="bg-purple-500/10 text-purple-400 text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-purple-500/20">
+              <span className="bg-white/10 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border border-white/20">
                 Pro Plan
               </span>
             </h2>
@@ -53,10 +53,10 @@ export default function BillingPage() {
             <div>
               <div className="flex items-baseline gap-1">
                 <p className="text-5xl font-black text-white tracking-tighter">
-                  $49<span className="text-xl text-[#71717a] font-medium tracking-normal ml-1">/mo</span>
+                  ₹1,499<span className="text-xl text-[#71717a] font-medium tracking-normal ml-1">/mo</span>
                 </p>
               </div>
-              <p className="text-[13px] text-[#71717a] mt-2 font-medium uppercase tracking-wider italic opacity-80">Billed annually ($588/year)</p>
+              <p className="text-[13px] text-[#71717a] mt-2 font-medium uppercase tracking-wider italic opacity-80">Billed annually (₹17,988/year)</p>
             </div>
 
             <div className="hidden md:block w-px h-16 bg-[#27272a]" />
@@ -68,7 +68,7 @@ export default function BillingPage() {
               </div>
               <div className="w-full bg-[#1c1c1c] rounded-full h-3.5 border border-[#27272a] overflow-hidden">
                 <div
-                  className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                  className="bg-white h-full rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(255,255,255,0.2)]"
                   style={{ width: "45%" }}
                 />
               </div>
@@ -76,7 +76,7 @@ export default function BillingPage() {
           </div>
 
           <div className="flex flex-wrap gap-4 mt-10">
-            <button className="bg-purple-600 text-white hover:bg-purple-500 px-8 py-3 rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95 shadow-purple-900/20">
+            <button className="bg-white text-black hover:bg-zinc-200 px-8 py-3 rounded-lg text-sm font-bold transition-all shadow-lg active:scale-95 shadow-white/5">
               Upgrade Plan
             </button>
             <button className="bg-[#1a1a1a] text-[#a1a1aa] hover:text-white hover:bg-[#222222] border border-[#2e2e2e] px-8 py-3 rounded-lg text-sm font-bold transition-all active:scale-95">
@@ -115,7 +115,7 @@ export default function BillingPage() {
       {/* Pricing Plans */}
       <div className="pt-16 relative">
         <div className="text-center mb-16">
-          <h2 className="text-4xl font-black text-white mb-6 tracking-tight">Available Plans</h2>
+          <h2 className="text-4xl font-black text-white mb-6 tracking-tight" style={{ fontFamily: 'Geist, sans-serif' }}>Available Plans</h2>
           <div className="inline-flex items-center p-1.5 bg-[#141414] border border-[#27272a] rounded-xl shadow-inner">
             <button
               onClick={() => setIsAnnual(false)}
@@ -136,7 +136,7 @@ export default function BillingPage() {
               Annually
               <span className={cn(
                 "text-[10px] uppercase font-black px-2 py-0.5 rounded transition-colors",
-                isAnnual ? "bg-purple-600 text-white" : "bg-[#1c1c1c] text-purple-400"
+                isAnnual ? "bg-white text-black" : "bg-[#1c1c1c] text-white"
               )}>Save 20%</span>
             </button>
           </div>
@@ -148,7 +148,7 @@ export default function BillingPage() {
             <h3 className="text-2xl font-bold text-white tracking-tight">Starter</h3>
             <p className="text-[14px] text-[#71717a] mt-2 mb-6 font-medium">For individuals and small teams.</p>
             <div className="mb-8">
-              <span className="text-5xl font-black text-white tracking-tighter">${isAnnual ? '19' : '24'}</span>
+              <span className="text-5xl font-black text-white tracking-tighter">₹{isAnnual ? '499' : '599'}</span>
               <span className="text-[#71717a] text-lg font-medium">/mo</span>
             </div>
             <ul className="space-y-4 mb-10 flex-1">
@@ -167,29 +167,29 @@ export default function BillingPage() {
           </div>
 
           {/* Pro Plan */}
-          <div className="bg-[#141414] border-2 border-purple-500 relative rounded-2xl p-8 flex flex-col shadow-[0_0_50px_rgba(168,85,247,0.15)] hover:translate-y-[-4px] transition-all duration-300">
+          <div className="bg-[#141414] border-2 border-white relative rounded-2xl p-8 flex flex-col shadow-[0_0_50px_rgba(255,255,255,0.05)] hover:translate-y-[-4px] transition-all duration-300">
             <div className="absolute -top-4 inset-x-0 flex justify-center">
-              <span className="bg-purple-600 text-white text-[11px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
+              <span className="bg-white text-black text-[11px] font-black tracking-widest uppercase px-4 py-1.5 rounded-full shadow-lg flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5" /> Most Popular
               </span>
             </div>
             <h3 className="text-2xl font-bold text-white tracking-tight">Pro</h3>
             <p className="text-[14px] text-[#71717a] mt-2 mb-6 font-medium">For growing businesses.</p>
             <div className="mb-8">
-              <span className="text-5xl font-black text-white tracking-tighter">${isAnnual ? '49' : '59'}</span>
+              <span className="text-5xl font-black text-white tracking-tighter">₹{isAnnual ? '1,499' : '1,799'}</span>
               <span className="text-[#a1a1aa] text-lg font-medium">/mo</span>
             </div>
             <ul className="space-y-4 mb-10 flex-1">
               {['Up to 500 attendees', 'Advanced AI voice agents', '10,000 AI minutes/mo', 'Custom branding', 'Priority support'].map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-[14px] text-white/90 font-medium">
-                  <div className="w-5 h-5 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
-                    <Check className="w-3 h-3 text-purple-400" />
+                <li key={i} className="flex items-center gap-3 text-white/90 font-medium">
+                  <div className="w-5 h-5 rounded-full bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 text-white" />
                   </div>
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
-            <button className="w-full bg-purple-600 text-white px-4 py-4 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg shadow-purple-900/30">
+            <button className="w-full bg-white text-black px-4 py-4 rounded-xl text-sm font-black uppercase tracking-widest shadow-lg shadow-white/5">
               Current Plan
             </button>
           </div>
@@ -199,7 +199,7 @@ export default function BillingPage() {
             <h3 className="text-2xl font-bold text-white tracking-tight">Enterprise</h3>
             <p className="text-[14px] text-[#71717a] mt-2 mb-6 font-medium">For large scale operations.</p>
             <div className="mb-8">
-              <span className="text-5xl font-black text-white tracking-tighter">${isAnnual ? '199' : '249'}</span>
+              <span className="text-5xl font-black text-white tracking-tighter">₹{isAnnual ? '4,999' : '5,999'}</span>
               <span className="text-[#71717a] text-lg font-medium">/mo</span>
             </div>
             <ul className="space-y-4 mb-10 flex-1">
@@ -221,7 +221,7 @@ export default function BillingPage() {
 
       {/* Billing History */}
       <div className="pt-20 relative">
-        <h2 className="text-2xl font-bold text-white mb-8 tracking-tight">Billing History</h2>
+        <h2 className="text-2xl font-bold text-white mb-8 tracking-tight" style={{ fontFamily: 'Geist, sans-serif' }}>Billing History</h2>
         <div className="bg-[#141414] border border-[#27272a] rounded-2xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left border-collapse">
@@ -236,10 +236,10 @@ export default function BillingPage() {
               </thead>
               <tbody className="divide-y divide-[#1c1c1c]">
                 {[
-                  { id: 'INV-2026-004', date: 'May 01, 2026', amount: '$49.00', status: 'Paid' },
-                  { id: 'INV-2026-003', date: 'Apr 01, 2026', amount: '$49.00', status: 'Paid' },
-                  { id: 'INV-2026-002', date: 'Mar 01, 2026', amount: '$49.00', status: 'Paid' },
-                  { id: 'INV-2026-001', date: 'Feb 01, 2026', amount: '$49.00', status: 'Paid' },
+                  { id: 'INV-2026-004', date: 'May 01, 2026', amount: '₹1,499.00', status: 'Paid' },
+                  { id: 'INV-2026-003', date: 'Apr 01, 2026', amount: '₹1,499.00', status: 'Paid' },
+                  { id: 'INV-2026-002', date: 'Mar 01, 2026', amount: '₹1,499.00', status: 'Paid' },
+                  { id: 'INV-2026-001', date: 'Feb 01, 2026', amount: '₹1,499.00', status: 'Paid' },
                 ].map((invoice) => (
                   <tr key={invoice.id} className="hover:bg-white/[0.02] transition-colors group">
                     <td className="px-8 py-5 text-white font-bold tracking-tight">{invoice.id}</td>

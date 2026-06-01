@@ -82,7 +82,7 @@ const WebinarDetailHeader = ({
           </div>
           <p className="text-[#71717a] text-sm">
             Hosted by{" "}
-            <span className="text-violet-400 font-medium">{presenterName}</span>
+            <span className="text-white font-medium">{presenterName}</span>
           </p>
         </div>
       </div>
@@ -90,11 +90,11 @@ const WebinarDetailHeader = ({
       {/* Date & Time row */}
       <div className="flex items-center gap-5 flex-wrap">
         <div className="flex items-center gap-2 text-[#a1a1aa] text-sm">
-          <CalendarDays className="w-4 h-4 text-violet-400" />
+          <CalendarDays className="w-4 h-4 text-zinc-400" />
           <span>{format(new Date(startTime), "EEEE, MMMM do yyyy")}</span>
         </div>
         <div className="flex items-center gap-2 text-[#a1a1aa] text-sm">
-          <Clock className="w-4 h-4 text-violet-400" />
+          <Clock className="w-4 h-4 text-zinc-400" />
           <span>{format(new Date(startTime), "hh:mm a")}</span>
         </div>
       </div>
@@ -108,13 +108,13 @@ const WebinarDetailHeader = ({
 
       {/* Shareable link */}
       <div className="flex items-center gap-2 p-3 rounded-md bg-[#0e0e10] border border-[#27272a] w-full max-w-xl">
-        <ExternalLink className="w-4 h-4 text-violet-400 flex-shrink-0" />
+        <ExternalLink className="w-4 h-4 text-zinc-400 flex-shrink-0" />
         <span className="text-sm text-[#71717a] truncate flex-1">
           {attendeeLink}
         </span>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 text-xs text-violet-400 hover:text-violet-300 font-medium flex-shrink-0 transition-colors"
+          className="flex items-center gap-1 text-xs text-white hover:text-zinc-300 font-medium flex-shrink-0 transition-colors"
         >
           <Copy className="w-3.5 h-3.5" />
           {copied ? "Copied!" : "Copy"}

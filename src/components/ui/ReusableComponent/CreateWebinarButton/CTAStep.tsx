@@ -193,7 +193,7 @@ const CTAStep = () => {
             </SelectTrigger>
             <SelectContent className="bg-[#141313] border-zinc-800 text-zinc-100 rounded-none shadow-2xl">
               {assistants.map((a) => (
-                <SelectItem key={a.id} value={a.id} className="focus:bg-white focus:text-black">
+                <SelectItem key={a.id} value={a.id} className="focus:bg-white/10 focus:text-white cursor-pointer transition-colors">
                   {a.name || "Unnamed Agent"}
                 </SelectItem>
               ))}

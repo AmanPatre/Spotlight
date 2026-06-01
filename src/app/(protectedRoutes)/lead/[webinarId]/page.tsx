@@ -96,7 +96,7 @@ function StatCard({ label, value, highlighted = false }: { label: string, value:
     );
 }
 
-function LeadSection({ title, leads, price, isHot = false, isConverted = false }: { title: string, leads: { id: string; user: { name: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], price: number, isHot?: boolean, isConverted?: boolean }) {
+function LeadSection({ title, leads, price, isHot = false, isConverted = false }: { title: string, leads: { id: string; user: { name: string, email: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], price: number, isHot?: boolean, isConverted?: boolean }) {
     if (leads.length === 0) return null;
 
     return (
@@ -111,7 +111,7 @@ function LeadSection({ title, leads, price, isHot = false, isConverted = false }
                     <thead>
                         <tr className="border-b border-zinc-800 bg-[#141313]">
                             <TableHead label="Contact" />
-                            <TableHead label="Company" />
+                            <TableHead label="Email" />
                             <TableHead label="Score" className="text-center" />
                             <TableHead label="Est. Value" />
                             <TableHead label="AI Summary" />
@@ -127,9 +127,8 @@ function LeadSection({ title, leads, price, isHot = false, isConverted = false }
                                 <TableCell className="font-medium text-white">
                                     {lead.user.name}
                                 </TableCell>
-                                <TableCell className="text-zinc-500 flex items-center gap-2">
-                                    <Globe className="w-3 h-3 opacity-30" />
-                                    <span>Enterprise Group</span> {/* Placeholder for user company */}
+                                <TableCell className="text-zinc-500 truncate max-w-[200px]">
+                                    {lead.user.email}
                                 </TableCell>
                                 <TableCell className="text-center">
                                     <div className={`inline-flex items-center justify-center w-10 h-10 border ${isHot ? 'border-zinc-700 text-white font-bold bg-white/5' : 'border-zinc-800 text-zinc-500'} font-mono text-sm`}>

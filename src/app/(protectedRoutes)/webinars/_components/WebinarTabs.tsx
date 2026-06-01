@@ -14,6 +14,7 @@ function filterWebinars(webinars: Webinar[], tab: Tab) {
         default: return webinars;
     }
 }
+import { useSearchParams } from "next/navigation";
 
 const emptyMessages: Record<Tab, string> = {
     All: "No webinars found",
@@ -24,7 +25,22 @@ const emptyMessages: Record<Tab, string> = {
 
 export default function WebinarTabs({ webinars }: { webinars: Webinar[] }) {
     const [active, setActive] = useState<Tab>("All");
-    const filtered = filterWebinars(webinars, active);
+    const [searchQuery, setSearchQuery] = useState("");
+    const searchParams = useSearchParams();
+    const sortParam = searchParams.get('sort') || 'newest';
+
+    const filtered = filterWebinars(webinars, active).filter((w) =>
+        w.title.toLowerCase().includes(searchQuery.toLowerCase())
+    ).sort((a, b) => {
+        if (sortParam === 'oldest') {
+            return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+        }
+        if (sortParam === 'title') {
+            return a.title.localeCompare(b.title);
+        }
+        // Default to newest
+        return new Date(b.startTime).getTime() - new Date(a.startTime).getTime();
+    });
 
     return (
         <div className="space-y-6">
@@ -36,8 +52,10 @@ export default function WebinarTabs({ webinars }: { webinars: Webinar[] }) {
                     </svg>
                     <input
                         className="w-full bg-[#0e0e0e] border border-[#2e2e2e] text-sm text-white rounded-md pl-9 pr-4 py-2 placeholder-[#71717a] focus:outline-none focus:border-white/20"
-                        placeholder="Search option..."
+                        placeholder="Search webinars..."
                         type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
                 <div className="flex items-center gap-1 bg-[#0e0e0e] border border-[#2e2e2e] rounded-lg p-1">

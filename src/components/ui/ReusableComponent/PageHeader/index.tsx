@@ -26,7 +26,7 @@ const PageHeader = ({
           {/* Icon cluster */}
           <div className="relative flex items-center justify-center">
             <div className="absolute -left-4 -top-3 opacity-30 scale-75 rotate-45">{leftIcon}</div>
-            <div className="w-10 h-10 rounded-lg bg-violet-600/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+            <div className="w-10 h-10 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center text-white">
               {mainIcon}
             </div>
             <div className="absolute -right-4 -top-3 opacity-30 scale-75 rotate-45">{rightIcon}</div>
@@ -42,7 +42,7 @@ const PageHeader = ({
           <input
             type="text"
             placeholder={placeholder || "Search..."}
-            className="w-full pl-8 pr-3 h-8 text-sm bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] placeholder:text-[#52525b] focus:outline-none focus:ring-1 focus:ring-violet-500/50 focus:border-violet-500/50"
+            className="w-full pl-8 pr-3 h-8 text-sm bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] placeholder:text-[#52525b] focus:outline-none focus:ring-1 focus:ring-white/50 focus:border-white/50"
           />
         </div>
 

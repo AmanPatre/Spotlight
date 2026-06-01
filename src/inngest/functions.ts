@@ -129,7 +129,7 @@ export const processWebinarEnd = inngest.createFunction(
 
                                 if (process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
                                     const { object } = await generateObject({
-                                        model: google("gemini-2.0-flash"),
+                                        model: google("gemini-3.1-flash-lite"),
                                         schema: z.object({
                                             summary: z.string(),
                                             score: z.number().min(1).max(10),
@@ -226,7 +226,7 @@ export const processWebinarEnd = inngest.createFunction(
                 .join("\n\n");
 
             const { object } = await generateObject({
-                model: google("gemini-2.0-flash"),
+                model: google("gemini-3.1-flash-lite"),
                 schema: z.object({ overallSummary: z.string() }),
                 prompt: `You are a sales analytics assistant. Below are the individual AI-scored summaries from a webinar's breakout room sessions:
 

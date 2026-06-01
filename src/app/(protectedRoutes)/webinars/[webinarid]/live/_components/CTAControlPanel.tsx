@@ -43,7 +43,7 @@ export default function CTAControlPanel({ call, aiAgentId, ctaType }: Props) {
     <div className="px-6 py-6 rounded-2xl border border-white/5 bg-[#171717] flex flex-col gap-4">
       <div className="flex items-center gap-2.5">
         <Zap className="w-5 h-5 text-yellow-500" strokeWidth={2.5} />
-        <h3 className="text-[15px] font-semibold text-[#a78bfa]">
+        <h3 className="text-[15px] font-semibold text-white">
           Drop a CTA to Attendees
         </h3>
       </div>

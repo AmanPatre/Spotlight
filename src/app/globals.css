@@ -95,8 +95,8 @@
   --card-foreground: #fafafa;
   --popover: #18181b;
   --popover-foreground: #fafafa;
-  --primary: #8b5cf6;
-  --primary-foreground: #ffffff;
+  --primary: #ffffff;
+  --primary-foreground: #09090b;
   --secondary: #18181b;
   --secondary-foreground: #fafafa;
   --muted: #27272a;
@@ -107,22 +107,22 @@
   --destructive-foreground: #fca5a5;
   --border: #27272a;
   --input: #18181b;
-  --ring: #8b5cf6;
-  --chart-1: #8b5cf6;
-  --chart-2: #a78bfa;
-  --chart-3: #c4b5fd;
-  --chart-4: #ddd6fe;
-  --chart-5: #ede9fe;
+  --ring: #ffffff;
+  --chart-1: #ffffff;
+  --chart-2: #a1a1aa;
+  --chart-3: #71717a;
+  --chart-4: #52525b;
+  --chart-5: #3f3f46;
   --sidebar: #09090b;
   --sidebar-foreground: #fafafa;
-  --sidebar-primary: #8b5cf6;
-  --sidebar-primary-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
+  --sidebar-primary-foreground: #09090b;
   --sidebar-accent: #27272a;
   --sidebar-accent-foreground: #fafafa;
   --sidebar-border: #27272a;
-  --sidebar-ring: #8b5cf6;
-  --accent-primary: #8b5cf6;
-  --accent-secondary: #a78bfa;
+  --sidebar-ring: #ffffff;
+  --accent-primary: #ffffff;
+  --accent-secondary: #a1a1aa;
 }
 
 @layer base {
@@ -174,14 +174,14 @@
 
 .iconBackground {
   border-radius: var(--radius-rounded-md, 0.375rem);
-  border: 0.5px solid #a76ef6;
+  border: 0.5px solid #52525b;
   background:
     radial-gradient(80.86% 125% at 50% 45%,
-      var(--background-bg-background-10, rgba(9, 9, 11, 0.08)) 0%,
-      var(--background-bg-accent-secondary-100, rgba(135, 49, 255, 0.75)) 100%),
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(255, 255, 255, 0.1) 100%),
     linear-gradient(180deg,
-      var(--background-bg-background, rgba(9, 9, 11, 0.5)) 60%,
-      var(--background-bg-accent-secondary-100, rgba(135, 49, 255, 0.5)) 100%);
+      rgba(9, 9, 11, 0.5) 60%,
+      rgba(39, 39, 42, 0.5) 100%);
 }
 
 /* Add these styles to your global CSS or create a new CSS module */

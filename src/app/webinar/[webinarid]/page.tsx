@@ -15,7 +15,7 @@ export default async function WebinarLandingPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-purple-500/30">
+    <div className="min-h-screen bg-black text-white selection:bg-white/30">
       <LandingPageClient
         webinarId={webinar.id}
         title={webinar.title}

@@ -46,7 +46,7 @@ export default function DebriefWidget({ debriefs, totalAttendeesCount, price, cu
     return (
         <div className="w-full bg-[#141414] border border-[#27272a] p-8 rounded-3xl mb-10 flex flex-col md:flex-row shadow-2xl gap-8 justify-between items-stretch relative overflow-hidden group">
             {/* Ambient Background Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-emerald-500/5 opacity-50 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-zinc-500/5 opacity-50 pointer-events-none" />
 
             {/* Left side stats */}
             <div className="relative flex flex-col sm:flex-row gap-8 md:gap-14 w-full md:w-auto z-10">
@@ -85,7 +85,7 @@ export default function DebriefWidget({ debriefs, totalAttendeesCount, price, cu
             {/* Actionable Insight Card */}
             <div className="relative w-full md:w-[45%] bg-black/40 p-6 rounded-2xl border border-[#27272a] group-hover:border-white/10 transition-colors z-10">
                 <div className="flex items-center gap-2 mb-3">
-                    <Sparkles className="w-4 h-4 text-purple-400" />
+                    <Sparkles className="w-4 h-4 text-white" />
                     <p className="font-bold text-[13px] uppercase tracking-widest text-[#a1a1aa]">Actionable Insight</p>
                 </div>
                 <p className="text-[#fafafa]/80 leading-relaxed text-[13.5px] font-medium italic">

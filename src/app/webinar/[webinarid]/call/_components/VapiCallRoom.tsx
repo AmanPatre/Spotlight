@@ -93,6 +93,16 @@ export default function VapiCallRoom({
   ]);
   const transcriptIdRef = useRef(1);
 
+  // Three refs that together handle streaming transcript grouping:
+  // currentBubbleIdRef: which bubble we're currently writing into per role
+  // bubbleBaseTextRef:  all committed (final) text in that bubble
+  // lastActivityRef:    timestamp of last event for silence detection
+  const currentBubbleIdRef = useRef<Record<string, number | null>>({});
+  const bubbleBaseTextRef = useRef<Record<string, string>>({});
+  const lastActivityRef = useRef<Record<string, number>>({});
+
+  const MERGE_WINDOW_MS = 6000; // 6 s silence → new bubble
+
   const publicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
 
   // Auto-scroll transcript
@@ -100,12 +110,66 @@ export default function VapiCallRoom({
     transcriptBottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
 
-  const addTranscriptEntry = (role: TranscriptEntry["role"], text: string) => {
+  /**
+   * Partial transcript — streams text into the current bubble.
+   * Display = all committed sentences + current in-progress words.
+   */
+  const onPartialTranscript = useCallback((role: TranscriptEntry["role"], partialText: string) => {
+    const now = Date.now();
+    const bubbleId = currentBubbleIdRef.current[role];
+    const lastActivity = lastActivityRef.current[role] ?? 0;
+
+    if (bubbleId != null && now - lastActivity < MERGE_WINDOW_MS) {
+      // Update same bubble in-place
+      const base = bubbleBaseTextRef.current[role] ?? "";
+      const display = base ? `${base} ${partialText}` : partialText;
+      setTranscript((prev) =>
+        prev.map((e) => (e.id === bubbleId ? { ...e, text: display } : e))
+      );
+    } else {
+      // Silence was too long or no bubble yet — start fresh bubble
+      const id = transcriptIdRef.current++;
+      setTranscript((prev) => [...prev, { id, role, text: partialText, time: nowTime() }]);
+      currentBubbleIdRef.current[role] = id;
+      bubbleBaseTextRef.current[role] = ""; // Reset base for the new bubble
+    }
+    lastActivityRef.current[role] = now;
+  }, []);
+
+  /**
+   * Final transcript — commits this sentence into the current bubble.
+   * Appends to base text so future partials don't overwrite committed words.
+   */
+  const onFinalTranscript = useCallback((role: TranscriptEntry["role"], finalText: string) => {
+    const now = Date.now();
+    const bubbleId = currentBubbleIdRef.current[role];
+    const lastActivity = lastActivityRef.current[role] ?? 0;
+
+    if (bubbleId != null && now - lastActivity < MERGE_WINDOW_MS) {
+      // Commit into existing bubble
+      const base = bubbleBaseTextRef.current[role] ?? "";
+      const newBase = base ? `${base} ${finalText}` : finalText;
+      setTranscript((prev) =>
+        prev.map((e) => (e.id === bubbleId ? { ...e, text: newBase } : e))
+      );
+      bubbleBaseTextRef.current[role] = newBase;
+    } else {
+      // Silence was too long or no bubble yet — start fresh
+      const id = transcriptIdRef.current++;
+      setTranscript((prev) => [...prev, { id, role, text: finalText, time: nowTime() }]);
+      currentBubbleIdRef.current[role] = id;
+      bubbleBaseTextRef.current[role] = finalText;
+    }
+    lastActivityRef.current[role] = now;
+  }, []);
+
+  // System messages always get their own bubble
+  const addSystemEntry = useCallback((text: string) => {
     setTranscript((prev) => [
       ...prev,
-      { id: transcriptIdRef.current++, role, text, time: nowTime() },
+      { id: transcriptIdRef.current++, role: "system", text, time: nowTime() },
     ]);
-  };
+  }, []);
 
   const releaseMicrophone = useCallback(() => {
     try { vapiRef.current?.stop(); } catch { /* ignore */ }
@@ -166,7 +230,7 @@ export default function VapiCallRoom({
       setMuted(false);
       setMicReady(true);
       setMicPriming(false);
-      addTranscriptEntry("system", "Call connected. Voice session active.");
+      addSystemEntry("Call connected. Voice session active.");
 
       fetch("/api/attendance", {
         method: "PATCH",
@@ -177,7 +241,7 @@ export default function VapiCallRoom({
 
     vapi.on("call-end", () => {
       setStatus("ended");
-      addTranscriptEntry("system", "Session ended.");
+      addSystemEntry("Session ended.");
 
       fetch("/api/attendance", {
         method: "PATCH",
@@ -196,14 +260,23 @@ export default function VapiCallRoom({
     vapi.on("speech-end", () => setAiSpeaking(false));
 
     vapi.on("message", (msg: { role?: string; type?: string; transcript?: string; transcriptType?: string }) => {
-      if (msg?.role === "assistant") {
+      if (!msg?.transcript) return;
+
+      if (msg.role === "assistant") {
         bumpAi();
-        if (msg.transcriptType === "final" && msg.transcript) {
-          addTranscriptEntry("ai", msg.transcript);
+        if (msg.transcriptType === "partial") {
+          onPartialTranscript("ai", msg.transcript);
+        } else if (msg.transcriptType === "final") {
+          onFinalTranscript("ai", msg.transcript);
         }
       }
-      if (msg?.role === "user" && msg.transcriptType === "final" && msg.transcript) {
-        addTranscriptEntry("user", msg.transcript);
+
+      if (msg.role === "user") {
+        if (msg.transcriptType === "partial") {
+          onPartialTranscript("user", msg.transcript);
+        } else if (msg.transcriptType === "final") {
+          onFinalTranscript("user", msg.transcript);
+        }
       }
     });
 
@@ -252,7 +325,7 @@ export default function VapiCallRoom({
       releaseMicrophone();
       setMicPriming(false);
     });
-  }, [assistantId, publicKey, releaseMicrophone, router, webinarId, selectedDeviceId, attendeeId]);
+  }, [assistantId, publicKey, releaseMicrophone, router, webinarId, selectedDeviceId, attendeeId, onPartialTranscript, onFinalTranscript, addSystemEntry]);
 
   // Enumerate devices
   useEffect(() => {
@@ -329,36 +402,70 @@ export default function VapiCallRoom({
   // ─── Mic priming / pre-call screen ───────────────────────────────────────────
   if (!micReady) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-8 bg-black text-white px-6 text-center"
+      <div
+        className="flex min-h-screen flex-col items-center justify-center bg-black text-white px-6"
         style={{
-          backgroundImage: "radial-gradient(#444748 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
+          backgroundImage: "radial-gradient(#2a2a2a 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
         }}
       >
-        {/* Icon */}
-        <div className="w-20 h-20 border border-[#444748] flex items-center justify-center">
-          <Mic className="w-8 h-8 text-white" />
-        </div>
+        <div className="w-full max-w-md flex flex-col items-center gap-10">
 
-        <div className="max-w-md space-y-3">
-          <h1 className="text-xl font-semibold tracking-tight" style={{ fontFamily: "Geist, Inter, sans-serif" }}>
-            Microphone Required
-          </h1>
-          <p className="text-sm text-[#8e9192] leading-relaxed font-mono">
-            Browsers only allow the AI to hear you after you explicitly allow the microphone.
-            Use <span className="text-white">HTTPS</span> or <span className="text-white">localhost</span>.
-          </p>
+          {/* Brand */}
+          <div className="flex items-center gap-3 self-start">
+            <span className="text-white font-bold text-lg tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
+              Spotlight
+            </span>
+            <div className="h-4 w-px bg-zinc-800" />
+            <span className="text-zinc-500 font-mono text-[11px] uppercase tracking-widest">AI Breakout</span>
+          </div>
 
-          {/* Device selector */}
-          <div className="text-left space-y-2 py-4">
-            <label className="text-[11px] font-mono uppercase tracking-widest text-[#8e9192]">
+          {/* AI Visual + heading */}
+          <div className="flex flex-col items-center gap-6 text-center">
+            {/* Animated ring indicator */}
+            <div className="relative w-24 h-24 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border border-zinc-700 animate-ping opacity-20" />
+              <div className="absolute inset-2 rounded-full border border-zinc-600 opacity-40" />
+              <div className="w-16 h-16 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+                <Mic className="w-6 h-6 text-white" />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
+                Your AI Sales Rep is Ready
+              </h1>
+              <p className="text-zinc-400 text-sm leading-relaxed max-w-sm" style={{ fontFamily: "Geist, sans-serif" }}>
+                You&apos;re about to enter a private voice session with an AI agent trained to answer your questions and help you make the right decision.
+              </p>
+            </div>
+
+            {/* Feature pills */}
+            <div className="flex flex-wrap justify-center gap-2">
+              {["Voice-Powered", "Real-Time Answers", "Private Session"].map((label) => (
+                <span
+                  key={label}
+                  className="px-3 py-1 border border-zinc-800 text-zinc-400 font-mono text-[10px] uppercase tracking-widest"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Microphone selector */}
+          <div className="w-full space-y-2">
+            <label className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 block">
               Select Microphone
             </label>
             <select
               value={selectedDeviceId}
               onChange={(e) => setSelectedDeviceId(e.target.value)}
-              className="w-full bg-black border border-[#444748] px-4 py-3 text-sm text-[#e5e2e1] font-mono focus:outline-none focus:border-white transition-colors"
+              className="w-full bg-black border border-zinc-800 px-4 py-3 text-sm text-zinc-200 font-mono focus:outline-none focus:border-white transition-colors cursor-pointer"
             >
+              {devices.length === 0 && (
+                <option value="">No microphone detected…</option>
+              )}
               {devices.map((device) => (
                 <option key={device.deviceId} value={device.deviceId}>
                   {device.label || `Microphone ${device.deviceId.slice(0, 5)}`}
@@ -367,39 +474,38 @@ export default function VapiCallRoom({
             </select>
           </div>
 
-          <p className="text-xs text-[#8e9192] leading-relaxed border-t border-[#444748] pt-3 font-mono text-left">
-            If you are the <span className="text-white">host</span> in one tab and the{" "}
-            <span className="text-white">attendee</span> here in another, both can try to use the mic at once. For solo testing: open the attendee link in{" "}
-            <span className="text-white">Incognito</span> or another browser.
-          </p>
+          {/* CTA */}
+          <div className="w-full flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => void handleConnect()}
+              disabled={micPriming || devices.length === 0}
+              className="w-full flex items-center justify-center gap-2 bg-white text-black font-semibold text-sm py-3 px-8 hover:bg-zinc-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ fontFamily: "Geist, sans-serif" }}
+            >
+              {micPriming ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Connecting to AI…</>
+              ) : (
+                <><Mic className="w-4 h-4" /> Join AI Breakout Session</>
+              )}
+            </button>
+
+            {micDenied && (
+              <p className="text-xs text-yellow-400 font-mono text-center">
+                Microphone access denied. Click the 🔒 lock in your address bar → Microphone → Allow.
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={() => { releaseMicrophone(); router.push(`/webinar/${webinarId}/live`); }}
+              className="text-zinc-600 text-xs font-mono hover:text-white transition-colors text-center"
+            >
+              ← Return to live stream
+            </button>
+          </div>
+
         </div>
-
-        <button
-          type="button"
-          onClick={() => void handleConnect()}
-          disabled={micPriming}
-          className="flex items-center gap-2 bg-white text-black font-mono text-sm px-8 py-3 hover:bg-zinc-200 transition-colors disabled:opacity-60"
-        >
-          {micPriming ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Checking microphone…</>
-          ) : (
-            <><Mic className="w-4 h-4" /> Allow microphone & connect</>
-          )}
-        </button>
-
-        {micDenied && (
-          <p className="text-xs text-yellow-500 font-mono max-w-sm">
-            If Chrome blocked access: click the lock icon in the address bar → Site settings → Microphone → Allow, then try again.
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={() => { releaseMicrophone(); router.push(`/webinar/${webinarId}/live`); }}
-          className="text-[#8e9192] text-sm font-mono hover:text-white transition-colors"
-        >
-          ← Back to live room
-        </button>
       </div>
     );
   }

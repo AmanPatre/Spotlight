@@ -68,16 +68,17 @@ export default function HostStreamView({
 
   // Auto-go-live
   useEffect(() => {
-    if (!call || !devicesReady || isLive) return;
+    if (!call || !devicesReady || isLive || ending) return;
     const autoGoLive = async () => {
       try {
         await call.goLive();
+        await updateWebinarStatus(webinarId, WebinarStatusEnum.LIVE);
       } catch (err) {
         console.error("Auto-goLive failed:", err);
       }
     };
     autoGoLive();
-  }, [call, devicesReady, isLive]);
+  }, [call, devicesReady, isLive, webinarId, ending]);
 
   const handleEndStream = async () => {
     if (!call) return;

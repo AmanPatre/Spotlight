@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getWebinarStatus } from "@/actions/webinar";
 import { WebinarStatusEnum } from "@prisma/client";
 import { toast } from "sonner";
@@ -14,6 +14,11 @@ type Props = {
 
 export default function WaitingRoom({ webinarId, webinarTitle, startTime, onLive }: Props) {
   const [status, setStatus] = useState<WebinarStatusEnum>(WebinarStatusEnum.WAITING_ROOM);
+  const onLiveRef = useRef(onLive);
+
+  useEffect(() => {
+    onLiveRef.current = onLive;
+  }, [onLive]);
 
   // Poll every 5 seconds for status
   useEffect(() => {
@@ -23,12 +28,12 @@ export default function WaitingRoom({ webinarId, webinarTitle, startTime, onLive
         setStatus(currentStatus as WebinarStatusEnum);
         if (currentStatus === WebinarStatusEnum.LIVE) {
           clearInterval(interval);
-          setTimeout(() => onLive(), 2000);
+          setTimeout(() => onLiveRef.current(), 2000);
         }
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [webinarId, onLive]);
+  }, [webinarId]);
 
   const handleAddToCalendar = () => {
     const start = new Date(startTime);

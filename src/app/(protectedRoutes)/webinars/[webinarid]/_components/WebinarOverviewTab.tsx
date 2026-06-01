@@ -41,7 +41,7 @@ const WebinarOverviewTab = ({
       {/* Tags card */}
       <div className="flex flex-col gap-3 p-5 rounded-xl border border-border bg-secondary/40">
         <div className="flex items-center gap-2">
-          <Tag className="w-4 h-4 text-purple-400" />
+          <Tag className="w-4 h-4 text-zinc-400" />
           <h3 className="text-sm font-semibold text-primary">Tags</h3>
         </div>
         {tags && tags.length > 0 ? (
@@ -49,7 +49,7 @@ const WebinarOverviewTab = ({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-xs font-medium"
+                className="px-2.5 py-1 rounded-full bg-white/10 text-white border border-white/20 text-xs font-medium"
               >
                 {tag}
               </span>
@@ -63,7 +63,7 @@ const WebinarOverviewTab = ({
       {/* CTA card */}
       <div className="flex flex-col gap-3 p-5 rounded-xl border border-border bg-secondary/40">
         <div className="flex items-center gap-2">
-          <Bot className="w-4 h-4 text-purple-400" />
+          <Bot className="w-4 h-4 text-zinc-400" />
           <h3 className="text-sm font-semibold text-primary">Call to Action</h3>
         </div>
         <div className="flex flex-col gap-1">
@@ -101,7 +101,7 @@ const WebinarOverviewTab = ({
       {/* Settings card */}
       <div className="flex flex-col gap-3 p-5 rounded-xl border border-border bg-secondary/40">
         <div className="flex items-center gap-2">
-          <Ticket className="w-4 h-4 text-purple-400" />
+          <Ticket className="w-4 h-4 text-zinc-400" />
           <h3 className="text-sm font-semibold text-primary">Settings</h3>
         </div>
         <div className="flex flex-col gap-2">

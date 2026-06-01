@@ -152,10 +152,24 @@ export default function WebinarDetailClient({
         {/* Status Footer */}
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between border-t border-[#27272a] pt-4 gap-4">
           <div className="flex flex-col sm:flex-row items-center gap-3 text-[#c4c7c8] text-sm text-center sm:text-left">
-            <span className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-              Live Syncing
-            </span>
+            {(webinar.webinarStatus === WebinarStatusEnum.LIVE || webinar.webinarStatus === WebinarStatusEnum.WAITING_ROOM) && (
+              <span className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full animate-pulse ${webinar.webinarStatus === WebinarStatusEnum.LIVE ? 'bg-red-500' : 'bg-white'}`}></span>
+                {webinar.webinarStatus === WebinarStatusEnum.LIVE ? "Live Streaming" : "Live Syncing"}
+              </span>
+            )}
+            {webinar.webinarStatus === WebinarStatusEnum.ENDED && (
+              <span className="flex items-center gap-2 text-zinc-500">
+                <span className="w-2 h-2 rounded-full bg-zinc-700"></span>
+                Webinar Session Concluded
+              </span>
+            )}
+            {webinar.webinarStatus === WebinarStatusEnum.SCHEDULED && (
+              <span className="flex items-center gap-2 text-zinc-500">
+                <span className="w-2 h-2 rounded-full bg-zinc-700"></span>
+                Awaiting Session Start
+              </span>
+            )}
             <span className="hidden sm:inline text-xs opacity-50">|</span>
             <span>Manage your webinar status and share the attendee link above</span>
           </div>

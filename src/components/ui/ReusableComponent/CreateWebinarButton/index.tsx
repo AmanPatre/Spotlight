@@ -73,11 +73,11 @@ const CreateWebinarButton = ({ children, className }: Props) => {
       if (!open) setComplete(false);
     }}>
       <DialogTrigger
-        className={cn(className, "rounded-xl flex gap-2 items-center hover:cursor-pointer px-4 py-2 border border-border bg-primary/10 backdrop-blur-sm text-sm font-normal text-primary hover:bg-primary-20")}
+        className={cn(className, "rounded-full flex gap-2 items-center hover:cursor-pointer px-5 py-2.5 border border-[#27272a] bg-[#1c1b1b] text-sm font-medium text-white hover:bg-[#27272a] transition-all duration-200")}
       >
         {children || (
           <>
-            <PlusIcon />
+            <PlusIcon className="w-3.5 h-3.5" />
             Create Webinar
           </>
         )}

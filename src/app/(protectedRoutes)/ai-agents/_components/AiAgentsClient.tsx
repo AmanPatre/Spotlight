@@ -33,7 +33,7 @@ import { Cpu, Loader2, Plus, Search, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 
 const PROVIDER_MODELS: Record<string, string[]> = {
-  google: ["gemini-2.0-flash-001", "gemini-1.5-flash", "gemini-1.5-pro"],
+  google: ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"],
   openai: ["gpt-4o", "gpt-4o-mini", "gpt-4.1"],
   anthropic: ["claude-3-5-sonnet-20241022", "claude-3-5-haiku-20241022"],
 };
@@ -50,7 +50,7 @@ export default function AiAgentsClient() {
   const [firstMessage, setFirstMessage] = useState("");
   const [systemPrompt, setSystemPrompt] = useState("");
   const [provider, setProvider] = useState("google");
-  const [model, setModel] = useState("gemini-2.0-flash-001");
+  const [model, setModel] = useState("gemini-3.1-flash-lite");
 
   const [createName, setCreateName] = useState("");
   const [createFirst, setCreateFirst] = useState(
@@ -60,7 +60,7 @@ export default function AiAgentsClient() {
     "You are a friendly sales assistant. Qualify the lead and offer to book a follow-up with the team.",
   );
   const [createProvider, setCreateProvider] = useState("google");
-  const [createModel, setCreateModel] = useState("gemini-2.0-flash-001");
+  const [createModel, setCreateModel] = useState("gemini-3.1-flash-lite");
   const [creating, setCreating] = useState(false);
 
   const refresh = useCallback(async () => {

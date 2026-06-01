@@ -3,7 +3,7 @@
 import { WebinarFormState } from "@/store/useWebinarStore";
 import { onAuthenticateUser } from "./auth";
 import { prismaClient } from "@/lib/prismaClient";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, unstable_noStore as noStore } from "next/cache";
 import { WebinarStatusEnum } from "@prisma/client";
 import { getVapiAssistantById } from "./vapi";
 import { inngest } from "@/inngest/client";
@@ -204,6 +204,7 @@ export const updateWebinarStatus = async (
     }
 
     revalidatePath(`/webinars/${webinarId}`);
+    revalidatePath(`/webinar/${webinarId}`);
     return {
       status: 200,
       message: "Status updated",
@@ -219,6 +220,7 @@ export const updateWebinarStatus = async (
  * Get just the status of a webinar (for polling)
  */
 export const getWebinarStatus = async (webinarId: string) => {
+  noStore();
   try {
     const webinar = await prismaClient.webinar.findUnique({
       where: { id: webinarId },

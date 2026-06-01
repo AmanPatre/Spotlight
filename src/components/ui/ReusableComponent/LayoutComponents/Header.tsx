@@ -49,22 +49,22 @@ const Header = () => {
       <div className="flex items-center gap-3">
         {/* Search bar */}
         <div className="relative hidden sm:flex items-center">
-          <Search className="absolute left-2.5 w-3.5 h-3.5 text-[#52525b]" />
+          <Search className="absolute left-3 w-3.5 h-3.5 text-[#52525b]" />
           <input
             type="text"
             placeholder="Search..."
-            className="pl-8 pr-3 h-8 text-sm bg-[#18181b] border border-[#27272a] rounded-md text-[#a1a1aa] placeholder:text-[#52525b] focus:outline-none focus:ring-1 focus:ring-[#ffffff] focus:border-[#ffffff] w-48 transition-all"
+            className="pl-9 pr-4 h-9 text-sm bg-[#111113] border border-[#27272a] rounded-full text-[#a1a1aa] placeholder:text-[#52525b] focus:outline-none focus:ring-1 focus:ring-white focus:border-white w-64 transition-all"
           />
         </div>
 
         {/* Notifications bell */}
-        <button className="flex items-center justify-center w-8 h-8 rounded-md bg-[#18181b] border border-[#27272a] text-[#a1a1aa] hover:text-white hover:bg-[#27272a] transition-colors">
+        <button className="flex items-center justify-center w-9 h-9 rounded-full bg-[#111113] border border-[#27272a] text-[#a1a1aa] hover:text-white hover:bg-[#27272a] transition-colors">
           <Bell className="w-3.5 h-3.5" />
         </button>
 
         {/* AI lightning icon */}
-        <button className="flex items-center justify-center w-8 h-8 rounded-md bg-[#ffffff] border border-[#27272a] text-[#141313] hover:bg-[#c6c6c7] transition-colors">
-          <LightningIcon />
+        <button className="flex items-center justify-center w-9 h-9 rounded-full bg-white text-black hover:bg-[#e4e4e7] transition-colors">
+          <LightningIcon className="w-3.5 h-3.5" />
         </button>
 
         {/* Create webinar */}

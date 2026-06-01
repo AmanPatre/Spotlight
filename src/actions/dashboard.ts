@@ -8,10 +8,14 @@ import { formatCurrency } from "@/lib/utils";
 
 export const getHomeDashboardData = async () => {
     try {
+        console.time("getHomeDashboardData");
+        console.time("auth");
         const auth = await onAuthenticateUser();
+        console.timeEnd("auth");
         if (!auth.user) return { success: false, data: null };
 
         // 1. Fetch Basic Metrics
+        console.time("metrics");
         const webinars = await prismaClient.webinar.findMany({
             where: { presenterId: auth.user.id },
             include: {
@@ -44,9 +48,12 @@ export const getHomeDashboardData = async () => {
         const totalHotLeads = webinars.reduce((sum, w) =>
             sum + w.attendances.filter(a => a.CallDebrief?.isHotLead).length, 0);
         const pipelineValue = totalHotLeads * 15000; // Mock multiplier for demo
+        console.timeEnd("metrics");
 
         // 2. Fetch Active Agents
+        console.time("vapi");
         const vapi = await getVapiAssistants();
+        console.timeEnd("vapi");
         const activeAgents = vapi.success && vapi.assistants ? vapi.assistants.length : 0;
 
         // 3. Upcoming Streams
@@ -127,5 +134,7 @@ export const getHomeDashboardData = async () => {
     } catch (error) {
         console.error("Error fetching home dashboard data", error);
         return { success: false, data: null };
+    } finally {
+        console.timeEnd("getHomeDashboardData");
     }
 };

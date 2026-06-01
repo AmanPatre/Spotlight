@@ -63,8 +63,8 @@ const Sidebar = () => {
             }}
           />
         </div>
-        <CreateWebinarButton className="w-full bg-[#ffffff] text-[#2f3131] font-medium text-[12px] py-2 px-4 rounded hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-          <Plus className="w-[16px] h-[16px] stroke-[2.5]" />
+        <CreateWebinarButton className="w-full justify-center">
+          <Plus className="w-3.5 h-3.5" />
           New Webinar
         </CreateWebinarButton>
       </div>
