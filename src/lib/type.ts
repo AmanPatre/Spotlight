@@ -41,7 +41,6 @@ export const validateBasicInfo = (data: {
   description?: string;
   date?: Date;
   time?: string;
-  timeFormat?: "AM" | "PM";
 }): ValidationResult => {
   const errors: ValidationErrors = {};
 

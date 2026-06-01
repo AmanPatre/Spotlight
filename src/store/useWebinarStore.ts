@@ -15,7 +15,6 @@ export type WebinarFormState = {
     description?: string;
     date?: Date;
     time?: string;
-    timeFormat?: "AM" | "PM";
   };
 
   cta: {
@@ -110,7 +109,6 @@ const initialState: WebinarFormState = {
     description: "",
     date: undefined,
     time: "",
-    timeFormat: "AM",
   },
 
   cta: {

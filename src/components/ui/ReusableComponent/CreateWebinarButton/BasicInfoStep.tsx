@@ -38,23 +38,21 @@ const BasicInfoStep = () => {
   };
 
   const handleDateChange = (newDate: Date | undefined) => {
-    updateBasicInfoField("date", newDate);
-
     if (newDate) {
+      // Normalize to midnight UTC of that local day to avoid timezone flip in server actions
+      const normalizedDate = new Date(Date.UTC(newDate.getFullYear(), newDate.getMonth(), newDate.getDate()));
+      updateBasicInfoField("date", normalizedDate);
+
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       if (newDate < today) {
-        console.log("Error: Cannot select a date in the past");
         toast.error("Webinar date cannot be in the past");
       }
+    } else {
+      updateBasicInfoField("date", undefined);
     }
   };
 
-  const handleTimeFormatChange = (value: "AM" | "PM" | null) => {
-    if (value === "AM" || value === "PM") {
-      updateBasicInfoField("timeFormat", value);
-    }
-  };
   return (
     <div className="space-y-6 w-full mt-4">
       <div className="flex flex-col space-y-2 w-full">
@@ -146,9 +144,7 @@ const BasicInfoStep = () => {
                 className="bg-transparent"
                 disabled={(date) => {
                   const today = new Date();
-
                   today.setHours(0, 0, 0, 0); // Reset time to start of day
-
                   return date < today;
                 }}
               />
@@ -174,27 +170,13 @@ const BasicInfoStep = () => {
                 name="time"
                 value={time || ""}
                 onChange={handleChange}
-                placeholder="12:00"
+                placeholder="20:00 (24h IST)"
                 className={cn(
                   "pl-8 flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors",
                   errors.time && "border-red-400 focus-visible:border-red-400",
                 )}
               />
             </div>
-
-            <Select
-              value={timeFormat || "AM"}
-              onValueChange={handleTimeFormatChange}
-            >
-              <SelectTrigger className="w-24 h-12 rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent text-zinc-400 font-mono text-xs focus:ring-0 focus:border-white transition-colors">
-                <SelectValue placeholder="AM" />
-              </SelectTrigger>
-
-              <SelectContent className="bg-[#141313] border-zinc-800 text-zinc-100 rounded-none">
-                <SelectItem value="AM">AM</SelectItem>
-                <SelectItem value="PM">PM</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
           {errors.time && <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.time}</p>}
         </div>
