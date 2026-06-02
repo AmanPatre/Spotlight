@@ -361,7 +361,10 @@ export const getWebinarLeadsDetail = async (webinarId: string) => {
     if (!webinar) return { success: false, leads: null };
 
     const attendances = await prismaClient.attendance.findMany({
-      where: { webinarId },
+      where: {
+        webinarId,
+        attendedType: { not: AttendedTypeEnum.REGISTERED }
+      },
       include: {
         user: true,
         CallDebrief: true,
