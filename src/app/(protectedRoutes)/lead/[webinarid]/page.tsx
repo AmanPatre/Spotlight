@@ -16,12 +16,15 @@ interface Lead {
 }
 
 type Props = {
-    params: Promise<{ webinarid: string }>;
+    params: Promise<{ webinarId?: string; webinarid?: string }>;
 };
 
 export default async function LeadDetailPage({ params }: Props) {
-    const { webinarid } = await params;
-    const { success, webinar, leads: rawLeads } = await getWebinarLeadsDetail(webinarid);
+    const resolvedParams = await params;
+    // Git stored folder as [webinarId] (capital I) so on Linux/Vercel params key is webinarId.
+    // On Windows (case-insensitive FS) it resolves as webinarid. Handle both.
+    const webinarid = resolvedParams.webinarId ?? resolvedParams.webinarid;
+    const { success, webinar, leads: rawLeads } = await getWebinarLeadsDetail(webinarid ?? "");
 
     if (!success || !webinar || !rawLeads) {
         notFound();

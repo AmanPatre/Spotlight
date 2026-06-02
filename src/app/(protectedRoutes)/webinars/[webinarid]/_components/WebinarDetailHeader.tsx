@@ -58,7 +58,20 @@ const WebinarDetailHeader = ({
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
   const attendeeLink = `${baseUrl}/webinar/${webinarId}`;
-  const { label, color } = statusConfig[webinarStatus];
+  const getConfig = () => {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+    if (webinarStatus === WebinarStatusEnum.SCHEDULED && new Date(startTime) <= oneHourAgo) {
+      return {
+        label: "Missed",
+        color: "bg-red-500/10 text-red-400 border border-red-500/20",
+      };
+    }
+    return statusConfig[webinarStatus];
+  };
+
+  const { label, color } = getConfig();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(attendeeLink);

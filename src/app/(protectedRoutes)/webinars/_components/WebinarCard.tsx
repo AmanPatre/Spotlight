@@ -10,7 +10,14 @@ type Props = {
 };
 
 const WebinarCard = ({ webinar }: Props) => {
-  const getDisplayStatus = (status: string) => {
+  const getDisplayStatus = (status: string, startTime: Date) => {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
+    if (status === "SCHEDULED" && new Date(startTime) <= oneHourAgo) {
+      return "MISSED";
+    }
+
     switch (status) {
       case "LIVE": return "LIVE";
       case "ENDED": return "ENDED";
@@ -19,7 +26,7 @@ const WebinarCard = ({ webinar }: Props) => {
   };
 
   const status = webinar.webinarStatus;
-  const displayStatus = getDisplayStatus(status);
+  const displayStatus = getDisplayStatus(status, webinar.startTime);
 
   return (
     <div className="group w-full bg-[#0e0e0e] border border-[#2e2e2e] rounded-xl overflow-hidden hover:border-[#ffffff]/20 transition-all duration-300 flex flex-col h-[280px]">

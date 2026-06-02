@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   useCall,
   useCallStateHooks,
@@ -54,13 +54,18 @@ export default function HostStreamView({
   const [activeTab, setActiveTab] = useState<"chat" | "participants">("chat");
   const [isChatOpen, setIsChatOpen] = useState(true);
 
+  // Track if we've already done the initial device setup
+  const hasSetupDevices = useRef(false);
+
   // Enable camera and mic automatically when the host enters the room
   useEffect(() => {
-    if (!call) return;
+    if (!call || hasSetupDevices.current) return;
+
     const setupDevices = async () => {
       try {
         await call.camera.enable();
         await call.microphone.enable();
+        hasSetupDevices.current = true;
         setDevicesReady(true);
       } catch (err) {
         console.error("Could not enable devices:", err);
@@ -68,10 +73,6 @@ export default function HostStreamView({
       }
     };
     setupDevices();
-    return () => {
-      call.camera.disable();
-      call.microphone.disable();
-    };
   }, [call]);
 
   // Auto-go-live

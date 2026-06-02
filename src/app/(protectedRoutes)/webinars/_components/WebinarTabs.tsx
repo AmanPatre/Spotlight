@@ -7,11 +7,24 @@ const TABS = ["All", "Upcoming", "Live", "Ended"] as const;
 type Tab = (typeof TABS)[number];
 
 function filterWebinars(webinars: Webinar[], tab: Tab) {
+    const now = new Date();
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+
     switch (tab) {
-        case "Upcoming": return webinars.filter((w) => w.webinarStatus === "SCHEDULED" || w.webinarStatus === "WAITING_ROOM");
-        case "Live": return webinars.filter((w) => w.webinarStatus === "LIVE");
-        case "Ended": return webinars.filter((w) => w.webinarStatus === "ENDED");
-        default: return webinars;
+        case "Upcoming":
+            return webinars.filter((w) =>
+                (w.webinarStatus === "SCHEDULED" && new Date(w.startTime) > oneHourAgo) ||
+                w.webinarStatus === "WAITING_ROOM"
+            );
+        case "Live":
+            return webinars.filter((w) => w.webinarStatus === "LIVE");
+        case "Ended":
+            return webinars.filter((w) =>
+                w.webinarStatus === "ENDED" ||
+                (w.webinarStatus === "SCHEDULED" && new Date(w.startTime) <= oneHourAgo)
+            );
+        default:
+            return webinars;
     }
 }
 import { useSearchParams } from "next/navigation";
