@@ -349,9 +349,11 @@ export const getWebinarLeadsOverview = async () => {
  */
 export const getWebinarLeadsDetail = async (webinarId: string) => {
   noStore();
+  // Critical guard: if webinarId is falsy, Prisma silently ignores the filter and returns ALL records
+  if (!webinarId) return { success: false, leads: null, webinar: null };
   try {
     const auth = await onAuthenticateUser();
-    if (!auth.user) return { success: false, leads: null };
+    if (!auth.user) return { success: false, leads: null, webinar: null };
 
     const webinar = await prismaClient.webinar.findFirst({
       where: { id: webinarId, presenterId: auth.user.id },
@@ -381,7 +383,7 @@ export const getWebinarLeadsDetail = async (webinarId: string) => {
     };
   } catch (error) {
     console.error("Error fetching webinar leads detail", error);
-    return { success: false, leads: null };
+    return { success: false, leads: null, webinar: null };
   }
 };
 
