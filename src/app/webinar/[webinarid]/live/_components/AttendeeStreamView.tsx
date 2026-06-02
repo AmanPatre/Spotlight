@@ -289,6 +289,22 @@ function AttendeeInnerView({
 
         {/* ── Video Canvas ────────────────────────────────────────── */}
         <div className="flex-1 relative flex items-center justify-center overflow-hidden border-r border-zinc-800 p-6 transition-all duration-300">
+          {/* Chat Toggle (when closed) */}
+          <AnimatePresence>
+            {!isChatOpen && (
+              <motion.button
+                initial={{ x: 100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: 100, opacity: 0 }}
+                onClick={() => setIsChatOpen(true)}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-zinc-900/80 backdrop-blur-sm border-l border-t border-b border-zinc-700 p-3 hover:bg-zinc-800 transition-all rounded-l-xl shadow-2xl group flex items-center gap-2"
+              >
+                <MessageSquare className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                <span className="text-[10px] uppercase tracking-widest font-mono text-zinc-500 group-hover:text-zinc-200 transition-colors hidden md:block">Show Chat</span>
+              </motion.button>
+            )}
+          </AnimatePresence>
+
           <div className="w-full aspect-video bg-zinc-950 border border-zinc-800 relative group overflow-hidden">
 
             {/* Scanline effect */}
@@ -374,20 +390,21 @@ function AttendeeInnerView({
               </div>
             </div>
 
-            {/* CTA Overlay */}
-            {activeCTA && (
-              <div className="absolute inset-x-0 bottom-0 z-50 p-6">
-                <CTABanner
-                  type={activeCTA}
-                  webinarId={webinarId}
-                  attendeeId={attendeeId}
-                  aiAgentId={aiAgentId}
-                  metadata={ctaMetadata}
-                  onClose={() => setActiveCTA(null)}
-                />
-              </div>
-            )}
           </div>
+
+          {/* CTA Overlay (Moved outside aspect-video to prevent clipping) */}
+          {activeCTA && (
+            <div className="absolute bottom-6 left-6 right-6 z-50">
+              <CTABanner
+                type={activeCTA}
+                webinarId={webinarId}
+                attendeeId={attendeeId}
+                aiAgentId={aiAgentId}
+                metadata={ctaMetadata}
+                onClose={() => setActiveCTA(null)}
+              />
+            </div>
+          )}
         </div>
 
         {/* ── Chat Sidebar ─────────────────────────────────────────── */}

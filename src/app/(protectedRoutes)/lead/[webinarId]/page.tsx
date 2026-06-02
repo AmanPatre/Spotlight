@@ -6,6 +6,8 @@ import React from "react";
 import { formatCurrency } from "@/lib/utils";
 import PipelineValueToggle from "./_components/PipelineValueToggle";
 
+export const dynamic = 'force-dynamic';
+
 interface Lead {
     id: string;
     user: { name: string; email: string };

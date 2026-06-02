@@ -189,7 +189,7 @@ export const updateWebinarStatus = async (
     }
 
     await prismaClient.webinar.update({
-      where: { id: webinarId, presenterId: user.user.id },
+      where: { id: webinarId },
       data: updateData,
     });
 

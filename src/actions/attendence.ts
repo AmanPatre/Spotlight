@@ -4,6 +4,7 @@ import { AttendedTypeEnum, CtaTypeEnum } from "@prisma/client";
 import { prismaClient } from "@/lib/prismaClient";
 import { AttendanceData } from "@/lib/type";
 import { onAuthenticateUser } from "./auth";
+import { unstable_noStore as noStore } from "next/cache";
 
 // we are geting the webinar info here
 
@@ -274,6 +275,7 @@ export const getAllLeads = async () => {
  * PHASE 5: Fetch broad overview of all webinars for the leads dashboard
  */
 export const getWebinarLeadsOverview = async () => {
+  noStore();
   try {
     const auth = await onAuthenticateUser();
     if (!auth.user) return { success: false, webinars: [] };
@@ -346,11 +348,12 @@ export const getWebinarLeadsOverview = async () => {
  * PHASE 5: Fetch detailed leads for a specific webinar
  */
 export const getWebinarLeadsDetail = async (webinarId: string) => {
+  noStore();
   try {
     const auth = await onAuthenticateUser();
     if (!auth.user) return { success: false, leads: null };
 
-    const webinar = await prismaClient.webinar.findUnique({
+    const webinar = await prismaClient.webinar.findFirst({
       where: { id: webinarId, presenterId: auth.user.id },
       select: { title: true, startTime: true, tags: true, price: true, currency: true }
     });
