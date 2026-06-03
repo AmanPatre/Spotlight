@@ -37,6 +37,14 @@ export default function LiveRoomClient({
   isPreRecorded,
 }: Props) {
   const { user: clerkUser, isLoaded } = useUser();
+
+  const userId = clerkUser?.id;
+  const userFullName = clerkUser?.fullName;
+  const userEmail = clerkUser?.emailAddresses?.[0]?.emailAddress;
+  const userImageUrl = clerkUser?.imageUrl;
+
+  const hostName = userFullName ?? userEmail ?? "Host";
+
   const [client, setClient] = useState<StreamVideoClient | null>(null);
   const [call, setCall] = useState<ReturnType<
     StreamVideoClient["call"]
@@ -49,7 +57,7 @@ export default function LiveRoomClient({
   const clientRef = useRef<StreamVideoClient | null>(null);
 
   useEffect(() => {
-    if (!isLoaded || !clerkUser || initCalledRef.current) return;
+    if (!isLoaded || !userId || initCalledRef.current) return;
     initCalledRef.current = true;
     let isMounted = true;
 
@@ -65,9 +73,9 @@ export default function LiveRoomClient({
         }
 
         const streamUser: User = {
-          id: clerkUser.id,
-          name: clerkUser.fullName ?? clerkUser.emailAddresses[0]?.emailAddress ?? "Host",
-          image: clerkUser.imageUrl,
+          id: userId,
+          name: hostName,
+          image: userImageUrl,
         };
 
         const videoClient = new StreamVideoClient({
@@ -119,7 +127,7 @@ export default function LiveRoomClient({
         initCalledRef.current = false;
       }
     };
-  }, [isLoaded, clerkUser, webinarId, webinarTitle]);
+  }, [isLoaded, userId, hostName, userImageUrl, webinarId, webinarTitle]);
 
   if (!isLoaded || (!client && !error)) {
     return (
@@ -147,7 +155,7 @@ export default function LiveRoomClient({
     );
   }
 
-  if (!client || !call) return null;
+  if (!client || !call || !userId) return null;
 
   return (
     <StreamVideo client={client}>
@@ -162,12 +170,8 @@ export default function LiveRoomClient({
           price={price}
           videoUrl={videoUrl}
           isPreRecorded={isPreRecorded}
-          hostId={clerkUser!.id}
-          hostName={
-            clerkUser!.fullName ??
-            clerkUser!.emailAddresses[0]?.emailAddress ??
-            "Host"
-          }
+          hostId={userId}
+          hostName={hostName}
         />
       </StreamCall>
     </StreamVideo>
