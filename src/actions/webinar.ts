@@ -93,6 +93,8 @@ export const createWebinar = async (formData: WebinarFormState) => {
         price: formData.productInfo.price,
         currency: formData.productInfo.currency,
         originalPrice: formData.productInfo.originalPrice,
+        videoUrl: formData.basicInfo.videoUrl || null,
+        isPreRecorded: formData.basicInfo.isPreRecorded || false,
       },
     });
 
@@ -218,6 +220,49 @@ export const updateWebinarStatus = async (
     };
   } catch (error: unknown) {
     return { status: 500, message: "Prisma or Server Error: " + (error instanceof Error ? error.message : String(error)) };
+  }
+};
+
+export const rescheduleWebinar = async (
+  webinarId: string,
+  date: Date,
+  timeStr: string
+) => {
+  try {
+    const user = await onAuthenticateUser();
+    if (!user.user) return { status: 401, message: "Unauthorized" };
+
+    const webinar = await prismaClient.webinar.findUnique({
+      where: { id: webinarId },
+      select: { webinarStatus: true }
+    });
+
+    if (!webinar) return { status: 404, message: "Webinar not found" };
+    if (webinar.webinarStatus !== WebinarStatusEnum.SCHEDULED) {
+      return { status: 400, message: "Only scheduled webinars can be rescheduled" };
+    }
+
+    const newStartTime = combineDateTime(date, timeStr);
+    const now = new Date();
+
+    if (newStartTime < now) {
+      return { status: 400, message: "Webinar date and time cannot be in the past" };
+    }
+
+    await prismaClient.webinar.update({
+      where: { id: webinarId },
+      data: { startTime: newStartTime },
+    });
+
+    revalidatePath(`/webinars/${webinarId}`);
+    revalidatePath(`/webinar/${webinarId}`);
+
+    return { status: 200, message: "Webinar rescheduled successfully" };
+  } catch (error: unknown) {
+    return {
+      status: 500,
+      message: "Prisma or Server Error: " + (error instanceof Error ? error.message : String(error))
+    };
   }
 };
 

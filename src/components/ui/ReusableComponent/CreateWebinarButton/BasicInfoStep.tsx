@@ -11,6 +11,7 @@ import { Label } from "../../label";
 import { Popover, PopoverContent, PopoverTrigger } from "../../popover";
 import { Input } from "../../input";
 import { Calendar } from "../../calendar";
+import { UploadButton } from "@/lib/uploadthing";
 import { toast } from "sonner";
 
 
@@ -185,23 +186,50 @@ const BasicInfoStep = () => {
       <div className="flex items-center gap-2 text-sm text-[#c4c7c8] mt-4">
         <div className="flex items-center">
           <Upload className="h-4 w-4 mr-2" />
-          Uploading a video makes this webinar pre-recorded.
+          {formData.basicInfo.isPreRecorded ? (
+            <span className="text-green-400">Video successfully uploaded for pre-recorded session.</span>
+          ) : (
+            "Uploading a video makes this webinar pre-recorded."
+          )}
         </div>
 
-        <div
-          className={cn(
-            buttonVariants({ variant: "outline" }),
-            "ml-auto relative border border-[#444748] !bg-[#1c1b1b] text-white hover:opacity-90 transition-opacity h-8 cursor-pointer"
+        <div className="ml-auto">
+          {!formData.basicInfo.isPreRecorded ? (
+            <UploadButton
+              endpoint="videoUploader"
+              appearance={{
+                button: "h-8 px-4 border border-[#444748] bg-[#1c1b1b] text-white hover:opacity-90 transition-opacity text-sm rounded-md",
+                allowedContent: "hidden"
+              }}
+              onClientUploadComplete={(res) => {
+                console.log("UploadThing response:", res);
+                if (res?.[0]) {
+                  console.log("Setting videoUrl:", res[0].url);
+                  updateBasicInfoField("videoUrl", res[0].url);
+                  updateBasicInfoField("isPreRecorded", true);
+                  toast.success("Video uploaded successfully!");
+                }
+              }}
+              onUploadError={(error: Error) => {
+                toast.error(`Upload failed: ${error.message}`);
+              }}
+            />
+          ) : (
+            <Button
+              variant="outline"
+              className="h-8 border-[#444748] !bg-[#1c1b1b] text-white hover:opacity-90 transition-opacity"
+              onClick={() => {
+                updateBasicInfoField("videoUrl", null);
+                updateBasicInfoField("isPreRecorded", false);
+              }}
+            >
+              Remove Video
+            </Button>
           )}
-        >
-          Upload File
-          <Input
-            className="absolute inset-0 opacity-0 cursor-pointer"
-            type="file"
-          />
         </div>
       </div>
     </div >
+
   );
 };
 

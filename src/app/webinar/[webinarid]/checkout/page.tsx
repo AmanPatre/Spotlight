@@ -94,7 +94,6 @@ export default function CheckoutPage({ params }: Props) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     webinarId: webinarId,
-                    currency: webinarData?.currency || "INR"
                 }),
             });
 

@@ -1,0 +1,6 @@
+﻿src/app/(protectedRoutes)/webinars/[webinarid]/live/_components/ScreenShareButton.tsx(10,13): error TS2339: Property 'useIsLocalScreenSharing' does not exist on type 'typeof import("E:/MERN PROJECTS/spotlight/webinaar-platform/node_modules/@stream-io/video-react-bindings/dist/src/hooks/callStateHooks")'.
+src/app/(protectedRoutes)/webinars/[webinarid]/live/_components/ScreenShareButton.tsx(25,28): error TS2551: Property 'stopScreenShare' does not exist on type 'Call'. Did you mean 'screenShare'?
+src/app/(protectedRoutes)/webinars/[webinarid]/live/_components/ScreenShareButton.tsx(27,28): error TS2551: Property 'startScreenShare' does not exist on type 'Call'. Did you mean 'screenShare'?
+src/app/webinar/[webinarid]/live/_components/AttendeeStreamView.tsx(277,43): error TS2339: Property 'useScreenShareParticipants' does not exist on type 'typeof import("E:/MERN PROJECTS/spotlight/webinaar-platform/node_modules/@stream-io/video-react-bindings/dist/src/hooks/callStateHooks")'.
+src/app/webinar/[webinarid]/live/_components/AttendeeStreamView.tsx(279,149): error TS2345: Argument of type '"screenShare"' is not assignable to parameter of type 'TrackType'.
+src/app/webinar/[webinarid]/live/_components/AttendeeStreamView.tsx(350,21): error TS2322: Type '"screenShare"' is not assignable to type '"none" | VideoTrackType | undefined'.

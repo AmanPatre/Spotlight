@@ -35,7 +35,7 @@ const CreateWebinarButton = ({ children, className }: Props) => {
     setComplete(true);
 
     setWebinarLink(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/live-webinar/${webinarId}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}/webinar/${webinarId}`,
     );
   };
 

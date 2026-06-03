@@ -11,9 +11,13 @@ import { AttendedTypeEnum } from "@prisma/client";
 export default function AttendeeLiveClient({
   webinarId,
   aiAgentId,
+  videoUrl,
+  isPreRecorded,
 }: {
   webinarId: string;
   aiAgentId: string | null;
+  videoUrl: string | null;
+  isPreRecorded: boolean;
 }) {
   const [attendeeId, setAttendeeId] = useState<string | null>(null);
   const [attendeeName, setAttendeeName] = useState<string>("Attendee");
@@ -81,6 +85,8 @@ export default function AttendeeLiveClient({
         attendeeId={attendeeId}
         attendeeName={attendeeName}
         aiAgentId={aiAgentId}
+        videoUrl={videoUrl}
+        isPreRecorded={isPreRecorded}
       />
     </>
   );

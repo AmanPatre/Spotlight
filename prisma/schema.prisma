@@ -77,6 +77,8 @@ model Webinar {
   couponEnabled   Boolean           @default(false)
   couponExpiry    DateTime?
   lockChat        Boolean           @default(false)
+  isPreRecorded   Boolean           @default(false)
+  videoUrl        String?           @db.VarChar(500)
   stripeProductId String?           @db.VarChar(255)
   aiAgentId       String?           @db.Uuid
   summary         String?           @db.Text

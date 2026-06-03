@@ -15,6 +15,8 @@ export type WebinarFormState = {
     description?: string;
     date?: Date;
     time?: string;
+    videoUrl?: string | null;
+    isPreRecorded?: boolean;
   };
 
   cta: {
@@ -109,6 +111,8 @@ const initialState: WebinarFormState = {
     description: "",
     date: undefined,
     time: "",
+    videoUrl: null,
+    isPreRecorded: false,
   },
 
   cta: {

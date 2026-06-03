@@ -33,6 +33,8 @@ const LivePage = async ({ params }: Props) => {
         ctaLabel={webinar.ctaLabel}
         productTitle={webinar.productTitle}
         price={webinar.price}
+        videoUrl={webinar.videoUrl}
+        isPreRecorded={webinar.isPreRecorded}
       />
     </div>
   );

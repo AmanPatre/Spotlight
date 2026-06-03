@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import {
   StreamCall,
   StreamVideo,
   StreamVideoClient,
   ParticipantView,
   Call,
+  useCall,
   useCallStateHooks,
+  hasScreenShare,
 } from "@stream-io/video-react-sdk";
 import "@stream-io/video-react-sdk/dist/css/styles.css";
 import { Loader2, Settings, Maximize2, Volume2, Pause, Users, MessageSquare } from "lucide-react";
@@ -18,12 +20,15 @@ import { getWebinarStatus } from "@/actions/webinar";
 import { AttendedTypeEnum, WebinarStatusEnum } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import SyncVideoPlayer from "@/components/ui/ReusableComponent/SyncVideoPlayer";
 
 type Props = {
   webinarId: string;
   attendeeId: string;
   attendeeName: string;
   aiAgentId: string | null;
+  videoUrl: string | null;
+  isPreRecorded: boolean;
 };
 
 export default function AttendeeStreamView({
@@ -31,6 +36,8 @@ export default function AttendeeStreamView({
   attendeeId,
   attendeeName,
   aiAgentId,
+  videoUrl,
+  isPreRecorded,
 }: Props) {
   // ... existing state and logic ...
   // (Retaining the logic from lines 34-268)
@@ -61,6 +68,7 @@ export default function AttendeeStreamView({
 
   useEffect(() => {
     let streamClient: StreamVideoClient | null = null;
+    let isMounted = true;
 
     const init = async (retries = 5, delay = 3000) => {
       try {
@@ -91,6 +99,11 @@ export default function AttendeeStreamView({
           throw joinErr;
         }
 
+        if (!isMounted) {
+          streamClient.disconnectUser();
+          return;
+        }
+
         setClient(streamClient);
         setCall(streamCall);
 
@@ -108,7 +121,10 @@ export default function AttendeeStreamView({
     };
 
     init();
-    return () => { streamClient?.disconnectUser(); };
+    return () => {
+      isMounted = false;
+      streamClient?.disconnectUser();
+    };
   }, [webinarId, attendeeId, attendeeName]);
 
   useEffect(() => {
@@ -251,6 +267,8 @@ export default function AttendeeStreamView({
           activeCTA={activeCTA}
           ctaMetadata={ctaMetadata}
           setActiveCTA={setActiveCTA}
+          videoUrl={videoUrl}
+          isPreRecorded={isPreRecorded}
         />
       </StreamCall>
     </StreamVideo>
@@ -265,6 +283,8 @@ function AttendeeInnerView({
   activeCTA,
   ctaMetadata,
   setActiveCTA,
+  videoUrl,
+  isPreRecorded,
 }: {
   webinarId: string;
   attendeeId: string;
@@ -273,14 +293,30 @@ function AttendeeInnerView({
   activeCTA: "BUY_NOW" | "BOOK_A_CALL" | null;
   ctaMetadata: any;
   setActiveCTA: (v: "BUY_NOW" | "BOOK_A_CALL" | null) => void;
+  videoUrl: string | null;
+  isPreRecorded: boolean;
 }) {
+  const call = useCall();
   const { useParticipants, useIsCallLive } = useCallStateHooks();
   const participants = useParticipants();
+  const screenSharingParticipants = participants.filter((p) => hasScreenShare(p));
   const isLive = useIsCallLive();
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  };
 
   const hostParticipant = participants.find((p) => p.userId !== attendeeId && p.videoStream);
   const displayParticipant = hostParticipant || participants.find((p) => p.userId !== attendeeId);
+  const activeScreenShare = screenSharingParticipants.length > 0 ? screenSharingParticipants[0] : null;
+
   const viewerCount = Math.max(0, participants.length - 1);
 
   return (
@@ -305,7 +341,10 @@ function AttendeeInnerView({
             )}
           </AnimatePresence>
 
-          <div className="w-full aspect-video bg-zinc-950 border border-zinc-800 relative group overflow-hidden">
+          <div
+            ref={containerRef}
+            className="w-full aspect-video bg-zinc-950 border border-zinc-800 relative group overflow-hidden"
+          >
 
             {/* Scanline effect */}
             <div className="absolute inset-0 pointer-events-none z-10 overflow-hidden">
@@ -338,15 +377,44 @@ function AttendeeInnerView({
             </div>
 
             {/* Player content */}
-            {displayParticipant ? (
-              <div className="w-full h-full">
+            {isPreRecorded && videoUrl && call ? (
+              <div className="w-full h-full z-10 relative bg-black">
+                <SyncVideoPlayer videoUrl={videoUrl} isHost={false} call={call} />
+              </div>
+            ) : activeScreenShare ? (
+              <div className="w-full h-full z-10 relative bg-black">
+                {/* Master - Screen Share: force contain so it's NOT zoomed in */}
+                <div className="w-full h-full screen-share-contain">
+                  <ParticipantView
+                    participant={activeScreenShare}
+                    trackType="screenShareTrack"
+                    className="w-full h-full"
+                  />
+                </div>
+
+                {/* Detail - Floating Host Camera (Google Meet Style PiP) */}
+                <div className="absolute bottom-6 right-6 w-48 sm:w-56 aspect-video bg-zinc-950 border border-zinc-700 rounded-xl overflow-hidden shadow-2xl z-30 transition-all duration-300">
+                  {displayParticipant ? (
+                    <ParticipantView
+                      participant={displayParticipant}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Loader2 className="w-5 h-5 animate-spin text-zinc-600" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : displayParticipant ? (
+              <div className="w-full h-full z-10 relative">
                 <ParticipantView
                   participant={displayParticipant}
                   className="w-full h-full object-cover"
                 />
               </div>
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-6 text-center px-6">
+              <div className="w-full h-full flex flex-col items-center justify-center gap-6 text-center px-6 z-10 relative">
                 <Loader2 className="w-8 h-8 animate-spin text-zinc-600" />
                 <div className="space-y-2">
                   <p className="text-sm font-semibold text-zinc-400">
@@ -383,7 +451,10 @@ function AttendeeInnerView({
                   <button className="text-white hover:text-zinc-400 transition-colors">
                     <Settings className="w-5 h-5" />
                   </button>
-                  <button className="text-white hover:text-zinc-400 transition-colors">
+                  <button
+                    onClick={toggleFullscreen}
+                    className="text-white hover:text-zinc-400 transition-colors"
+                  >
                     <Maximize2 className="w-5 h-5" />
                   </button>
                 </div>
@@ -445,6 +516,15 @@ function AttendeeInnerView({
         @keyframes scanline {
           0%   { transform: translateY(-100%); }
           100% { transform: translateY(800px); }
+        }
+        /* Force screen share to show full content without zooming */
+        .screen-share-contain .str-video__video,
+        .screen-share-contain video {
+          object-fit: contain !important;
+        }
+        .screen-share-contain .str-video__participant-view {
+          width: 100%;
+          height: 100%;
         }
       `}</style>
     </div>

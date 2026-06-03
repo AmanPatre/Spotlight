@@ -16,6 +16,8 @@ import HostChatPanel from "./HostChatPanel";
 import CTAControlPanel from "./CTAControlPanel";
 import DeviceControlPanel from "./DeviceControlPanel";
 import ParticipantSidebar from "./ParticipantSidebar";
+import ScreenShareButton from "./ScreenShareButton";
+import SyncVideoPlayer from "@/components/ui/ReusableComponent/SyncVideoPlayer";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Props = {
@@ -26,6 +28,8 @@ type Props = {
   ctaLabel?: string | null;
   productTitle?: string | null;
   price?: number | null;
+  videoUrl: string | null;
+  isPreRecorded: boolean;
   hostId: string;
   hostName: string;
 };
@@ -38,6 +42,8 @@ export default function HostStreamView({
   ctaLabel,
   productTitle,
   price,
+  videoUrl,
+  isPreRecorded,
   hostId,
   hostName,
 }: Props) {
@@ -164,7 +170,9 @@ export default function HostStreamView({
           {/* Video Canvas */}
           <div className="flex-1 p-6 flex flex-col items-center justify-center relative overflow-hidden">
             <div className="w-full h-full max-w-6xl relative border border-[#444748] bg-black rounded overflow-hidden group">
-              {localParticipant ? (
+              {isPreRecorded && videoUrl ? (
+                <SyncVideoPlayer videoUrl={videoUrl} isHost={true} call={call!} />
+              ) : localParticipant ? (
                 <ParticipantView
                   participant={localParticipant}
                   className="w-full h-full object-cover"
@@ -205,6 +213,10 @@ export default function HostStreamView({
             >
               {isCamOff ? <VideoOff className="w-5 h-5 group-hover:scale-110 transition-transform" /> : <Video className="w-5 h-5 group-hover:scale-110 transition-transform" />}
             </button>
+
+            <div className="w-px h-8 bg-[#444748] mx-2"></div>
+
+            <ScreenShareButton />
 
             <div className="w-px h-8 bg-[#444748] mx-2"></div>
 

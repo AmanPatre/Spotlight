@@ -21,6 +21,8 @@ type Props = {
   ctaLabel?: string | null;
   productTitle?: string | null;
   price?: number | null;
+  videoUrl: string | null;
+  isPreRecorded: boolean;
 };
 
 export default function LiveRoomClient({
@@ -31,6 +33,8 @@ export default function LiveRoomClient({
   ctaLabel,
   productTitle,
   price,
+  videoUrl,
+  isPreRecorded,
 }: Props) {
   const { user: clerkUser, isLoaded } = useUser();
   const [client, setClient] = useState<StreamVideoClient | null>(null);
@@ -47,6 +51,7 @@ export default function LiveRoomClient({
   useEffect(() => {
     if (!isLoaded || !clerkUser || initCalledRef.current) return;
     initCalledRef.current = true;
+    let isMounted = true;
 
     const initStream = async () => {
       try {
@@ -82,6 +87,11 @@ export default function LiveRoomClient({
 
         await streamCall.join();
 
+        if (!isMounted) {
+          videoClient.disconnectUser();
+          return;
+        }
+
         setClient(videoClient);
         setCall(streamCall);
       } catch (err) {
@@ -101,6 +111,7 @@ export default function LiveRoomClient({
     window.addEventListener("beforeunload", handleBeforeUnload);
 
     return () => {
+      isMounted = false;
       window.removeEventListener("beforeunload", handleBeforeUnload);
       if (clientRef.current) {
         clientRef.current.disconnectUser();
@@ -149,6 +160,8 @@ export default function LiveRoomClient({
           ctaLabel={ctaLabel}
           productTitle={productTitle}
           price={price}
+          videoUrl={videoUrl}
+          isPreRecorded={isPreRecorded}
           hostId={clerkUser!.id}
           hostName={
             clerkUser!.fullName ??

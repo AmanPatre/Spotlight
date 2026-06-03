@@ -56,6 +56,8 @@ export default async function AttendeeLivePage({ params }: Props) {
         <AttendeeLiveClient
           webinarId={webinarId}
           aiAgentId={webinar.aiAgentId}
+          videoUrl={webinar.videoUrl as string | null}
+          isPreRecorded={webinar.isPreRecorded as boolean}
         />
       </div>
     </div>
