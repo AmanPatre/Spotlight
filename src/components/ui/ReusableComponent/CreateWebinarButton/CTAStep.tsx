@@ -23,12 +23,14 @@ const CTAStep = () => {
   const {
     formData,
     updateCTAField,
+    updateProductInfoField,
     addTag,
     removeTag,
     getStepValidationErrors,
   } = useWebinarStore();
 
   const { ctaLabel, tags, aiAgent, ctaType } = formData.cta;
+  const { productTitle, price } = formData.productInfo;
   const errors = getStepValidationErrors("cta");
 
   const [assistants, setAssistants] = useState<VapiAssistantSummary[]>([]);
@@ -122,7 +124,6 @@ const CTAStep = () => {
                 className="flex items-center gap-2 bg-white/5 border border-zinc-800 text-zinc-300 px-3 py-1.5 rounded-none font-mono text-[10px] uppercase tracking-wider"
               >
                 {tag}
-
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
@@ -161,6 +162,50 @@ const CTAStep = () => {
           </TabsList>
         </Tabs>
       </div>
+
+      {/* Product Name & Price fields - shown only for BUY_NOW */}
+      {ctaType === CtaTypeEnum.BUY_NOW && (
+        <div className="space-y-6 pt-2 border-t border-zinc-800/50">
+          <div className="space-y-3">
+            <Label
+              htmlFor="productName"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+            >
+              Product Name <span className="text-red-400">*</span>
+            </Label>
+            <Input
+              id="productName"
+              value={productTitle || ""}
+              onChange={(e) => updateProductInfoField("productTitle", e.target.value)}
+              placeholder="e.g. Full Course Access"
+              className="flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent px-0 py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors"
+            />
+          </div>
+
+          <div className="space-y-3">
+            <Label
+              htmlFor="price"
+              className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500"
+            >
+              Price (₹ INR) <span className="text-red-400">*</span>
+            </Label>
+            <Input
+              id="price"
+              type="number"
+              min={0}
+              value={price || ""}
+              onChange={(e) =>
+                updateProductInfoField("price", Number(e.target.value))
+              }
+              placeholder="499"
+              className="flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent px-0 py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors"
+            />
+            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-wider">
+              Amount in whole INR. Attendees will pay this amount during the webinar.
+            </p>
+          </div>
+        </div>
+      )}
 
       {ctaType === CtaTypeEnum.BOOK_A_CALL && (
         <div className="space-y-3">

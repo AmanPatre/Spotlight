@@ -9,6 +9,7 @@ import { useUser } from "@clerk/nextjs";
 type WebinarData = {
     title?: string;
     productTitle?: string | null;
+    productName?: string | null;
     description?: string | null;
     price?: number;
     originalPrice?: number | null;
@@ -84,6 +85,7 @@ export default function CheckoutPage({ params }: Props) {
 
         if (!scriptLoaded) {
             setError("Payment gateway is still loading...");
+            setLoading(false);
             return;
         }
 
@@ -107,11 +109,11 @@ export default function CheckoutPage({ params }: Props) {
 
             // 2. Open Razorpay Checkout Window
             const options = {
-                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_placeholder",
+                key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "",
                 amount: orderData.amount,
                 currency: orderData.currency,
-                name: "Webinar Platform",
-                description: "Webinar Full Access",
+                name: "Spotlight",
+                description: webinarData?.productName || webinarData?.productTitle || "Webinar Full Access",
                 order_id: orderData.id,
                 prefill: {
                     name: clerkUser?.fullName || "User",
@@ -119,7 +121,7 @@ export default function CheckoutPage({ params }: Props) {
                     contact: "",
                 },
                 theme: {
-                    color: "#059669", // emerald-600
+                    color: "#ffffff",
                 },
                 handler: async function (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string }) {
                     try {
@@ -173,7 +175,7 @@ export default function CheckoutPage({ params }: Props) {
     if (pageLoading) {
         return (
             <div className="min-h-screen bg-[#0c0c0c] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-white" />
             </div>
         );
     }
@@ -182,14 +184,14 @@ export default function CheckoutPage({ params }: Props) {
         <div className="relative min-h-screen bg-[#0c0c0c] flex items-center justify-center px-4 py-16 overflow-hidden">
             {/* Background elements */}
             <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/5 rounded-full blur-[120px]" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-teal-500/5 rounded-full blur-[120px]" />
+                <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-white/5 rounded-full blur-[120px]" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-zinc-500/5 rounded-full blur-[120px]" />
             </div>
 
             <div className="relative w-full max-w-xl z-10">
                 {/* Header */}
                 <div className="text-center mb-12 space-y-4">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 border border-emerald-500/20 bg-emerald-500/5 rounded-none font-mono text-[10px] uppercase tracking-[0.3em] text-emerald-500">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 border border-white/20 bg-white/5 rounded-none font-mono text-[10px] uppercase tracking-[0.3em] text-white">
                         <Lock className="w-3 h-3" />
                         Secure Checkout
                     </div>
@@ -207,7 +209,7 @@ export default function CheckoutPage({ params }: Props) {
                     <div className="space-y-8">
                         <div className="flex justify-between items-start">
                             <div className="space-y-1">
-                                <h3 className="text-xl font-medium text-white">{webinarData?.productTitle || "Full Webinar Access"}</h3>
+                                <h3 className="text-xl font-medium text-white">{webinarData?.productName || webinarData?.productTitle || "Full Webinar Access"}</h3>
                                 <p className="text-xs text-zinc-500">Includes lifetime recording & exclusive materials</p>
                             </div>
                             <div className="text-right">
@@ -222,9 +224,9 @@ export default function CheckoutPage({ params }: Props) {
                             </div>
                         </div>
 
-                        <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 flex justify-between items-center">
-                            <span className="text-[10px] font-mono text-emerald-500 uppercase tracking-widest">Savings Applied</span>
-                            <span className="text-sm font-bold text-emerald-400">
+                        <div className="p-4 bg-white/5 border border-white/10 flex justify-between items-center">
+                            <span className="text-[10px] font-mono text-white uppercase tracking-widest">Savings Applied</span>
+                            <span className="text-sm font-bold text-white">
                                 {webinarData?.originalPrice && (webinarData.price || 0) < (webinarData.originalPrice || 0)
                                     ? `-${Math.round((1 - (webinarData.price || 0) / (webinarData.originalPrice || 0)) * 100)}% DISCOUNT`
                                     : "OFFER PRICE"}
@@ -236,7 +238,7 @@ export default function CheckoutPage({ params }: Props) {
                     <div className="pt-6 border-t border-zinc-900">
                         <div className="flex gap-4 items-start">
                             <div className="w-10 h-10 rounded-full bg-zinc-900 flex items-center justify-center shrink-0 border border-zinc-800">
-                                <ShieldCheck className="w-5 h-5 text-emerald-500" />
+                                <ShieldCheck className="w-5 h-5 text-white" />
                             </div>
                             <div className="space-y-1">
                                 <p className="font-mono text-[10px] text-zinc-400 uppercase tracking-widest">Payment Security</p>
@@ -287,7 +289,7 @@ export default function CheckoutPage({ params }: Props) {
                 </div>
 
                 <p className="text-center text-[9px] font-mono text-zinc-700 uppercase tracking-[0.3em] mt-10">
-                    Trusted by 10,000+ creators worldwide
+                    Powered by Razorpay Secure Payments
                 </p>
             </div>
         </div>

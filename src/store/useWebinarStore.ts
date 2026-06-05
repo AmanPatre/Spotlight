@@ -24,7 +24,6 @@ export type WebinarFormState = {
     tags?: string[];
     ctaType: CtaTypeEnum;
     aiAgent?: string;
-    priceId?: string;
   };
 
   additionalInfo: {
@@ -120,7 +119,6 @@ const initialState: WebinarFormState = {
     tags: [],
     ctaType: "BOOK_A_CALL",
     aiAgent: "",
-    priceId: "",
   },
 
   additionalInfo: {

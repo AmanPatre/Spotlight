@@ -38,11 +38,20 @@ export const createWebinar = async (formData: WebinarFormState) => {
       return { status: 401, message: "Unauthorized" };
     }
 
-    //TODO: Check if user has a subscription
+    // SaaS Gate: User must have an active Pro subscription to create webinars
+    const dbUser = await prismaClient.user.findUnique({
+      where: { id: user.user.id },
+      select: { isPro: true, proExpiresAt: true },
+    });
+
+    if (!dbUser?.isPro || !dbUser.proExpiresAt || dbUser.proExpiresAt < new Date()) {
+      return {
+        status: 403,
+        message: "Active Pro Pass required. Please upgrade your plan to create webinars.",
+      };
+    }
 
     const presenterId = user.user.id;
-
-    console.log("Form Data:", formData, presenterId);
 
     if (!formData.basicInfo.webinarName) {
       return { status: 404, message: "Webinar name is required" };
@@ -82,7 +91,6 @@ export const createWebinar = async (formData: WebinarFormState) => {
         ctaLabel: formData.cta.ctaLabel,
         ctaType: formData.cta.ctaType,
         aiAgentId: formData.cta.aiAgent || null,
-        priceId: formData.cta.priceId || null,
         lockChat: formData.additionalInfo.lockChat || false,
         couponCode: formData.additionalInfo.couponEnabled
           ? formData.additionalInfo.couponCode
@@ -90,7 +98,8 @@ export const createWebinar = async (formData: WebinarFormState) => {
         couponEnabled: formData.additionalInfo.couponEnabled || false,
         presenterId: presenterId,
         productTitle: formData.productInfo.productTitle,
-        price: formData.productInfo.price,
+        productName: formData.productInfo.productTitle,
+        price: formData.productInfo.price ? Math.round(formData.productInfo.price) : 0,
         currency: formData.productInfo.currency,
         originalPrice: formData.productInfo.originalPrice,
         videoUrl: formData.basicInfo.videoUrl || null,
@@ -127,7 +136,7 @@ export const getWebinarByPresenterId = async (
         presenter: {
           select: {
             name: true,
-            stripeConnectId: true,
+            razorpayAccountId: true,
             id: true,
           },
         },
@@ -147,7 +156,7 @@ export const getWebinarById = async (webinarId: string) => {
       where: { id: webinarId },
       include: {
         presenter: {
-          select: { name: true, stripeConnectId: true, id: true },
+          select: { name: true, razorpayAccountId: true, id: true },
         },
       },
     });

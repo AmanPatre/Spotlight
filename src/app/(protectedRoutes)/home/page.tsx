@@ -85,7 +85,7 @@ const Pages = async () => {
             </div>
             <div className="text-[12px] font-medium text-[#c4c7c8] mt-3 flex items-center gap-1 font-mono uppercase tracking-wider">
               <TrendingUp className="w-[14px] h-[14px] text-emerald-500" />
-              AI Projected
+              Revenue Realized
             </div>
           </div>
         </div>

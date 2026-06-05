@@ -52,21 +52,30 @@ export default function AttendeeStreamView({
     price?: number | null;
   } | null>(null);
   const [webinarEnded, setWebinarEnded] = useState(false);
+  const [webinarStatus, setWebinarStatus] = useState<WebinarStatusEnum | null>(null);
   const router = useRouter();
 
   const checkStatus = useCallback(async () => {
-    const status = await getWebinarStatus(webinarId);
-    if (status === WebinarStatusEnum.ENDED) {
-      setWebinarEnded(true);
+    try {
+      const status = await getWebinarStatus(webinarId);
+      setWebinarStatus(status);
+      if (status === WebinarStatusEnum.ENDED) {
+        setWebinarEnded(true);
+      }
+    } catch (e) {
+      console.error("Failed to check webinar status:", e);
     }
   }, [webinarId]);
 
   useEffect(() => {
-    const interval = setInterval(checkStatus, 10000);
+    checkStatus();
+    const interval = setInterval(checkStatus, 7000);
     return () => clearInterval(interval);
   }, [checkStatus]);
 
   useEffect(() => {
+    if (webinarStatus !== WebinarStatusEnum.LIVE) return;
+
     let streamClient: StreamVideoClient | null = null;
     let isMounted = true;
 
@@ -125,7 +134,7 @@ export default function AttendeeStreamView({
       isMounted = false;
       streamClient?.disconnectUser();
     };
-  }, [webinarId, attendeeId, attendeeName]);
+  }, [webinarId, attendeeId, attendeeName, webinarStatus]);
 
   useEffect(() => {
     if (!call) return;
@@ -180,14 +189,19 @@ export default function AttendeeStreamView({
   }
 
   if (!client || !call) {
+    const isWaiting = webinarStatus === WebinarStatusEnum.SCHEDULED;
     return (
       <div className="w-full h-screen flex flex-col items-center justify-center gap-6 bg-black text-white"
         style={{ backgroundImage: "radial-gradient(#27272a 1px, transparent 1px)", backgroundSize: "24px 24px" }}
       >
         <Loader2 className="w-8 h-8 animate-spin text-white" />
         <div className="text-center space-y-1">
-          <p className="text-sm font-semibold text-white">Joining Live Stream</p>
-          <p className="text-xs text-zinc-500 font-mono uppercase tracking-widest">Securing your connection...</p>
+          <p className="text-sm font-semibold text-white">
+            {isWaiting ? "Waiting for Host" : "Joining Live Stream"}
+          </p>
+          <p className="text-xs text-zinc-500 font-mono uppercase tracking-widest">
+            {isWaiting ? "The broadcast will begin shortly..." : "Securing your connection..."}
+          </p>
         </div>
       </div>
     );

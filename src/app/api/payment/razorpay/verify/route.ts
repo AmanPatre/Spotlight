@@ -3,6 +3,11 @@ import crypto from "crypto";
 import { prismaClient } from "@/lib/prismaClient";
 import { AttendedTypeEnum } from "@prisma/client";
 
+/**
+ * POST /api/payment/razorpay/verify
+ * Verifies Razorpay payment signature after successful checkout.
+ * Marks the attendee as CONVERTED in the database.
+ */
 export async function POST(req: Request) {
     try {
         const body = await req.json();
@@ -15,32 +20,50 @@ export async function POST(req: Request) {
         } = body;
 
         const secret = process.env.RAZORPAY_KEY_SECRET;
-        if (!secret) throw new Error("Missing razorpay secret");
+        if (!secret) {
+            return NextResponse.json(
+                { success: false, error: "Missing Razorpay secret" },
+                { status: 500 }
+            );
+        }
 
+        // Verify the signature using HMAC SHA256
         const expectedSignature = crypto
             .createHmac("sha256", secret)
             .update(razorpay_order_id + "|" + razorpay_payment_id)
             .digest("hex");
 
-        if (expectedSignature === razorpay_signature) {
-            // Payment verified! Update the database for localhost testing
-            if (attendeeId && webinarId) {
-                await prismaClient.attendance.update({
-                    where: {
-                        attendeeId_webinarId: { attendeeId, webinarId },
-                    },
-                    data: {
-                        attendedType: AttendedTypeEnum.CONVERTED,
-                    },
-                });
-            }
-            return NextResponse.json({ success: true });
-        } else {
-            return NextResponse.json({ success: false, error: "Invalid signature" }, { status: 400 });
+        if (expectedSignature !== razorpay_signature) {
+            return NextResponse.json(
+                { success: false, error: "Invalid payment signature" },
+                { status: 400 }
+            );
         }
+
+        // Payment verified — mark attendee as CONVERTED
+        if (attendeeId && webinarId) {
+            await prismaClient.attendance.upsert({
+                where: {
+                    attendeeId_webinarId: { attendeeId, webinarId },
+                },
+                update: {
+                    attendedType: AttendedTypeEnum.CONVERTED,
+                },
+                create: {
+                    attendeeId,
+                    webinarId,
+                    attendedType: AttendedTypeEnum.CONVERTED,
+                },
+            });
+        }
+
+        return NextResponse.json({ success: true });
     } catch (error: unknown) {
         console.error("Verification error:", error);
         const message = error instanceof Error ? error.message : "Internal Server Error";
-        return NextResponse.json({ success: false, error: message }, { status: 500 });
+        return NextResponse.json(
+            { success: false, error: message },
+            { status: 500 }
+        );
     }
 }
