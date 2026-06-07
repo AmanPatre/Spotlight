@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { getWebinarById } from "@/actions/webinar";
 import { notFound } from "next/navigation";
 import LandingPageClient from "./_components/LandingPageClient";
@@ -16,14 +17,17 @@ export default async function WebinarLandingPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white/30">
-      <LandingPageClient
-        webinarId={webinar.id}
-        title={webinar.title}
-        description={webinar.description ?? ""}
-        startTime={webinar.startTime}
-        presenterName={webinar.presenter.name}
-        webinarStatus={webinar.webinarStatus}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-black" />}>
+        <LandingPageClient
+          webinarId={webinar.id}
+          title={webinar.title}
+          description={webinar.description ?? ""}
+          startTime={webinar.startTime}
+          presenterName={webinar.presenter.name}
+          webinarStatus={webinar.webinarStatus}
+        />
+      </Suspense>
     </div>
   );
 }
+

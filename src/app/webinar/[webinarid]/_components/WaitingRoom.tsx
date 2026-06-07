@@ -14,29 +14,36 @@ type Props = {
 
 export default function WaitingRoom({ webinarId, webinarTitle, startTime, onLive }: Props) {
   const [status, setStatus] = useState<WebinarStatusEnum>(WebinarStatusEnum.WAITING_ROOM);
+  const [webinarStartTime, setWebinarStartTime] = useState<Date>(startTime);
   const onLiveRef = useRef(onLive);
 
   useEffect(() => {
     onLiveRef.current = onLive;
   }, [onLive]);
 
-  // Poll every 5 seconds for status
+  // Poll every 5 seconds for status AND startTime
   useEffect(() => {
     const interval = setInterval(async () => {
-      const currentStatus = await getWebinarStatus(webinarId);
-      if (currentStatus) {
-        setStatus(currentStatus as WebinarStatusEnum);
-        if (currentStatus === WebinarStatusEnum.LIVE) {
+      const data = await getWebinarStatus(webinarId);
+      if (data) {
+        setStatus(data.status as WebinarStatusEnum);
+
+        const newStartTime = new Date(data.startTime);
+        if (newStartTime.getTime() !== webinarStartTime.getTime()) {
+          setWebinarStartTime(newStartTime);
+        }
+
+        if (data.status === WebinarStatusEnum.LIVE) {
           clearInterval(interval);
           setTimeout(() => onLiveRef.current(), 2000);
         }
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [webinarId]);
+  }, [webinarId, webinarStartTime]);
 
   const handleAddToCalendar = () => {
-    const start = new Date(startTime);
+    const start = new Date(webinarStartTime);
     const end = new Date(start.getTime() + 60 * 60 * 1000); // +1hr
     const fmt = (d: Date) =>
       d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";

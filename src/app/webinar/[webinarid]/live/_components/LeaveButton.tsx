@@ -10,7 +10,8 @@ export default function LeaveButton({ webinarId }: { webinarId: string }) {
 
     const handleLeave = () => {
         setIsLeaving(true);
-        router.push(`/webinar/${webinarId}`);
+        router.push(`/webinar/${webinarId}?left=true`);
+        setTimeout(() => setIsLeaving(false), 2000);
     };
 
     return (

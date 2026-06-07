@@ -40,8 +40,6 @@ export default async function LeadDetailPage({ params }: Props) {
         (l.CallDebrief?.score || 0) >= 8
     );
 
-    // Since hotLeads already excludes converted, all hot leads are unconverted
-    const unconvertedHotLeadsCount = hotLeads.length;
 
     const standardLeads = leads.filter(l =>
         l.attendedType !== "CONVERTED" &&
@@ -79,7 +77,6 @@ export default async function LeadDetailPage({ params }: Props) {
                 <PipelineValueToggle
                     convertedCount={convertedLeads.length}
                     hotLeadsCount={hotLeads.length}
-                    unconvertedHotLeadsCount={unconvertedHotLeadsCount}
                     totalAttendeesCount={leads.length}
                     price={price}
                     currency={currency}
@@ -91,7 +88,6 @@ export default async function LeadDetailPage({ params }: Props) {
                 <LeadSection
                     title="Converted (Closed Deals)"
                     leads={convertedLeads}
-                    price={price}
                     isConverted
                 />
 
@@ -99,7 +95,6 @@ export default async function LeadDetailPage({ params }: Props) {
                 <LeadSection
                     title="Hot Leads (Score 8-10)"
                     leads={hotLeads}
-                    price={price}
                     isHot
                 />
 
@@ -107,7 +102,6 @@ export default async function LeadDetailPage({ params }: Props) {
                 <LeadSection
                     title="Standard Leads (Score 1-7)"
                     leads={standardLeads}
-                    price={price}
                 />
             </div>
         </div>
@@ -125,7 +119,7 @@ function StatCard({ label, value, highlighted = false }: { label: string, value:
     );
 }
 
-function LeadSection({ title, leads, price, isHot = false, isConverted = false }: { title: string, leads: { id: string; user: { name: string, email: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], price: number, isHot?: boolean, isConverted?: boolean }) {
+function LeadSection({ title, leads, isHot = false, isConverted = false }: { title: string, leads: { id: string; user: { name: string, email: string }; CallDebrief?: { score?: number | null; summary?: string | null } | null; attendedType: string }[], isHot?: boolean, isConverted?: boolean }) {
     if (leads.length === 0) return null;
 
     return (
@@ -139,10 +133,9 @@ function LeadSection({ title, leads, price, isHot = false, isConverted = false }
                 <table className="w-full text-left border-collapse">
                     <thead>
                         <tr className="border-b border-zinc-800 bg-[#141313]">
-                            <TableHead label="Contact" />
-                            <TableHead label="Email" />
-                            <TableHead label="Score" className="text-center" />
-                            <TableHead label="Est. Value" />
+                            <TableHead label="Contact" className="w-[200px]" />
+                            <TableHead label="Email" className="w-[250px]" />
+                            <TableHead label="Score" className="w-[120px]" />
                             <TableHead label="AI Summary" />
                             <TableHead label="Action" className="text-right" />
                         </tr>
@@ -159,15 +152,12 @@ function LeadSection({ title, leads, price, isHot = false, isConverted = false }
                                 <TableCell className="text-zinc-500 truncate max-w-[200px]">
                                     {lead.user.email}
                                 </TableCell>
-                                <TableCell className="text-center">
+                                <TableCell>
                                     <div className={`inline-flex items-center justify-center w-10 h-10 border ${isHot ? 'border-zinc-700 text-white font-bold bg-white/5' : 'border-zinc-800 text-zinc-500'} font-mono text-sm`}>
                                         {lead.CallDebrief?.score || "—"}
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-zinc-400 font-mono text-[13px]">
-                                    {formatCurrency(isConverted ? price : isHot ? (price * 0.7) : (price * 0.1))}
-                                </TableCell>
-                                <TableCell className="text-zinc-400 max-w-md text-[13px] leading-relaxed py-4">
+                                <TableCell className="text-zinc-400 text-[13px] leading-relaxed py-4">
                                     {lead.CallDebrief?.summary || "Attended main broadcast. Interaction data pending AI synthesis."}
                                 </TableCell>
                                 <TableCell className="text-right">

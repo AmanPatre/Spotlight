@@ -17,11 +17,14 @@ function combineDateTime(
   const hours = Number.parseInt(hoursStr, 10);
   const minutes = Number.parseInt(minutesStr || "0", 10);
 
-  // Input date is normalized to UTC midnight, and time is in 24h IST (UTC+5:30).
-  // Reconstruct the full IST datetime as UTC by subtracting 5h30m (330 minutes).
-  const year = date.getUTCFullYear();
-  const month = date.getUTCMonth();
-  const day = date.getUTCDate();
+  // Input date is normalized to UTC midnight (00:00:00Z).
+  // We use the local getters because in IST (UTC+5:30), 00:00:00Z is 05:30:00 AM.
+  // Both local and UTC getters will return the same year/month/day for a Date object 
+  // created with Date.UTC(...) if checked within a reasonable timezone offset.
+  // However, extracting from local components is safer for our normalization strategy.
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
 
   // Create a UTC timestamp representing the IST time
   const istAsUtcMs =
@@ -284,9 +287,9 @@ export const getWebinarStatus = async (webinarId: string) => {
   try {
     const webinar = await prismaClient.webinar.findUnique({
       where: { id: webinarId },
-      select: { webinarStatus: true },
+      select: { webinarStatus: true, startTime: true },
     });
-    return webinar?.webinarStatus || null;
+    return webinar ? { status: webinar.webinarStatus, startTime: webinar.startTime } : null;
   } catch (error) {
     console.error("Error fetching webinar status", error);
     return null;

@@ -23,6 +23,8 @@ import {
   SelectValue,
 } from "../../select";
 
+import { TimePicker } from "../TimePicker";
+
 const BasicInfoStep = () => {
   const { formData, updateBasicInfoField, getStepValidationErrors } =
     useWebinarStore();
@@ -164,20 +166,11 @@ const BasicInfoStep = () => {
           </Label>
 
           <div className="flex gap-4">
-            <div className="relative flex-1 group">
-              <Clock className="absolute left-0 top-3.5 h-4 w-4 text-zinc-500" />
-
-              <Input
-                name="time"
-                value={time || ""}
-                onChange={handleChange}
-                placeholder="20:00 (24h IST)"
-                className={cn(
-                  "pl-8 flex h-12 w-full rounded-none border-x-0 border-t-0 border-b border-zinc-800 bg-transparent py-2 text-base ring-offset-background placeholder:text-zinc-700 focus-visible:outline-none focus-visible:border-white transition-colors",
-                  errors.time && "border-red-400 focus-visible:border-red-400",
-                )}
-              />
-            </div>
+            <TimePicker
+              value={time}
+              onChange={(val) => updateBasicInfoField("time", val)}
+              error={errors.time}
+            />
           </div>
           {errors.time && <p className="text-[10px] font-mono text-red-400 mt-1 uppercase tracking-wider">{errors.time}</p>}
         </div>

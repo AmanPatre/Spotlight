@@ -199,7 +199,7 @@ export default function CheckoutPage({ params }: Props) {
                         Complete Purchase
                     </h1>
                     <p className="text-zinc-500 font-mono text-[11px] uppercase tracking-widest">
-                        Final Step to Access {webinarData?.title || "Your Webinar"}
+                        Secure Checkout for {webinarData?.title || "Webinar Enrollment"}
                     </p>
                 </div>
 
@@ -209,8 +209,8 @@ export default function CheckoutPage({ params }: Props) {
                     <div className="space-y-8">
                         <div className="flex justify-between items-start">
                             <div className="space-y-1">
-                                <h3 className="text-xl font-medium text-white">{webinarData?.productName || webinarData?.productTitle || "Full Webinar Access"}</h3>
-                                <p className="text-xs text-zinc-500">Includes lifetime recording & exclusive materials</p>
+                                <h3 className="text-xl font-medium text-white">{webinarData?.productName || webinarData?.productTitle || (webinarData?.title ? `${webinarData.title} Access` : "Full Webinar Access")}</h3>
+                                <p className="text-xs text-zinc-500">{webinarData?.description || "Includes lifetime recording & exclusive materials"}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-2xl font-semibold text-white tracking-tight">
@@ -278,8 +278,8 @@ export default function CheckoutPage({ params }: Props) {
                             <p className="text-[10px] text-zinc-400 font-bold">256-BIT SSL</p>
                         </div>
                         <div className="text-center space-y-1 px-4 border-r border-zinc-900/50 flex-1">
-                            <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Guarantee</p>
-                            <p className="text-[10px] text-zinc-400 font-bold">30 DAY REFUND</p>
+                            <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Delivery</p>
+                            <p className="text-[10px] text-zinc-400 font-bold">INSTANT ACCESS</p>
                         </div>
                         <div className="text-center space-y-1 px-4 flex-1">
                             <p className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Support</p>

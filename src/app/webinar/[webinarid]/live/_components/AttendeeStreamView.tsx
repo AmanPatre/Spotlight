@@ -57,15 +57,18 @@ export default function AttendeeStreamView({
 
   const checkStatus = useCallback(async () => {
     try {
-      const status = await getWebinarStatus(webinarId);
-      setWebinarStatus(status);
-      if (status === WebinarStatusEnum.ENDED) {
-        setWebinarEnded(true);
+      const data = await getWebinarStatus(webinarId);
+      if (data) {
+        setWebinarStatus(data.status as WebinarStatusEnum);
+        if (data.status === WebinarStatusEnum.ENDED) {
+          setWebinarEnded(true);
+        }
       }
     } catch (e) {
       console.error("Failed to check webinar status:", e);
     }
   }, [webinarId]);
+
 
   useEffect(() => {
     checkStatus();
@@ -238,10 +241,10 @@ export default function AttendeeStreamView({
               <div className="flex flex-col items-center gap-2">
                 <span className="font-mono text-[11px] text-zinc-400 uppercase tracking-widest">Next Step</span>
                 <h3 className="text-xl font-semibold text-white">
-                  Join the AI Breakout Room
+                  Join a Consultation Session
                 </h3>
                 <p className="text-sm text-zinc-500 text-center max-w-md">
-                  Continue the discussion with an AI agent for a personalized consultation session.
+                  Continue the discussion with an advisor for a personalized consultation session.
                 </p>
               </div>
               <button

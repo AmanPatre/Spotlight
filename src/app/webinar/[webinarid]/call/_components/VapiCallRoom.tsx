@@ -89,7 +89,7 @@ export default function VapiCallRoom({
   const micStreamRef = useRef<MediaStream | null>(null);
 
   const [transcript, setTranscript] = useState<TranscriptEntry[]>([
-    { id: 0, role: "system", text: "Recording initiated. AI Agent connected.", time: nowTime() },
+    { id: 0, role: "system", text: "Recording initiated. Advisor connected.", time: nowTime() },
   ]);
   const transcriptIdRef = useRef(1);
 
@@ -417,7 +417,7 @@ export default function VapiCallRoom({
               Spotlight
             </span>
             <div className="h-4 w-px bg-zinc-800" />
-            <span className="text-zinc-500 font-mono text-[11px] uppercase tracking-widest">AI Breakout</span>
+            <span className="text-zinc-500 font-mono text-[11px] uppercase tracking-widest">Consultation Session</span>
           </div>
 
           {/* AI Visual + heading */}
@@ -433,10 +433,10 @@ export default function VapiCallRoom({
 
             <div className="space-y-2">
               <h1 className="text-2xl font-bold tracking-tight" style={{ fontFamily: "Geist, sans-serif" }}>
-                Your AI Sales Rep is Ready
+                Your Advisor is Ready
               </h1>
               <p className="text-zinc-400 text-sm leading-relaxed max-w-sm" style={{ fontFamily: "Geist, sans-serif" }}>
-                You&apos;re about to enter a private voice session with an AI agent trained to answer your questions and help you make the right decision.
+                You&apos;re about to enter a private voice session with an advisor trained to answer your questions and help you make the right decision.
               </p>
             </div>
 
@@ -484,9 +484,9 @@ export default function VapiCallRoom({
               style={{ fontFamily: "Geist, sans-serif" }}
             >
               {micPriming ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Connecting to AI…</>
+                <><Loader2 className="w-4 h-4 animate-spin" /> Connecting to Advisor…</>
               ) : (
-                <><Mic className="w-4 h-4" /> Join AI Breakout Session</>
+                <><Mic className="w-4 h-4" /> Join Consultation Session</>
               )}
             </button>
 
@@ -527,7 +527,7 @@ export default function VapiCallRoom({
               </h1>
             </div>
             <div className="font-mono text-[13px] text-[#8e9192]">
-              {attendeeName} · AI Breakout
+              {attendeeName} · Consultation
             </div>
           </div>
           <div className="font-mono text-[13px] text-[#8e9192]">
@@ -581,7 +581,7 @@ export default function VapiCallRoom({
                 ))}
               </div>
               <div className="flex flex-col items-center">
-                <span className="font-mono text-[11px] text-white uppercase tracking-widest">AI Agent</span>
+                <span className="font-mono text-[11px] text-white uppercase tracking-widest">Advisor</span>
                 <span className="font-mono text-[10px] text-[#8e9192]">
                   {aiSpeaking ? "Speaking" : status === "active" ? "Listening" : "Standby"}
                 </span>
@@ -704,7 +704,7 @@ export default function VapiCallRoom({
             return (
               <div key={entry.id} className="flex flex-col gap-1 w-full pl-3 border-l-2 border-white bg-[#1c1b1b] p-3 -ml-3">
                 <span className="font-mono text-[10px] text-white uppercase tracking-wider">
-                  AI Agent · {entry.time}
+                  Advisor · {entry.time}
                 </span>
                 <p className="text-[14px] text-[#e5e2e1]" style={{ fontFamily: "Geist, Inter, sans-serif", lineHeight: 1.5 }}>
                   {entry.text}
@@ -716,7 +716,7 @@ export default function VapiCallRoom({
           {/* AI typing indicator */}
           {aiSpeaking && (
             <div className="flex flex-col gap-1 w-full pl-3 border-l-2 border-white bg-[#1c1b1b] p-3 -ml-3 opacity-80 animate-pulse">
-              <span className="font-mono text-[10px] text-white uppercase tracking-wider">AI Agent · Processing</span>
+              <span className="font-mono text-[10px] text-white uppercase tracking-wider">Advisor · Processing</span>
               <div className="flex items-center gap-1 mt-1">
                 <span className="w-1.5 h-1.5 bg-white rounded-full" />
                 <span className="w-1.5 h-1.5 bg-white rounded-full opacity-60" />
@@ -742,7 +742,7 @@ export default function VapiCallRoom({
         <div className="pointer-events-none fixed inset-0 flex items-center justify-center bg-black/70 z-50">
           <div className="flex flex-col items-center gap-4 border border-[#444748] bg-[#141313] px-10 py-8">
             <Loader2 className="w-8 h-8 animate-spin text-white" />
-            <p className="font-mono text-sm text-[#c4c7c8] uppercase tracking-wider">Connecting to AI…</p>
+            <p className="font-mono text-sm text-[#c4c7c8] uppercase tracking-wider">Connecting to Advisor…</p>
           </div>
         </div>
       )}

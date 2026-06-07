@@ -15,6 +15,8 @@ import { format } from "date-fns";
 import { rescheduleWebinar } from "@/actions/webinar";
 import { cn } from "@/lib/utils";
 
+import { TimePicker } from "@/components/ui/ReusableComponent/TimePicker";
+
 type Props = {
   webinarId: string;
   currentStatus: WebinarStatusEnum;
@@ -25,6 +27,16 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
   const [rescheduleDate, setRescheduleDate] = useState<Date | undefined>(undefined);
   const [rescheduleTime, setRescheduleTime] = useState("");
   const router = useRouter();
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date) {
+      // Normalize to UTC midnight to avoid day-flip issues in server actions
+      const normalized = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+      setRescheduleDate(normalized);
+    } else {
+      setRescheduleDate(undefined);
+    }
+  };
 
   const handleStatusChange = async (newStatus: WebinarStatusEnum) => {
     setLoading(true);
@@ -102,7 +114,7 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
                     <Calendar
                       mode="single"
                       selected={rescheduleDate}
-                      onSelect={setRescheduleDate}
+                      onSelect={handleDateSelect}
                       disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                       className="rounded-md"
                     />
@@ -110,16 +122,11 @@ const WebinarStatusControls = ({ webinarId, currentStatus }: Props) => {
                 </div>
                 <div className="space-y-3">
                   <Label className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">New Time (24h IST)</Label>
-                  <div className="relative group">
-                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 group-focus-within:text-white transition-colors" />
-                    <Input
-                      type="text"
-                      placeholder="20:00"
-                      value={rescheduleTime}
-                      onChange={(e) => setRescheduleTime(e.target.value)}
-                      className="pl-10 bg-black/40 border-[#27272a] h-11 rounded-lg focus-visible:ring-1 focus-visible:ring-white/20 focus-visible:border-white transition-all placeholder:text-zinc-700"
-                    />
-                  </div>
+                  <TimePicker
+                    value={rescheduleTime}
+                    onChange={setRescheduleTime}
+                    placeholder="20:00"
+                  />
                 </div>
                 <Button
                   onClick={handleReschedule}

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { WebinarStatusEnum } from "@prisma/client";
+import { getWebinarStatus } from "@/actions/webinar";
 import RegistrationForm from "./RegistrationForm";
 import WaitingRoom from "./WaitingRoom";
 import { CheckCircle2 } from "lucide-react";
@@ -20,18 +21,43 @@ export default function LandingPageClient({
   webinarId,
   title,
   description,
-  startTime,
+  startTime: initialStartTime,
   presenterName,
-  webinarStatus,
+  webinarStatus: initialStatus,
 }: Props) {
   const [attendeeId, setAttendeeId] = useState<string | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [webinarStatus, setWebinarStatus] = useState<WebinarStatusEnum>(initialStatus);
+  const [startTime, setStartTime] = useState<Date>(initialStartTime);
+
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const hasLeft = searchParams.get("left") === "true";
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
   }, []);
+
+  // Poll for updates (rescheduling or status changes)
+  useEffect(() => {
+    const poll = async () => {
+      const data = await getWebinarStatus(webinarId);
+      if (data) {
+        if (data.status !== webinarStatus) {
+          setWebinarStatus(data.status as WebinarStatusEnum);
+        }
+        // Check if startTime changed (comparing ISO strings for stability)
+        const newStartTime = new Date(data.startTime);
+        if (newStartTime.getTime() !== startTime.getTime()) {
+          setStartTime(newStartTime);
+        }
+      }
+    };
+
+    const interval = setInterval(poll, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, [webinarId, webinarStatus, startTime]);
 
   // Countdown state
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
@@ -43,10 +69,10 @@ export default function LandingPageClient({
         if (storedId !== attendeeId) setAttendeeId(storedId);
       }, 0);
     }
-    if (storedId && webinarStatus === WebinarStatusEnum.LIVE) {
+    if (storedId && webinarStatus === WebinarStatusEnum.LIVE && !hasLeft) {
       router.push(`/webinar/${webinarId}/live`);
     }
-  }, [webinarId, webinarStatus, router, attendeeId]);
+  }, [webinarId, webinarStatus, router, attendeeId, hasLeft]);
 
   useEffect(() => {
     const tick = () => {
@@ -133,31 +159,45 @@ export default function LandingPageClient({
             </div>
           </div>
 
-          {/* Countdown */}
+          {/* Countdown or Ended Message */}
           <div className="space-y-4">
-            <p className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest">Starts In</p>
-            <div className="flex flex-wrap gap-4 items-start">
-              {[
-                { label: "Days", value: pad(timeLeft.days) },
-                { label: "Hours", value: pad(timeLeft.hours) },
-                { label: "Mins", value: pad(timeLeft.minutes) },
-                { label: "Secs", value: pad(timeLeft.seconds) },
-              ].map((unit, i, arr) => (
-                <div key={unit.label} className="flex items-start gap-4">
-                  <div className="flex flex-col items-center">
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-black border border-zinc-800 flex items-center justify-center">
-                      <span className="text-white font-mono font-bold" style={{ fontSize: "clamp(28px,4vw,48px)" }}>
-                        {unit.value}
-                      </span>
-                    </div>
-                    <span className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest mt-2">{unit.label}</span>
-                  </div>
-                  {i < arr.length - 1 && (
-                    <span className="text-zinc-700 font-bold text-4xl mt-2">:</span>
-                  )}
+            {webinarStatus === WebinarStatusEnum.ENDED ? (
+              <div className="space-y-4">
+                <p className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest">Status</p>
+                <div className="inline-flex items-center space-x-3 border border-zinc-500/20 bg-zinc-900/50 px-5 py-4">
+                  <CheckCircle2 className="w-5 h-5 text-zinc-500" />
+                  <span className="text-white font-medium" style={{ fontFamily: "Geist, sans-serif" }}>
+                    Successfully Concluded • Thanks for joining!
+                  </span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest">Starts In</p>
+                <div className="flex flex-wrap gap-4 items-start">
+                  {[
+                    { label: "Days", value: pad(timeLeft.days) },
+                    { label: "Hours", value: pad(timeLeft.hours) },
+                    { label: "Mins", value: pad(timeLeft.minutes) },
+                    { label: "Secs", value: pad(timeLeft.seconds) },
+                  ].map((unit, i, arr) => (
+                    <div key={unit.label} className="flex items-start gap-4">
+                      <div className="flex flex-col items-center">
+                        <div className="w-20 h-20 md:w-24 md:h-24 bg-black border border-zinc-800 flex items-center justify-center">
+                          <span className="text-white font-mono font-bold" style={{ fontSize: "clamp(28px,4vw,48px)" }}>
+                            {unit.value}
+                          </span>
+                        </div>
+                        <span className="text-zinc-500 text-[11px] font-mono uppercase tracking-widest mt-2">{unit.label}</span>
+                      </div>
+                      {i < arr.length - 1 && (
+                        <span className="text-zinc-700 font-bold text-4xl mt-2">:</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
