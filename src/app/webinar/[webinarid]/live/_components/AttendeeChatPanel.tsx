@@ -30,7 +30,7 @@ export default function AttendeeChatPanel({ webinarId, attendeeId, attendeeName 
         const res = await fetch("/api/attendee-stream-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ attendeeId }),
+          body: JSON.stringify({ attendeeId, webinarId }),
         });
         const { token } = await res.json();
 

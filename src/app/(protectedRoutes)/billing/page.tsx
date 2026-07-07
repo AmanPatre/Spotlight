@@ -38,8 +38,10 @@ export default function BillingPage() {
     };
   }, []);
 
+  const isProActive = userData?.isPro && userData?.proExpiresAt && new Date(userData.proExpiresAt) > new Date();
+
   const handleUpgrade = async () => {
-    if (userData?.isPro) {
+    if (isProActive) {
       alert("You already have an active Pro Pass!");
       return;
     }
@@ -100,7 +102,7 @@ export default function BillingPage() {
     );
   }
 
-  const isPro = userData?.isPro;
+  const isPro = isProActive;
 
   return (
     <div className="min-h-screen bg-[#0c0c0c] text-white p-6 md:p-10 space-y-10 font-sans selection:bg-white/30">

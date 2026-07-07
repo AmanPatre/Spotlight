@@ -1,20 +1,38 @@
 import { StreamClient } from "@stream-io/node-sdk";
 import { NextRequest, NextResponse } from "next/server";
+import { prismaClient } from "@/lib/prismaClient";
 
 /**
  * POST /api/attendee-stream-token
  * Public endpoint — no Clerk auth required.
- * Body: { attendeeId: string; name?: string }
+ * Body: { attendeeId: string; webinarId: string }
  * Returns a signed Stream token for the given attendeeId.
  */
 export async function POST(req: NextRequest) {
   try {
-    const { attendeeId } = await req.json();
+    const { attendeeId, webinarId } = await req.json();
 
-    if (!attendeeId || typeof attendeeId !== "string") {
+    if (!attendeeId || typeof attendeeId !== "string" || !webinarId || typeof webinarId !== "string") {
       return NextResponse.json(
-        { error: "attendeeId is required" },
+        { error: "attendeeId and webinarId are required" },
         { status: 400 }
+      );
+    }
+
+    // VERIFICATION STEP: Ensure this attendee actually registered for this webinar
+    const attendance = await prismaClient.attendance.findUnique({
+      where: {
+        attendeeId_webinarId: {
+          attendeeId,
+          webinarId,
+        },
+      },
+    });
+
+    if (!attendance) {
+      return NextResponse.json(
+        { error: "Forbidden: No valid attendance record found." },
+        { status: 403 }
       );
     }
 

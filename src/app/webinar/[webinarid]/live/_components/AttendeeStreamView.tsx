@@ -87,7 +87,7 @@ export default function AttendeeStreamView({
         const res = await fetch("/api/attendee-stream-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ attendeeId }),
+          body: JSON.stringify({ attendeeId, webinarId }),
         });
         const data = await res.json();
         if (!res.ok || !data.token) throw new Error(data.error || "Failed to get stream token");
