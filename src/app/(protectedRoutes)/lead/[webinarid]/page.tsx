@@ -129,8 +129,8 @@ function LeadSection({ title, leads, isHot = false, isConverted = false }: { tit
                 <h2 className="font-mono text-[11px] text-white uppercase tracking-widest">{title}</h2>
             </div>
 
-            <div className="border border-zinc-800 overflow-hidden bg-[#0c0c0c]">
-                <table className="w-full text-left border-collapse">
+            <div className="border border-zinc-800 overflow-hidden bg-[#0c0c0c] overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[800px]">
                     <thead>
                         <tr className="border-b border-zinc-800 bg-[#141313]">
                             <TableHead label="Contact" className="w-[200px]" />

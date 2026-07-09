@@ -23,7 +23,7 @@ export default function PipelineValueToggle({
 
     return (
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-            <div className="flex gap-4">
+            <div className="flex flex-wrap lg:flex-nowrap gap-4">
                 <StatCard
                     label="Total Attendees"
                     value={totalAttendeesCount}
@@ -38,7 +38,7 @@ export default function PipelineValueToggle({
                     value={hotLeadsCount}
                     highlighted
                 />
-                <div className="bg-[#141313] border border-zinc-800 p-6 min-w-[200px] space-y-3 relative group overflow-hidden">
+                <div className="bg-[#141313] border border-zinc-800 p-6 flex-1 min-w-[200px] space-y-3 relative group overflow-hidden">
                     <div className="flex justify-between items-start">
                         <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest block">
                             Actual Revenue

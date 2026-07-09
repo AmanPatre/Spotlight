@@ -92,52 +92,52 @@ export default function LeadPageClient({ webinars }: Props) {
                     </button>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                     {filteredWebinars.map((webinar) => (
                         <div
                             key={webinar.id}
                             className="group bg-[#141313] border border-zinc-800 hover:border-zinc-700 transition-all flex flex-col h-full relative"
                         >
                             {/* Card Header */}
-                            <div className="p-6 pb-2">
+                            <div className="p-4 lg:p-6 pb-2">
                                 <div className="flex justify-between items-start mb-4">
-                                    <div className="space-y-1">
-                                        <h3 className="font-semibold text-white leading-tight group-hover:text-white/90 transition-colors" style={{ fontFamily: "Geist, sans-serif" }}>
+                                    <div className="space-y-1 truncate pr-2">
+                                        <h3 className="font-semibold text-white leading-tight group-hover:text-white/90 transition-colors truncate" style={{ fontFamily: "Geist, sans-serif" }}>
                                             {webinar.title}
                                         </h3>
-                                        <p className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
+                                        <p className="text-[10px] sm:text-[11px] font-mono text-zinc-500 uppercase tracking-wider">
                                             {new Date(webinar.date).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                                         </p>
                                     </div>
 
                                     {webinar.status === WebinarStatusEnum.LIVE ? (
-                                        <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded">
+                                        <div className="flex items-center gap-1.5 bg-red-500/10 border border-red-500/20 px-2 py-0.5 rounded shrink-0">
                                             <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
                                             <span className="text-[10px] font-mono font-bold text-red-500 uppercase">LIVE</span>
                                         </div>
                                     ) : (
-                                        <div className="flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 px-2 py-0.5 rounded">
+                                        <div className="flex items-center gap-1.5 bg-zinc-800 border border-zinc-700 px-2 py-0.5 rounded shrink-0">
                                             <span className="text-[10px] font-mono font-medium text-zinc-400 uppercase">VOD</span>
                                         </div>
                                     )}
                                 </div>
 
                                 {/* Main Stats Row */}
-                                <div className="flex items-baseline gap-10 my-6">
+                                <div className="flex flex-wrap items-baseline justify-between gap-y-4 gap-x-2 sm:gap-x-4 my-6">
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Attendees</span>
-                                        <p className="text-2xl font-semibold text-white tracking-tight">{webinar.totalAttendees.toLocaleString()}</p>
+                                        <span className="text-[9px] sm:text-[10px] font-mono text-zinc-500 uppercase tracking-widest block truncate">Attendees</span>
+                                        <p className="text-xl sm:text-2xl font-semibold text-white tracking-tight">{webinar.totalAttendees.toLocaleString()}</p>
                                     </div>
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-1">
-                                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Converted</span>
-                                            <div className="w-1 h-1 rounded-full bg-emerald-500" />
+                                            <span className="text-[9px] sm:text-[10px] font-mono text-zinc-500 uppercase tracking-widest block truncate">Converted</span>
+                                            <div className="w-1 h-1 rounded-full bg-emerald-500 shrink-0" />
                                         </div>
-                                        <p className="text-2xl font-semibold text-emerald-400 tracking-tight">{webinar.convertedCount}</p>
+                                        <p className="text-xl sm:text-2xl font-semibold text-emerald-400 tracking-tight">{webinar.convertedCount}</p>
                                     </div>
                                     <div className="space-y-1">
-                                        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Pipeline</span>
-                                        <p className="text-2xl font-semibold text-white tracking-tight">
+                                        <span className="text-[9px] sm:text-[10px] font-mono text-zinc-500 uppercase tracking-widest block truncate">Pipeline</span>
+                                        <p className="text-xl sm:text-2xl font-semibold text-white tracking-tight truncate">
                                             {formatCurrency(webinar.pipelineValue)}
                                         </p>
                                     </div>

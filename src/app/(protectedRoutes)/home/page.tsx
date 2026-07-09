@@ -101,8 +101,8 @@ const Pages = async () => {
               View all <ArrowRight className="w-[14px] h-[14px]" />
             </button>
           </div>
-          <div className="border border-[#444748] bg-[#141313] rounded overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="border border-[#444748] bg-[#141313] rounded overflow-hidden overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[500px]">
               <thead>
                 <tr className="bg-[#353434] border-b border-[#444748] text-[12px] font-medium text-[#c4c7c8] font-mono uppercase tracking-widest">
                   <th className="py-3 px-4">Session Name</th>
@@ -139,8 +139,8 @@ const Pages = async () => {
               Archive <ArrowRight className="w-[14px] h-[14px]" />
             </button>
           </div>
-          <div className="border border-[#444748] bg-[#141313] rounded overflow-hidden">
-            <table className="w-full text-left border-collapse">
+          <div className="border border-[#444748] bg-[#141313] rounded overflow-hidden overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[500px]">
               <thead>
                 <tr className="bg-[#353434] border-b border-[#444748] text-[12px] font-medium text-[#c4c7c8] font-mono uppercase tracking-widest">
                   <th className="py-3 px-4">Session Name</th>
