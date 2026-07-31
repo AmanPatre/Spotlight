@@ -447,7 +447,7 @@ erDiagram
 
     CallDebrief {
         UUID id PK
-        UUID attendanceId FK_UK
+        UUID attendanceId FK UK
         Int score
         String summary
         Boolean isHotLead
