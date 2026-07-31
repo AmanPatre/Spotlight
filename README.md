@@ -560,7 +560,7 @@ UPLOADTHING_TOKEN=...
 UPLOADTHING_SECRET=...
 ```
 
-> **Never commit `.env` to version control.** Add it to `.gitignore`.
+
 
 ---
 
